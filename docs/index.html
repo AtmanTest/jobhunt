@@ -79,6 +79,25 @@
 .date-header.today { color: var(--green); }
 .date-header.this-week { color: var(--accent); }
 
+.new-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+    background: var(--green);
+    color: #0a0a0f;
+    animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
         .job-list { padding: 0 32px 40px; }
         .job-card {
             background: var(--card); border: 1px solid var(--border);
@@ -235,6 +254,14 @@ function render() {
         return d >= weekAgo && !isToday(dateStr);
     }
     
+    function isNew(dateStr) {
+        if (dateStr === 'unknown') return false;
+        const d = new Date(dateStr);
+        const fourteenDays = new Date();
+        fourteenDays.setDate(fourteenDays.getDate() - 14);
+        return d >= fourteenDays;
+    }
+    
     // Render grouped by date
     const container = document.getElementById('jobList');
     if (jobs.length === 0) {
@@ -251,7 +278,7 @@ function render() {
         groups[dateStr].forEach(j => {
             html += `
                 <div class="job-card">
-                    <div class="job-title">${j.title}</div>
+                    <div class="job-title">${j.title}${isNew(j.date) ? '<span class="new-badge">NEW</span>' : ''}</div>
                     <div class="job-company">${j.company || ''}</div>
                     <div class="job-meta">
                         <span>📍 ${j.location || 'Remote'}</span>
