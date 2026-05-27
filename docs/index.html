@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobHunt - Remote QA Jobs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f; --card: #16161f; --border: #252535;
+            --text: #e0e0ea; --text-dim: #7a7a95;
+            --accent: #6c5ce7; --accent-glow: rgba(108,92,231,0.12);
+            --green: #00d68f;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh;
+        }
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding: 20px 32px;
+            display: flex; align-items: center;
+            justify-content: space-between;
+            background: rgba(10,10,15,0.95);
+            backdrop-filter: blur(12px);
+            position: sticky; top:0; z-index:100;
+        }
+        .header h1 {
+            font-size: 22px; font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header .last-update {
+            font-size: 12px; color: var(--text-dim);
+        }
+        .stats {
+            display: flex; gap: 12px; padding: 20px 32px; flex-wrap: wrap;
+        }
+        .stat {
+            flex:1; min-width:120px;
+            background: var(--card); border:1px solid var(--border);
+            border-radius: 10px; padding: 14px 20px;
+        }
+        .stat .num { font-size: 26px; font-weight: 700; }
+        .stat .lbl { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .5px; }
+        .stat.accent { border-color: var(--accent); }
+        .stat.accent .num { color: var(--accent); }
+        .stat.green { border-color: var(--green); }
+        .stat.green .num { color: var(--green); }
+        .filters { padding: 0 32px 16px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .filters input {
+            background: var(--card); border:1px solid var(--border);
+            border-radius: 8px; padding: 8px 14px;
+            color: var(--text); font-size: 13px; flex:1; min-width:200px; outline:none;
+        }
+        .filters input:focus { border-color: var(--accent); }
+        .filter-btn {
+            padding: 7px 14px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--card);
+            color: var(--text-dim); font-size: 12px; cursor: pointer;
+        }
+        .filter-btn.active { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); }
+
+        .job-list { padding: 0 32px 40px; }
+        .job-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 10px; padding: 18px 22px; margin-bottom: 8px;
+            transition: all .15s;
+        }
+        .job-card:hover { border-color: rgba(108,92,231,.3); transform: translateX(3px); }
+        .job-title { font-size: 15px; font-weight: 600; }
+        .job-company { font-size: 13px; color: var(--accent); margin-top: 2px; }
+        .job-meta { display: flex; gap: 14px; font-size: 11px; color: var(--text-dim); margin-top: 8px; flex-wrap: wrap; }
+        .job-meta .source {
+            text-transform: uppercase; letter-spacing: 1px;
+            padding: 1px 8px; border:1px solid var(--border); border-radius: 4px;
+        }
+        .job-apply { margin-top: 10px; }
+        .job-apply a {
+            display: inline-block; padding: 6px 16px;
+            background: var(--accent); color: white !important;
+            border-radius: 6px; font-size: 12px; font-weight: 600;
+            text-decoration: none;
+        }
+        .job-apply a:hover { background: #5f4dd0; }
+
+        .empty-state {
+            text-align: center; padding: 60px 20px; color: var(--text-dim);
+        }
+        .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+
+        .loading {
+            text-align: center; padding: 60px; color: var(--text-dim);
+        }
+        .loading .spinner {
+            display: inline-block; width: 24px; height: 24px;
+            border: 2px solid var(--border); border-top-color: var(--accent);
+            border-radius: 50%; animation: spin .8s linear infinite;
+            margin-bottom: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 8px; padding: 14px 16px; text-align: center; }
+            .stats, .filters, .job-list { padding-left: 16px; padding-right: 16px; }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>⚡ JobHunt</h1>
+    <span class="last-update" id="lastUpdate">Chargement...</span>
+</div>
+
+<div class="stats" id="stats">
+    <div class="stat accent"><div class="num" id="statQa">—</div><div class="lbl">Offres QA</div></div>
+    <div class="stat"><div class="num" id="statTotal">—</div><div class="lbl">Total</div></div>
+    <div class="stat green"><div class="num" id="statThisWeek">—</div><div class="lbl">Cette semaine</div></div>
+    <div class="stat"><div class="num" id="statCompanies">—</div><div class="lbl">Entreprises</div></div>
+</div>
+
+<div class="filters">
+    <input type="text" id="search" placeholder="🔍 Chercher par titre, entreprise..." oninput="filterJobs()">
+    <button class="filter-btn active" id="filterQa" onclick="toggleQa()">🔬 QA only</button>
+</div>
+
+<div id="jobList" class="job-list">
+    <div class="loading">
+        <div class="spinner"></div>
+        <p>Chargement des offres...</p>
+    </div>
+</div>
+
+<script>
+let allJobs = [];
+
+async function loadJobs() {
+    try {
+        const res = await fetch('jobs.json');
+        const data = await res.json();
+        allJobs = data.jobs || [];
+        document.getElementById('lastUpdate').textContent = 
+            'Dernière mise à jour: ' + (data.exported_at ? new Date(data.exported_at).toLocaleDateString('fr-FR') : '?');
+        render();
+    } catch(e) {
+        document.getElementById('jobList').innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>Erreur de chargement</h3><p>Impossible de charger les offres.</p></div>';
+    }
+}
+
+function render() {
+    const showQa = document.getElementById('filterQa').classList.contains('active');
+    const search = document.getElementById('search').value.toLowerCase();
+    
+    let jobs = [...allJobs];
+    if (showQa) jobs = jobs.filter(j => j.is_qa);
+    if (search) jobs = jobs.filter(j => 
+        (j.title || '').toLowerCase().includes(search) || 
+        (j.company || '').toLowerCase().includes(search)
+    );
+    
+    // Stats
+    document.getElementById('statQa').textContent = allJobs.filter(j => j.is_qa).length;
+    document.getElementById('statTotal').textContent = allJobs.length;
+    const thisWeek = allJobs.filter(j => {
+        const d = new Date(j.date || 0);
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return d >= weekAgo;
+    }).length;
+    document.getElementById('statThisWeek').textContent = thisWeek;
+    document.getElementById('statCompanies').textContent = new Set(allJobs.map(j => j.company)).size;
+    
+    // Job list
+    const container = document.getElementById('jobList');
+    if (jobs.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><h3>Aucune offre</h3><p>Essaie de modifier les filtres.</p></div>';
+        return;
+    }
+    
+    container.innerHTML = jobs.map(j => `
+        <div class="job-card">
+            <div class="job-title">${j.title}</div>
+            <div class="job-company">${j.company || ''}</div>
+            <div class="job-meta">
+                <span>📍 ${j.location || 'Remote'}</span>
+                ${j.salary ? '<span>💰 ' + j.salary + '</span>' : ''}
+                <span>📅 ${j.date || ''}</span>
+                <span class="source">${j.source || ''}</span>
+            </div>
+            <div class="job-apply">
+                <a href="${j.url}" target="_blank" rel="noopener">Apply ↗</a>
+            </div>
+        </div>
+    `).join('');
+}
+
+function filterJobs() { render(); }
+function toggleQa() {
+    document.getElementById('filterQa').classList.toggle('active');
+    render();
+}
+
+loadJobs();
+</script>
+</body>
+</html>

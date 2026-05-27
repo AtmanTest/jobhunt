@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV - {{ cv.name }} | JobHunt</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f0f13;
+            --card: #1a1a24;
+            --border: #2a2a3a;
+            --text: #e4e4ef;
+            --text-dim: #8888a0;
+            --accent: #6c5ce7;
+            --accent-glow: rgba(108,92,231,0.12);
+            --green: #00d68f;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15,15,19,0.95);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header h1 { font-size: 20px; font-weight: 600; }
+        .header a {
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+        .header a:hover { border-color: var(--accent); }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 32px; }
+
+        /* Profile header */
+        .profile {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: var(--card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+        .profile .name {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .profile .title {
+            font-size: 16px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+        .profile .status {
+            font-size: 13px;
+            color: var(--green);
+            margin-top: 4px;
+        }
+        .profile .summary {
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--text-dim);
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 32px;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Experience */
+        .exp-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 12px;
+        }
+        .exp-card .role {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .exp-card .company {
+            color: var(--accent);
+            font-weight: 500;
+        }
+        .exp-card .period {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+        .exp-card .desc {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-top: 8px;
+            line-height: 1.7;
+        }
+        .exp-card .tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .exp-card .tags span {
+            font-size: 10px;
+            background: var(--accent-glow);
+            color: var(--accent);
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+
+        /* Skills grid */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 10px;
+        }
+        .skill-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 20px;
+        }
+        .skill-card .category {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+        .skill-card .items {
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .cert-list {
+            display: grid;
+            gap: 8px;
+        }
+        .cert-item {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 13px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .back-link:hover { color: var(--accent); }
+
+        /* Print */
+        @media print {
+            .header { display: none; }
+            body { background: white; color: black; }
+            .profile { background: #f8f8fb; border: 1px solid #ddd; }
+            .profile .name { background: none; color: #333; -webkit-text-fill-color: #333; }
+            .exp-card, .skill-card, .cert-item { background: #f8f8fb; border: 1px solid #ddd; }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>📄 Mon CV</h1>
+    <div>
+        <a href="{{ url_for('index') }}">← Dashboard</a>
+        <a href="#" onclick="window.print()" style="margin-left:8px;">🖨️ Imprimer / PDF</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="profile">
+        <div class="name">{{ cv.name }}</div>
+        <div class="title">{{ cv.title }}</div>
+        <div class="status">{{ cv.status }} • {{ cv.location }}</div>
+        <div class="summary">{{ cv.summary }}</div>
+        <div style="margin-top:12px;font-size:12px;color:var(--text-dim);">
+            {% for lang in cv.languages %}
+            <span style="background:var(--accent-glow);padding:3px 12px;border-radius:12px;margin:0 4px;">{{ lang }}</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Expérience</div>
+        {% for exp in cv.experience %}
+        <div class="exp-card">
+            <div class="role">{{ exp.role }} <span class="company">@ {{ exp.company }}</span></div>
+            {% if exp.period %}<div class="period">{{ exp.period }}</div>{% endif %}
+            <div class="desc">{{ exp.description }}</div>
+            {% if exp.keywords %}
+            <div class="tags">
+                {% for kw in exp.keywords %}<span>{{ kw }}</span>{% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <div class="section-title">Compétences Techniques</div>
+        <div class="skills-grid">
+            {% for category, items in cv.technical_skills.items() %}
+            <div class="skill-card">
+                <div class="category">{{ category }}</div>
+                <div class="items">{{ items }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Certifications</div>
+        <div class="cert-list">
+            {% for cert in cv.certifications %}
+            <div class="cert-item">{{ cert.name }}{% if cert.year %} ({{ cert.year }}){% endif %}</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+</body>
+</html>

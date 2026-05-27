@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>À propos | JobHunt</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f0f13; --card: #1a1a24; --border: #2a2a3a;
+            --text: #e4e4ef; --text-dim: #8888a0; --accent: #6c5ce7;
+            --green: #00d68f; --orange: #ff9f43;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15,15,19,0.95);
+            position: sticky; top: 0;
+        }
+        .header h1 { font-size: 20px; font-weight: 600; }
+        .header a {
+            padding: 8px 16px; border-radius: 8px; text-decoration: none;
+            font-size: 13px; font-weight: 500;
+            background: var(--card); color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .container { max-width: 700px; margin: 0 auto; padding: 40px 32px; }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        .card h2 { font-size: 16px; margin-bottom: 8px; color: var(--accent); }
+        .card p, .card li { font-size: 13px; color: var(--text-dim); }
+        .card ul { padding-left: 20px; margin-top: 8px; }
+        .card li { margin-bottom: 6px; }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 4px;
+        }
+        .badge.green { background: rgba(0,214,143,0.1); color: var(--green); }
+        .badge.orange { background: rgba(255,159,67,0.1); color: var(--orange); }
+        .badge.accent { background: rgba(108,92,231,0.12); color: var(--accent); }
+
+        code {
+            background: var(--bg);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>ℹ️ JobHunt Dashboard</h1>
+    <a href="{{ url_for('index') }}">← Dashboard</a>
+</div>
+
+<div class="container">
+    <div class="card">
+        <h2>Comment ça marche</h2>
+        <p>
+            JobHunt scrape automatiquement les offres d'emploi QA/SDET depuis
+            <strong>RemoteOK</strong> et bientôt d'autres sources. Les offres sont
+            stockées localement dans une base SQLite sur ton Mac.
+        </p>
+    </div>
+
+    <div class="card">
+        <h2>Flux de travail</h2>
+        <ol style="padding-left:20px;margin-top:8px;">
+            <li style="color:var(--text-dim);font-size:13px;margin-bottom:8px;">
+                <span class="badge accent">1</span> 
+                Lance <strong>Rafraîchir</strong> pour importer les nouvelles offres
+            </li>
+            <li style="color:var(--text-dim);font-size:13px;margin-bottom:8px;">
+                <span class="badge accent">2</span>
+                Parcours les offres filtrées (QA uniquement, non postulées)
+            </li>
+            <li style="color:var(--text-dim);font-size:13px;margin-bottom:8px;">
+                <span class="badge accent">3</span>
+                Clique <strong>Cover</strong> pour générer une cover letter personnalisée
+            </li>
+            <li style="color:var(--text-dim);font-size:13px;margin-bottom:8px;">
+                <span class="badge accent">4</span>
+                Clique <strong>Apply</strong> pour ouvrir le site et postuler manuellement
+            </li>
+            <li style="color:var(--text-dim);font-size:13px;margin-bottom:8px;">
+                <span class="badge accent">5</span>
+                Marque comme postulé dans l'app pour tracker tes candidatures
+            </li>
+        </ol>
+    </div>
+
+    <div class="card">
+        <h2>Sources d'emploi</h2>
+        <ul>
+            <li><span class="badge green">✓</span> RemoteOK — API JSON, ~200 offres QA</li>
+            <li><span class="badge orange">⚠</span> We Work Remotely — nécessite scraping HTML</li>
+            <li><span class="badge orange">⚠</span> Malt, LinkedIn, Indeed — bloqués par Cloudflare</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>Commandes utiles</h2>
+        <p style="margin-top:8px;">
+            <code>cd ~/Desktop/jobhunt && python3 app.py</code><br>
+            <span style="font-size:12px;color:var(--text-dim);">→ Lance le dashboard sur http://localhost:5050</span>
+        </p>
+        <p style="margin-top:8px;">
+            <code>python3 scraper.py</code><br>
+            <span style="font-size:12px;color:var(--text-dim);">→ Scrape les offres sans lancer le serveur</span>
+        </p>
+    </div>
+</div>
+</body>
+</html>
