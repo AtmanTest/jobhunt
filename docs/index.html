@@ -65,6 +65,20 @@
         }
         .filter-btn.active { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); }
 
+.date-section { margin-bottom: 8px; }
+.date-header {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    padding: 12px 0 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.date-header.today { color: var(--green); }
+.date-header.this-week { color: var(--accent); }
+
         .job-list { padding: 0 32px 40px; }
         .job-card {
             background: var(--card); border: 1px solid var(--border);
@@ -174,28 +188,87 @@ function render() {
     document.getElementById('statThisWeek').textContent = thisWeek;
     document.getElementById('statCompanies').textContent = new Set(allJobs.map(j => j.company)).size;
     
-    // Job list
+    // Group jobs by date
+    const groups = {};
+    const today = new Date();
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    
+    jobs.forEach(j => {
+        const d = j.date || 'unknown';
+        if (!groups[d]) groups[d] = [];
+        groups[d].push(j);
+    });
+    
+    const sortedDates = Object.keys(groups).sort((a, b) => {
+        if (a === 'unknown') return 1;
+        if (b === 'unknown') return -1;
+        return new Date(b) - new Date(a);
+    });
+    
+    // Format date in French
+    function formatDate(dateStr) {
+        if (dateStr === 'unknown') return 'Date inconnue';
+        const d = new Date(dateStr);
+        const now = new Date();
+        const diff = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+        
+        if (diff === 0) return "Aujourd'hui";
+        if (diff === 1) return 'Hier';
+        if (diff <= 7) return `Il y a ${diff} jours`;
+        
+        return d.toLocaleDateString('fr-FR', { 
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+    }
+    
+    function isToday(dateStr) {
+        if (dateStr === 'unknown') return false;
+        const d = new Date(dateStr);
+        const now = new Date();
+        return d.toDateString() === now.toDateString();
+    }
+    
+    function isThisWeek(dateStr) {
+        if (dateStr === 'unknown') return false;
+        const d = new Date(dateStr);
+        return d >= weekAgo && !isToday(dateStr);
+    }
+    
+    // Render grouped by date
     const container = document.getElementById('jobList');
     if (jobs.length === 0) {
         container.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><h3>Aucune offre</h3><p>Essaie de modifier les filtres.</p></div>';
         return;
     }
     
-    container.innerHTML = jobs.map(j => `
-        <div class="job-card">
-            <div class="job-title">${j.title}</div>
-            <div class="job-company">${j.company || ''}</div>
-            <div class="job-meta">
-                <span>📍 ${j.location || 'Remote'}</span>
-                ${j.salary ? '<span>💰 ' + j.salary + '</span>' : ''}
-                <span>📅 ${j.date || ''}</span>
-                <span class="source">${j.source || ''}</span>
-            </div>
-            <div class="job-apply">
-                <a href="${j.url}" target="_blank" rel="noopener">Apply ↗</a>
-            </div>
-        </div>
-    `).join('');
+    let html = '';
+    sortedDates.forEach(dateStr => {
+        const headerClass = isToday(dateStr) ? 'today' : (isThisWeek(dateStr) ? 'this-week' : '');
+        html += `<div class="date-section">`;
+        html += `<div class="date-header ${headerClass}">${formatDate(dateStr)} — ${groups[dateStr].length} offre${groups[dateStr].length > 1 ? 's' : ''}</div>`;
+        
+        groups[dateStr].forEach(j => {
+            html += `
+                <div class="job-card">
+                    <div class="job-title">${j.title}</div>
+                    <div class="job-company">${j.company || ''}</div>
+                    <div class="job-meta">
+                        <span>📍 ${j.location || 'Remote'}</span>
+                        ${j.salary ? '<span>💰 ' + j.salary + '</span>' : ''}
+                        <span>📅 ${j.date || ''}</span>
+                        <span class="source">${j.source || ''}</span>
+                    </div>
+                    <div class="job-apply">
+                        <a href="${j.url}" target="_blank" rel="noopener">Apply ↗</a>
+                    </div>
+                </div>`;
+        });
+        
+        html += `</div>`;
+    });
+    
+    container.innerHTML = html;
 }
 
 function filterJobs() { render(); }
