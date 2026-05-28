@@ -368,6 +368,16 @@ def api_refresh():
     return jsonify({"status": "started"})
 
 
+@app.route("/api/job/<int:job_id>/click")
+def api_job_click(job_id):
+    """Mark a job as viewed/clicked."""
+    conn = scraper_db()
+    conn.execute("UPDATE jobs SET viewed = 1 WHERE id = ?", (job_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "ok"})
+
+
 @app.route("/api/jobs")
 def api_jobs():
     filters = {}

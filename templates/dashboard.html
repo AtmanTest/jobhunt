@@ -237,6 +237,23 @@
         }
         .job-card.applied { opacity: 0.5; }
         .job-card.applied:hover { opacity: 0.7; }
+        .job-card .new-badge {
+            display: inline-block;
+            background: var(--green);
+            color: #0f0f13;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 6px;
+            vertical-align: middle;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .job-card.viewed .new-badge { display: none; }
         .job-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
         .job-title {
             font-size: 14px;
@@ -436,11 +453,12 @@
         <div class="job-list">
             {% if country_data.jobs %}
             {% for job in country_data.jobs %}
-            <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}">
+            <div class="job-card {% if job.applied %}applied{% endif %} {% if job.viewed %}viewed{% endif %}" data-id="{{ job.id }}">
                 <div class="job-header">
                     <div>
                         <div class="job-title">
                             {{ job.title }}
+                            {% if not job.viewed %}<span class="new-badge">Nouveau</span>{% endif %}
                             {% if job.is_qa %}<span class="qa-badge">QA</span>{% endif %}
                         </div>
                         <div class="job-company">{{ job.company }}</div>
@@ -488,11 +506,12 @@
         <div class="job-list">
             {% if tous_jobs %}
             {% for job in tous_jobs %}
-            <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}">
+            <div class="job-card {% if job.applied %}applied{% endif %} {% if job.viewed %}viewed{% endif %}" data-id="{{ job.id }}">
                 <div class="job-header">
                     <div>
                         <div class="job-title">
                             {{ job.title }}
+                            {% if not job.viewed %}<span class="new-badge">Nouveau</span>{% endif %}
                             {% if job.is_qa %}<span class="qa-badge">QA</span>{% endif %}
                         </div>
                         <div class="job-company">{{ job.company }}</div>
@@ -545,11 +564,19 @@
         });
     });
 
-    // Job card click → open URL
+    // Job card click → open URL + mark as viewed
     document.querySelectorAll('.job-card').forEach(card => {
         card.addEventListener('click', function() {
             const link = this.querySelector('.btn-apply');
+            const jobId = this.dataset.id;
             if (link) window.open(link.href, '_blank');
+            // Track click
+            if (jobId && !this.classList.contains('viewed')) {
+                fetch('/api/job/' + jobId + '/click');
+                this.classList.add('viewed');
+                const badge = this.querySelector('.new-badge');
+                if (badge) badge.remove();
+            }
         });
     });
 </script>

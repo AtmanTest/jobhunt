@@ -540,6 +540,113 @@ def fetch_freework():
 
     return jobs
 
+# ─── French-specific scrapers ──────────────────────────────────────
+
+def fetch_lesjeudis():
+    """Fetch QA freelance jobs from LesJeudis (French IT freelance platform)."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test", "tester", "testing", "automation",
+                       "testeur", "recette", "qualite"]
+
+    try:
+        resp = requests.get(
+            "https://www.lesjeudis.com/recherche?q=QA&type=Mission&field=IT",
+            headers=headers, timeout=15
+        )
+        if resp.status_code == 200:
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(resp.text, "html.parser")
+            cards = soup.select("article.job-card, div.job-item, li.job, div[class*=job]")
+            for card in cards:
+                title_el = card.select_one("h2 a, h3 a, a[title], .job-title a, .posting-title")
+                if not title_el:
+                    continue
+                title = title_el.get_text(strip=True)
+                title_lower = title.lower()
+                if not any(k in title_lower for k in filter_keywords):
+                    continue
+
+                url = title_el.get("href", "")
+                if url and not url.startswith("http"):
+                    url = "https://www.lesjeudis.com" + url
+
+                company_el = card.select_one(".company, .org, [class*=company]")
+                company = company_el.get_text(strip=True) if company_el else ""
+
+                location_el = card.select_one(".location, .place, [class*=location]")
+                location = location_el.get_text(strip=True) if location_el else "France"
+
+                jobs.append({
+                    "title": title, "company": company, "source": "LesJeudis",
+                    "url": url, "location": location, "salary": "", "tags": "",
+                    "description": "", "date": datetime.now().strftime("%Y-%m-%d"),
+                    "raw_date": int(time.time()),
+                })
+    except Exception as e:
+        print(f"  LesJeudis error: {e}")
+
+    if not jobs:
+        print("  LesJeudis: 0 jobs (selector may need update)")
+    return jobs
+
+
+def fetch_optioncarriere():
+    """Fetch QA jobs from Optioncarriere (French job aggregator)."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "text/html",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test automate", "test engineer", "tester",
+                       "software test", "testeur", "recette", "qualite"]
+
+    try:
+        resp = requests.get(
+            "https://www.optioncarriere.com/recherche/s-emplois?q=QA&l=France&t=freelance",
+            headers=headers, timeout=15
+        )
+        if resp.status_code == 200:
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(resp.text, "html.parser")
+            cards = soup.select("article, .job, .result, li.result, div[class*=job]")
+            for card in cards:
+                title_el = card.select_one("a[title], h2 a, h3 a, .title a")
+                if not title_el:
+                    continue
+                title = title_el.get_text(strip=True)
+                title_lower = title.lower()
+                if not any(k in title_lower for k in filter_keywords):
+                    continue
+
+                url = title_el.get("href", "")
+                if url and not url.startswith("http"):
+                    url = "https://www.optioncarriere.com" + url
+
+                company_el = card.select_one(".company, .employer, [class*=company]")
+                company = company_el.get_text(strip=True) if company_el else ""
+
+                location_el = card.select_one(".location, .place, .city")
+                location = location_el.get_text(strip=True) if location_el else "France"
+
+                jobs.append({
+                    "title": title, "company": company, "source": "Optioncarriere",
+                    "url": url, "location": location, "salary": "", "tags": "",
+                    "description": "", "date": datetime.now().strftime("%Y-%m-%d"),
+                    "raw_date": int(time.time()),
+                })
+    except Exception as e:
+        print(f"  Optioncarriere error: {e}")
+
+    if not jobs:
+        print("  Optioncarriere: 0 jobs (selector may need update)")
+    return jobs
+
 
 def fetch_linkedin_guest(country, location_query, keywords="QA"):
     """Fetch jobs from LinkedIn guest search API for a specific country."""
@@ -647,6 +754,8 @@ def fetch_all_new_sources():
         ("JobBoard.io", fetch_jobboard_io),
         ("Otta", fetch_otta),
         ("Free-Work (FR)", fetch_freework),
+        ("LesJeudis (FR)", fetch_lesjeudis),
+        ("Optioncarriere (FR)", fetch_optioncarriere),
         ("LinkedIn Countries", fetch_linkedin_countries),
     ]
     
@@ -728,6 +837,7 @@ def init_db():
         ("currency", "TEXT"),
         ("ai_enriched", "INTEGER DEFAULT 0"),
         ("saved", "INTEGER DEFAULT 0"),
+        ("viewed", "INTEGER DEFAULT 0"),
         ("applied_at", "DATETIME"),
     ]
     for col_name, col_type in new_columns:
