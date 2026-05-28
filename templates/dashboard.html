@@ -500,6 +500,7 @@
         <button class="tab-btn" data-tab="luxembourg">🇱🇺 Luxembourg <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'luxembourg')|map(attribute='count')|first }}</span></button>
         <button class="tab-btn" data-tab="dubai">🇦🇪 Dubaï / EAU <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'dubai')|map(attribute='count')|first }}</span></button>
         <button class="tab-btn" data-tab="singapour">🇸🇬 Singapour <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'singapour')|map(attribute='count')|first }}</span></button>
+        <button class="tab-btn" data-tab="linkedin">🔗 LinkedIn <span class="badge" id="linkedin-count">{{ linkedin_jobs|default(0) }}</span></button>
         <button class="tab-btn" data-tab="tous">🌐 Tous <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'tous')|map(attribute='count')|first }}</span></button>
     </div>
 
@@ -689,6 +690,19 @@
     </div>
 </div>
 
+<!-- LinkedIn panel -->
+<div class="tab-panel" id="panel-linkedin">
+    <div class="container" style="padding:16px 0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-size:15px;font-weight:600;">🔗 Offres LinkedIn <span style="color:var(--text-dim);font-weight:400;font-size:13px;" id="linkedin-subtitle">— scrapé via Chrome</span></div>
+            <button onclick="refreshLinkedIn()" id="btn-refresh-li" style="background:var(--accent);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;">↻ Rafraîchir</button>
+        </div>
+        <div id="linkedin-jobs-container">
+            <div style="text-align:center;padding:40px;color:var(--text-dim);">Chargement...</div>
+        </div>
+    </div>
+</div>
+
 <!-- Footer -->
 <div style="text-align:center;padding:24px 32px;font-size:11px;color:var(--text-muted);border-top:1px solid var(--border-subtle);margin-top:32px;">
     JobHunt Dashboard · v{{ version }} · <a href="{{ url_for('changelog') }}" style="color:var(--accent);text-decoration:none;">Changelog</a> · <a href="{{ url_for('about') }}" style="color:var(--accent);text-decoration:none;">À propos</a>
@@ -705,6 +719,8 @@
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             const panel = document.getElementById('panel-' + this.dataset.tab);
             if (panel) panel.classList.add('active');
+            // Load LinkedIn jobs when that tab is clicked
+            if (this.dataset.tab === 'linkedin') loadLinkedInJobs();
         });
     });
 
@@ -748,6 +764,76 @@
     }
     fetchBalance();
     setInterval(fetchBalance, 60000);
+
+    // LinkedIn jobs loader
+    function loadLinkedInJobs() {
+        const container = document.getElementById('linkedin-jobs-container');
+        const btn = document.getElementById('btn-refresh-li');
+        if (btn) btn.disabled = true;
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim);">⏳ Chargement...</div>';
+        fetch('/api/linkedin/jobs')
+            .then(r => r.json())
+            .then(data => {
+                const jobs = data.qa_jobs || data.jobs || [];
+                document.getElementById('linkedin-count').textContent = jobs.length;
+                if (jobs.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">🔗</div><h3>Aucune offre LinkedIn</h3><p>Lance un scrap depuis le bouton Rafraîchir (nécessite Chrome + session LinkedIn ouverte).</p></div>';
+                    return;
+                }
+                let html = '<div class="job-list">';
+                jobs.forEach((j, i) => {
+                    const url = j.url || '#';
+                    html += '<div class="job-card" style="cursor:pointer;" onclick="window.open(\'' + url + '\',\'_blank\')">';
+                    html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;">';
+                    html += '<div style="flex:1;">';
+                    html += '<div style="font-weight:600;font-size:14px;">' + escapeHtml(j.title) + '</div>';
+                    html += '<div class="job-company" style="margin-top:2px;">' + escapeHtml(j.company || '') + '</div>';
+                    html += '<div class="job-meta" style="margin-top:4px;">';
+                    html += '<span>📍 ' + escapeHtml(j.location || '') + '</span>';
+                    if (j.country) html += '<span class="job-source">' + escapeHtml(j.country) + '</span>';
+                    html += '<span style="background:var(--accent-glow);color:var(--accent);padding:1px 7px;border-radius:8px;font-size:10px;">🔗 LinkedIn</span>';
+                    html += '</div></div>';
+                    html += '<a href="' + url + '" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>';
+                    html += '</div></div>';
+                });
+                html += '</div>';
+                html += '<div style="margin-top:8px;font-size:11px;color:var(--text-dim);text-align:center;">🔄 ' + jobs.length + ' offres · scrapé à ' + (data.scraped_at || '').substring(0,16).replace('T',' ') + '</div>';
+                container.innerHTML = html;
+            })
+            .catch(() => {
+                container.innerHTML = '<div class="empty-state"><div class="icon">❌</div><h3>Erreur</h3><p>Impossible de charger les offres LinkedIn.</p></div>';
+            })
+            .finally(() => { if (btn) btn.disabled = false; });
+    }
+    function refreshLinkedIn() {
+        const btn = document.getElementById('btn-refresh-li');
+        btn.textContent = '⟳ Scraping...';
+        btn.disabled = true;
+        fetch('/api/linkedin/refresh', {method:'POST'})
+            .then(r => r.json())
+            .then(() => {
+                btn.textContent = '⏳ Attente...';
+                setTimeout(() => {
+                    loadLinkedInJobs();
+                    btn.textContent = '↻ Rafraîchir';
+                    btn.disabled = false;
+                }, 15000);
+            })
+            .catch(() => {
+                btn.textContent = '↻ Rafraîchir';
+                btn.disabled = false;
+            });
+    }
+    function escapeHtml(t) {
+        if(!t) return '';
+        return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // Preload LinkedIn count
+    fetch('/api/linkedin/jobs').then(r=>r.json()).then(d => {
+        const n = (d.qa_jobs||d.jobs||[]).length;
+        document.getElementById('linkedin-count').textContent = n;
+    });
 </script>
 </body>
 </html>

@@ -610,6 +610,32 @@ def api_deepseek_balance():
         return jsonify({"balance": 0, "error": str(e), "live": False}), 200
 
 
+LINKEDIN_JOBS_FILE = os.path.join(os.path.dirname(__file__), "linkedin_jobs.json")
+
+
+@app.route("/api/linkedin/jobs")
+def api_linkedin_jobs():
+    """Return LinkedIn-scraped QA jobs."""
+    if os.path.exists(LINKEDIN_JOBS_FILE):
+        with open(LINKEDIN_JOBS_FILE, encoding="utf-8") as f:
+            data = json.load(f)
+        return jsonify(data)
+    return jsonify({"jobs": [], "qa_jobs": [], "count": 0})
+
+
+@app.route("/api/linkedin/refresh", methods=["POST"])
+def api_linkedin_refresh():
+    """Trigger LinkedIn resrape via subprocess."""
+    try:
+        scraper = os.path.join(os.path.dirname(__file__), "linkedin_scraper.py")
+        thread = threading.Thread(target=lambda: subprocess.run(
+            ["python3", scraper], capture_output=True, timeout=120), daemon=True)
+        thread.start()
+        return jsonify({"status": "started"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/jobs/saved")
 def api_saved_jobs():
     """Get saved (bookmarked) jobs."""
