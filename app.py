@@ -19,6 +19,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from scraper import init_db, fetch_all, fetch_all_new_sources, save_jobs, get_jobs, mark_applied, get_stats, export_static_json, get_db as scraper_db
 from version import get_version, get_git_commit, get_git_tag, is_dirty, DB_SCHEMA_VERSION
+from matcher import match_job_to_cv, analyze_tjm, detect_duplicates, analyze_skills_gap, source_stats as src_stats
 from cv_data import CV
 
 # ─── QA Module ───────────────────────────────────────────────────
@@ -334,6 +335,12 @@ def index():
 
     for cid, cdata in COUNTRY_DATA.items():
         jobs = filter_jobs_by_country(cid)
+        # Enrichir avec score + TJM
+        for j in jobs:
+            score, matched = match_job_to_cv(j)
+            j['match_score'] = score
+            j['matched_skills'] = matched[:5]
+            j['tjm_analysis'] = analyze_tjm(j)
         cdata['jobs'] = jobs
         countries[cid] = cdata
         cnt = len(jobs)
@@ -350,11 +357,23 @@ def index():
                 all_jobs.append(job)
     country_counts.append({'key': 'tous', 'count': len(all_jobs)})
 
+    # Top matches (top 10 tous pays)
+    top_matches = sorted(all_jobs, key=lambda j: -j.get('match_score', 0))[:10]
+
+    # Stats sources
+    s_stats = src_stats(all_jobs)
+    
+    # Skills gap
+    skills = analyze_skills_gap(all_jobs)
+
     return render_template("dashboard.html",
         stats=stats,
         countries=countries,
         country_counts=country_counts,
         tous_jobs=all_jobs,
+        top_matches=top_matches,
+        source_stats=s_stats,
+        skills_gap=skills,
         version=get_version())
 
 
@@ -394,7 +413,83 @@ def api_job_click(job_id):
     return jsonify({"status": "ok"})
 
 
-@app.route("/api/jobs")
+@app.route("/api/job/<int:job_id>/stage", methods=["POST"])
+def api_job_stage(job_id):
+    """Mettre à jour le stage pipeline."""
+    data = request.get_json() or {}
+    stage = data.get("stage", "saved")
+    conn = get_db()
+    conn.execute("UPDATE jobs SET pipeline_stage = ? WHERE id = ?", (stage, job_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "ok"})
+
+
+@app.route("/cover-letter/<int:job_id>")
+def cover_letter(job_id):
+    """Générer une cover letter personnalisée."""
+    conn = get_db()
+    job = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+    conn.close()
+    if not job:
+        return "Job non trouvé", 404
+    job = dict(job)
+    score, matched_skills = match_job_to_cv(job)
+    
+    # Générer la lettre
+    company = job.get("company", "l'entreprise")
+    title = job.get("title", "le poste")
+    cl = f"""Bonjour,
+
+Je vous adresse ma candidature pour le poste de {title} au sein de {company}.
+
+Fort de 12+ années d'expérience en tant que consultant QA senior, j'accompagne les DSI et équipes produit dans la mise en place de stratégies de test robustes, la gestion des campagnes de recette et l'automatisation des processus de validation.
+
+Mon parcours chez BRED Bank (conformité réglementaire bancaire), Accor Hotels (QA Lead mobile 100+ pays) et Oodrive (cloud B2B souverain) m'a permis de développer une expertise transverse : test automation, API testing, DevOps et management de la qualité.
+
+Compétences clés : {", ".join(matched_skills[:8]) if matched_skills else "QA, test automation, gestion de campagne, ISTQB, Agile/Scrum"}.
+
+En tant que freelance en SASU, je suis disponible rapidement pour des missions en régie ou au forfait, en full remote ou hybride.
+
+Dans l'attente de pouvoir échanger sur cette opportunité, je reste à votre disposition pour un entretien.
+
+Cordialement,
+Jahangir
+Senior QA Consultant - SASU"""
+
+    return render_template("cover_letter.html",
+        job=job, cover_letter=cl, score=score,
+        matched_skills=matched_skills[:8],
+        version=get_version())
+
+
+@app.route("/stats")
+def stats_page():
+    """Page des statistiques : sources, skills gap, top matches."""
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM jobs WHERE freelance_status IN ('VALIDÉE', 'AMBIGUË') ORDER BY raw_date DESC").fetchall()
+    conn.close()
+    all_jobs = [dict(r) for r in rows]
+    
+    # Enrichir avec score
+    for j in all_jobs:
+        score, matched = match_job_to_cv(j)
+        j['match_score'] = score
+        j['matched_skills'] = matched[:5]
+        j['tjm_analysis'] = analyze_tjm(j)
+    
+    s_stats = src_stats(all_jobs)
+    skills = analyze_skills_gap(all_jobs)
+    top_matches = sorted(all_jobs, key=lambda j: -j.get('match_score', 0))[:20]
+    dup_groups = detect_duplicates(all_jobs)
+    
+    return render_template("stats.html",
+        source_stats=s_stats,
+        skills_gap=skills,
+        top_matches=top_matches,
+        duplicate_count=len(dup_groups),
+        total_jobs=len(all_jobs),
+        version=get_version())
 def api_jobs():
     filters = {}
     if request.args.get("qa"):

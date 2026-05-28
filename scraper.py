@@ -843,6 +843,7 @@ def init_db():
         ("duration_info", "TEXT"),
         ("budget_info", "TEXT"),
         ("source_publish_date", "TEXT"),
+        ("pipeline_stage", "TEXT DEFAULT 'new'"),
         ("applied_at", "DATETIME"),
     ]
     for col_name, col_type in new_columns:

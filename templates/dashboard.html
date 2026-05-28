@@ -291,6 +291,20 @@
         .score-high { background: rgba(0,214,143,0.2); color: var(--green); }
         .score-mid { background: rgba(255,159,67,0.2); color: var(--orange); }
         .score-low { background: rgba(255,107,107,0.2); color: var(--red); }
+        .match-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 1px 8px;
+            border-radius: 4px;
+            margin-left: 6px;
+        }
+        .match-high { background: rgba(0,214,143,0.15); color: var(--green); }
+        .match-mid { background: rgba(255,159,67,0.15); color: var(--orange); }
+        .pipeline-bar { display:flex;gap:2px;margin-top:6px; }
+        .p-step { flex:1;text-align:center;font-size:9px;padding:3px 0;border-radius:3px;background:var(--border);color:var(--text-muted);cursor:pointer;transition:all 0.2s; }
+        .p-step.active { background:var(--accent);color:#fff;font-weight:600; }
+        .p-step.done { background:var(--green);color:#0f0f13; }
         .job-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
         .job-title {
             font-size: 14px;
@@ -417,6 +431,7 @@
         <a href="{{ url_for('cv_page') }}">📄 CV</a>
         <a href="{{ url_for('qa_dashboard') }}">🧪 QA</a>
         <a href="{{ url_for('marche_qa') }}">🌍 Marché</a>
+        <a href="{{ url_for('stats_page') }}">📊 Stats</a>
         <a href="{{ url_for('about') }}">À propos</a>
         <a href="{{ url_for('refresh') }}" class="btn-primary" onclick="this.textContent='⏳...'">↻</a>
     </div>
@@ -437,7 +452,28 @@
             <span class="num orange">{{ country_counts|sum(attribute='count') }}</span>
             <span>dans nos marchés</span>
         </div>
+        <div class="stat-chip">
+            <span class="num green">{{ top_matches|length }}</span>
+            <span>🎯 Top matches</span>
+        </div>
     </div>
+
+    <!-- Top matches section -->
+    {% if top_matches %}
+    <div style="margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:8px;">🎯 Top matches CV</div>
+        <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;">
+            {% for j in top_matches[:6] %}
+            <a href="/cover-letter/{{ j.id }}" style="flex:0 0 200px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--text);transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+                <div style="font-size:18px;font-weight:800;color:var(--green);">{{ j.match_score }}%</div>
+                <div style="font-size:12px;font-weight:600;margin-top:4px;">{{ j.title[:45] }}{% if j.title|length > 45 %}…{% endif %}</div>
+                <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">{{ j.company }} · {{ j.source }}</div>
+            </a>
+            {% endfor %}
+            <a href="{{ url_for('stats_page') }}" style="flex:0 0 60px;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid var(--border);border-radius:10px;text-decoration:none;color:var(--text-dim);font-size:20px;">→</a>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Country tabs -->
     <div class="tabs" id="tabs">
@@ -503,6 +539,9 @@
                             {% if job.freelance_score %}
                             <span class="score-circle {% if job.freelance_score >= 7 %}score-high{% elif job.freelance_score >= 3 %}score-mid{% else %}score-low{% endif %}">{{ job.freelance_score }}/10</span>
                             {% endif %}
+                            {% if job.match_score %}
+                            <span class="match-badge {% if job.match_score >= 70 %}match-high{% else %}match-mid{% endif %}">{{ job.match_score }}%</span>
+                            {% endif %}
                         </div>
                         <div class="job-company">{{ job.company }}</div>
                         <div class="job-meta">
@@ -522,8 +561,19 @@
                         {% else %}
                         <a href="{{ job.url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
                         {% endif %}
+                        <a href="/cover-letter/{{ job.id }}" class="btn-outline" style="padding:5px 8px;font-size:10px;text-decoration:none;border-radius:6px;border:1px solid var(--border);color:var(--text-dim);" onclick="event.stopPropagation();">✉️</a>
                     </div>
                 </div>
+                {% if job.matched_skills %}
+                <div style="margin-top:4px;display:flex;gap:3px;flex-wrap:wrap;">
+                    {% for s in job.matched_skills %}<span style="background:rgba(0,214,143,0.1);color:var(--green);padding:1px 6px;border-radius:8px;font-size:9px;">{{ s }}</span>{% endfor %}
+                </div>
+                {% endif %}
+                {% if job.tjm_analysis and job.tjm_analysis.tjm %}
+                <div style="margin-top:4px;font-size:10px;color:var(--text-dim);">
+                    💶 {{ job.tjm_analysis.tjm }}{{ job.tjm_analysis.currency }}{{ job.tjm_analysis.unit }} {% if job.tjm_analysis.flag %}<span style="color:var(--orange)">{{ job.tjm_analysis.flag }}</span>{% endif %}
+                </div>
+                {% endif %}
                 {% if job.tags %}
                 <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">
                     {% for tag in job.tags.split(', ')[:5] %}
@@ -566,6 +616,9 @@
                             {% if job.freelance_score %}
                             <span class="score-circle {% if job.freelance_score >= 7 %}score-high{% elif job.freelance_score >= 3 %}score-mid{% else %}score-low{% endif %}">{{ job.freelance_score }}/10</span>
                             {% endif %}
+                            {% if job.match_score %}
+                            <span class="match-badge {% if job.match_score >= 70 %}match-high{% else %}match-mid{% endif %}">{{ job.match_score }}%</span>
+                            {% endif %}
                         </div>
                         <div class="job-company">{{ job.company }}</div>
                         <div class="job-meta">
@@ -585,8 +638,19 @@
                         {% else %}
                         <a href="{{ job.url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
                         {% endif %}
+                        <a href="/cover-letter/{{ job.id }}" class="btn-outline" style="padding:5px 8px;font-size:10px;text-decoration:none;border-radius:6px;border:1px solid var(--border);color:var(--text-dim);" onclick="event.stopPropagation();">✉️</a>
                     </div>
                 </div>
+                {% if job.matched_skills %}
+                <div style="margin-top:4px;display:flex;gap:3px;flex-wrap:wrap;">
+                    {% for s in job.matched_skills %}<span style="background:rgba(0,214,143,0.1);color:var(--green);padding:1px 6px;border-radius:8px;font-size:9px;">{{ s }}</span>{% endfor %}
+                </div>
+                {% endif %}
+                {% if job.tjm_analysis and job.tjm_analysis.tjm %}
+                <div style="margin-top:4px;font-size:10px;color:var(--text-dim);">
+                    💶 {{ job.tjm_analysis.tjm }}{{ job.tjm_analysis.currency }}{{ job.tjm_analysis.unit }} {% if job.tjm_analysis.flag %}<span style="color:var(--orange)">{{ job.tjm_analysis.flag }}</span>{% endif %}
+                </div>
+                {% endif %}
                 {% if job.tags %}
                 <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">
                     {% for tag in job.tags.split(', ')[:5] %}
