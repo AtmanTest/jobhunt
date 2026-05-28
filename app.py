@@ -173,6 +173,9 @@ app.secret_key = "jobhunt-secret-2026"
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "jobs.db")
 
+# Initialize DB on import (needed for gunicorn on Render)
+init_db()
+
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -778,9 +781,6 @@ def qa_github_runs():
 
 
 if __name__ == "__main__":
-    # Initialize database
-    init_db()
-    
     print("""
 ╔══════════════════════════════════════════════╗
 ║          JobHunt Dashboard v1.0              ║
