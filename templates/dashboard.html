@@ -359,11 +359,11 @@
         <span class="header-logo">⚡ JobHunt</span>
     </div>
     <div class="header-nav">
-        <a href="./" class="active">Dashboard</a>
-        <a href="./cv.html">📄 CV</a>
-        <a href="./qa.html">🧪 QA</a>
-        <a href="./marche-qa.html">🌍 Marché</a>
-        <a href="./about.html">À propos</a>
+        <a href="{{ url_for('index') }}" class="active">Dashboard</a>
+        <a href="{{ url_for('cv_page') }}">📄 CV</a>
+        <a href="{{ url_for('qa_dashboard') }}">🧪 QA</a>
+        <a href="{{ url_for('marche_qa') }}">🌍 Marché</a>
+        <a href="{{ url_for('about') }}">À propos</a>
         <a href="{{ url_for('refresh') }}" class="btn-primary" onclick="this.textContent='⏳...'">↻</a>
     </div>
 </div>
@@ -483,6 +483,52 @@
         </div>
     </div>
     {% endfor %}
+    <!-- Tous panel -->
+    <div class="tab-panel {% if countries|length == 0 %}active{% endif %}" id="panel-tous">
+        <div class="job-list">
+            {% if tous_jobs %}
+            {% for job in tous_jobs %}
+            <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}">
+                <div class="job-header">
+                    <div>
+                        <div class="job-title">
+                            {{ job.title }}
+                            {% if job.is_qa %}<span class="qa-badge">QA</span>{% endif %}
+                        </div>
+                        <div class="job-company">{{ job.company }}</div>
+                        <div class="job-meta">
+                            <span>📍 {{ job.location }}</span>
+                            {% if job.salary %}<span>💰 {{ job.salary }}</span>{% endif %}
+                            <span>📅 {{ job.date }}</span>
+                            <span class="job-source">{{ job.source }}</span>
+                        </div>
+                    </div>
+                    <div class="job-actions">
+                        {% if job.applied %}
+                        <span class="applied-label">✓ Postulé</span>
+                        {% else %}
+                        <a href="{{ job.url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if job.tags %}
+                <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">
+                    {% for tag in job.tags.split(', ')[:5] %}
+                    <span style="background:var(--accent-glow);color:var(--accent);padding:1px 7px;border-radius:10px;font-size:10px;">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <div class="icon">🔍</div>
+                <h3>Aucune offre trouvée</h3>
+                <p>Les scrapers n'ont pas encore trouvé d'offres dans ces pays.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -494,7 +540,8 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-            document.getElementById('panel-' + this.dataset.tab).classList.add('active');
+            const panel = document.getElementById('panel-' + this.dataset.tab);
+            if (panel) panel.classList.add('active');
         });
     });
 

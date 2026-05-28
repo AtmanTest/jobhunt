@@ -316,7 +316,8 @@ def index():
     return render_template("dashboard.html",
         stats=stats,
         countries=countries,
-        country_counts=country_counts)
+        country_counts=country_counts,
+        tous_jobs=all_jobs)
 
 
 @app.route("/refresh")
