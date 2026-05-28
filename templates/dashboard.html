@@ -107,6 +107,20 @@
         }
         .stat-chip .num.green { color: var(--green); }
         .stat-chip .num.orange { color: var(--orange); }
+        .stat-chip .num.red { color: var(--red); }
+        .balance-chip { transition: all 0.3s ease; }
+        .balance-chip .live-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            margin-right: 4px;
+            animation: pulse-dot 2s infinite;
+        }
+        .balance-chip .live-dot.off { background: var(--text-muted); animation: none; }
+        @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .balance-chip .num { font-family: 'JetBrains Mono', monospace; }
 
         /* Tabs */
         .tabs {
@@ -456,6 +470,10 @@
             <span class="num green">{{ top_matches|length }}</span>
             <span>🎯 Top matches</span>
         </div>
+        <div class="stat-chip balance-chip" id="balance-chip">
+            <span class="num" id="balance-value">⟳</span>
+            <span>🤖 API Balance</span>
+        </div>
     </div>
 
     <!-- Top matches section -->
@@ -705,6 +723,31 @@
             }
         });
     });
+
+    // Live DeepSeek balance widget — refresh every 60s
+    function fetchBalance() {
+        const chip = document.getElementById('balance-chip');
+        const val = document.getElementById('balance-value');
+        fetch('/api/deepseek/balance')
+            .then(r => r.json())
+            .then(data => {
+                if (data.live && data.balance > 0) {
+                    const color = data.balance < 2 ? 'red' : data.balance < 5 ? 'orange' : 'green';
+                    val.className = 'num ' + color;
+                    val.innerHTML = '● $' + data.balance.toFixed(2);
+                    chip.title = 'Top-up: $' + data.topped_up.toFixed(2) + ' · Live';
+                } else {
+                    val.className = 'num';
+                    val.innerHTML = data.live ? '$0.00' : '⟳ err';
+                }
+            })
+            .catch(() => {
+                val.className = 'num';
+                val.innerHTML = '⟳ err';
+            });
+    }
+    fetchBalance();
+    setInterval(fetchBalance, 60000);
 </script>
 </body>
 </html>

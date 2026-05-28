@@ -575,6 +575,41 @@ def api_stats_advanced():
     return jsonify(stats)
 
 
+@app.route("/api/deepseek/balance")
+def api_deepseek_balance():
+    """Live DeepSeek balance depuis l'API officielle."""
+    api_key = os.environ.get("DEEPSEEK_API_KEY", "")
+    if not api_key:
+        env_file = os.path.expanduser("~/.hermes/.env")
+        if os.path.exists(env_file):
+            with open(env_file) as f:
+                for line in f:
+                    if line.startswith("DEEPSEEK_API_KEY="):
+                        api_key = line.split("=", 1)[1].strip().strip("\"'")
+                        break
+    if not api_key:
+        return jsonify({"error": "No API key", "balance": 0, "currency": "USD", "live": False}), 200
+
+    try:
+        resp = requests.get(
+            "https://api.deepseek.com/user/balance",
+            headers={"Authorization": f"Bearer {api_key}", "Accept": "application/json"},
+            timeout=10
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            for b in data.get("balance_infos", []):
+                return jsonify({
+                    "balance": float(b.get("total_balance", 0)),
+                    "topped_up": float(b.get("topped_up_balance", 0)),
+                    "currency": b.get("currency", "USD"),
+                    "live": True
+                })
+        return jsonify({"error": f"API error {resp.status_code}", "balance": 0, "live": False}), 200
+    except Exception as e:
+        return jsonify({"balance": 0, "error": str(e), "live": False}), 200
+
+
 @app.route("/api/jobs/saved")
 def api_saved_jobs():
     """Get saved (bookmarked) jobs."""
