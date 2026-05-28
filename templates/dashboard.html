@@ -122,6 +122,48 @@
         @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
         .balance-chip .num { font-family: 'JetBrains Mono', monospace; }
 
+        /* Remote mode filter */
+        .remote-filter {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            background: rgba(26,26,36,0.6);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 4px;
+            backdrop-filter: blur(12px);
+            width: fit-content;
+        }
+        .rm-btn {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 11px;
+            background: transparent;
+            color: var(--text-dim);
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        .rm-btn:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+        .rm-btn.active {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 2px 12px rgba(108,92,231,0.35);
+        }
+        .job-card.filtered-out { display: none !important; }
+        .job-card.filtered-in { animation: fadeSlide 0.3s ease; }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* Tabs */
         .tabs {
             display: flex;
@@ -493,6 +535,14 @@
     </div>
     {% endif %}
 
+    <!-- Remote mode filter -->
+    <div class="remote-filter">
+        <button class="rm-btn active" data-rm="all">🌐 Tous</button>
+        <button class="rm-btn" data-rm="remote">🌍 Remote</button>
+        <button class="rm-btn" data-rm="hybrid">🔄 Hybride</button>
+        <button class="rm-btn" data-rm="onsite">🏢 Sur site</button>
+    </div>
+
     <!-- Country tabs -->
     <div class="tabs" id="tabs">
         <button class="tab-btn active" data-tab="france">🇫🇷 France <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'france')|map(attribute='count')|first }}</span></button>
@@ -721,6 +771,41 @@
             if (panel) panel.classList.add('active');
             // Load LinkedIn jobs when that tab is clicked
             if (this.dataset.tab === 'linkedin') loadLinkedInJobs();
+        });
+    });
+
+    // Remote mode filter
+    function detectRemoteType(card) {
+        const text = card.textContent.toLowerCase();
+        const hasRemote = /remote|télétravail|distance|full remote|100%|home|anywhere|worldwide/.test(text);
+        const hasOnsite = /sur site|onsite|présentiel|site|bureau/.test(text);
+        const hasHybrid = /hybride|hybrid|flexible|mixte/.test(text);
+        if (hasHybrid && !hasOnsite) return 'hybrid';
+        if (hasRemote && hasOnsite) return 'hybrid';
+        if (hasRemote) return 'remote';
+        return 'onsite';
+    }
+    function filterRemote(mode) {
+        document.querySelectorAll('.rm-btn').forEach(b => b.classList.toggle('active', b.dataset.rm === mode));
+        const activePanel = document.querySelector('.tab-panel.active');
+        if (!activePanel) return;
+        activePanel.querySelectorAll('.job-card').forEach(card => {
+            const type = detectRemoteType(card);
+            const match = (mode === 'all') || (mode === type);
+            card.classList.toggle('filtered-out', !match);
+            card.classList.toggle('filtered-in', match);
+        });
+    }
+    document.querySelectorAll('.rm-btn').forEach(btn => {
+        btn.addEventListener('click', () => filterRemote(btn.dataset.rm));
+    });
+    // Re-filter when tab changes
+    document.querySelectorAll('.tab-btn').forEach(tab => {
+        tab.addEventListener('click', function() {
+            setTimeout(() => {
+                const activeRm = document.querySelector('.rm-btn.active');
+                if (activeRm) filterRemote(activeRm.dataset.rm);
+            }, 50);
         });
     });
 
