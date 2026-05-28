@@ -12,8 +12,8 @@ Feature: Scraping RemoteOK
     Given l'API RemoteOK retourne 15 offres dont 8 offres QA software
     When je lance le scraper RemoteOK
     Then 8 offres sont insérées en base
-    And chaque offre contient les champs obligatoires : titre, url, entreprise, date_publication
-    And le champ source vaut "remoteok"
+    And chaque offre contient les champs obligatoires : title, url, company, date
+    And le champ source vaut "RemoteOK"
 
   Scenario: Scraping avec réponse vide
     Given l'API RemoteOK retourne une liste vide
@@ -22,11 +22,11 @@ Feature: Scraping RemoteOK
     And aucune erreur n'est levée
 
   Scenario: Dédoublonnage lors d'un second scraping
-    Given la base de données contient déjà 5 offres RemoteOK
-    And l'API RemoteOK retourne les mêmes 5 offres plus 3 nouvelles offres
+    Given la base de données contient déjà 4 offres RemoteOK
+    And l'API RemoteOK retourne les mêmes 4 offres plus 3 nouvelles offres
     When je lance le scraper RemoteOK
     Then seulement 3 nouvelles offres sont insérées en base
-    And le total en base est 8 offres
+    And le total en base est 7 offres
 
   Scenario Outline: Exclusion des offres hors périmètre QA software
     Given l'API RemoteOK retourne une offre avec le titre "<titre>"

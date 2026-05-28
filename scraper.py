@@ -8,6 +8,7 @@ import hashlib
 from datetime import datetime
 import time
 import json
+import os
 import re
 
 
@@ -59,7 +60,8 @@ def fetch_remoteok():
                                    "test engineer", "test automation", "tester",
                                    "testing", "automation engineer", "test lead",
                                    "test manager", "qa lead", "qa engineer",
-                                   "software test", "software testing"]
+                                   "software test", "software testing", "test developer",
+                                   "engineer in test", "sdet engineer"]
                 matches = any(k in title_lower for k in filter_keywords) or \
                           any(k in all_tags for k in ["qa", "testing", "test", "quality assurance"])
                 if not matches:
@@ -486,8 +488,12 @@ def fetch_all_new_sources():
     return unique
 
 
+# ─── DB path ─────────────────────────────────────────────────────
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "jobs.db")
+
+
 def get_db():
-    conn = sqlite3.connect("/Users/jahangir/Desktop/jobhunt/jobs.db")
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -562,7 +568,8 @@ def save_jobs(jobs):
     title_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
                       "test engineer", "test automation", "sdet", "tester",
                       "testing", "automation engineer", "test lead", "test manager",
-                      "software test", "qa lead", "qa engineer"]
+                      "software test", "qa lead", "qa engineer",
+                      "engineer in test", "test developer"]
     # Broader keywords only checked against tags (less likely to false-positive)
     tag_keywords = ["qa", "testing", "test", "quality assurance", "automation testing"]
     

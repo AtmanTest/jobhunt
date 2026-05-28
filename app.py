@@ -20,6 +20,154 @@ sys.path.insert(0, os.path.dirname(__file__))
 from scraper import init_db, fetch_all, fetch_all_new_sources, save_jobs, get_jobs, mark_applied, get_stats, export_static_json, get_db as scraper_db
 from cv_data import CV
 
+# ─── QA Module ───────────────────────────────────────────────────
+QA_RUNS_DIR = os.path.join(os.path.dirname(__file__), ".qa_runs")
+os.makedirs(QA_RUNS_DIR, exist_ok=True)
+
+GITHUB_TOKEN = None
+token_paths = [
+    os.path.expanduser("~/.hermes/jobhunt_token"),
+    os.path.expanduser("~/.hermes/gh_token"),
+]
+for tp in token_paths:
+    if os.path.exists(tp):
+        with open(tp) as f:
+            GITHUB_TOKEN = f.read().strip()
+        break
+
+FEATURES_DIR = os.path.join(os.path.dirname(__file__), "tests", "features")
+
+
+def parse_feature_files():
+    """Parse all .feature files and return structured data."""
+    categories = []
+    if not os.path.isdir(FEATURES_DIR):
+        return {"categories": []}
+
+    for root, dirs, files in os.walk(FEATURES_DIR):
+        for fname in sorted(files):
+            if not fname.endswith(".feature"):
+                continue
+            fpath = os.path.join(root, fname)
+            rel_dir = os.path.relpath(root, FEATURES_DIR)
+            category_name = rel_dir if rel_dir != "." else "root"
+
+            with open(fpath, encoding="utf-8") as f:
+                content = f.read()
+
+            scenarios = []
+            lines = content.split("\n")
+            current_scenario = None
+            current_tags = []
+
+            for line in lines:
+                stripped = line.strip()
+                if stripped.startswith("@"):
+                    current_tags = [t.strip() for t in stripped.split("@") if t.strip()]
+                elif stripped.startswith("Scenario"):
+                    if current_scenario:
+                        scenarios.append(current_scenario)
+                    current_scenario = {"name": stripped, "tags": list(current_tags)}
+                elif stripped.startswith(("Given ", "When ", "Then ", "And ")) and current_scenario:
+                    if "steps" not in current_scenario:
+                        current_scenario["steps"] = []
+                    current_scenario["steps"].append(stripped)
+
+            if current_scenario:
+                scenarios.append(current_scenario)
+
+            categories.append({
+                "category": category_name + "/" + fname.replace(".feature", ""),
+                "file": fname,
+                "path": fpath,
+                "scenarios": scenarios,
+            })
+
+    return {"categories": categories}
+
+
+def run_pytest_async():
+    """Run pytest in a thread, save output to a timestamped file."""
+    import uuid
+    run_id = str(uuid.uuid4())[:8]
+    out_path = os.path.join(QA_RUNS_DIR, f"{run_id}.json")
+
+    def _run():
+        import subprocess, json, time
+        start = time.time()
+        try:
+            proc = subprocess.run(
+                ["python3", "-m", "pytest", "tests/", "-v", "--tb=short", "--no-header"],
+                capture_output=True, text=True, timeout=120,
+                cwd=os.path.dirname(__file__),
+            )
+            output = proc.stdout + proc.stderr
+            elapsed = time.time() - start
+
+            # Parse summary line
+            passed = failed = skipped = total = 0
+            for line in output.split("\n"):
+                if "passed" in line and "failed" in line:
+                    import re
+                    m = re.search(r'([\d]+)\s+failed', line)
+                    if m: failed = int(m.group(1))
+                    m = re.search(r'([\d]+)\s+passed', line)
+                    if m: passed = int(m.group(1))
+                    m = re.search(r'([\d]+)\s+skipped', line)
+                    if m: skipped = int(m.group(1))
+                    total = passed + failed + skipped
+                    break
+
+            result = {
+                "run_id": run_id,
+                "status": "completed" if proc.returncode == 0 else "failed",
+                "passed": passed,
+                "failed": failed,
+                "skipped": skipped,
+                "total": total,
+                "output": output,
+                "duration": round(elapsed, 2),
+                "timestamp": datetime.now().isoformat(),
+            }
+        except subprocess.TimeoutExpired:
+            result = {
+                "run_id": run_id,
+                "status": "failed",
+                "passed": 0, "failed": 0, "skipped": 0, "total": 0,
+                "output": "TIMEOUT: pytest exceeded 120s",
+                "duration": 120,
+                "timestamp": datetime.now().isoformat(),
+            }
+        except Exception as e:
+            result = {
+                "run_id": run_id,
+                "status": "failed",
+                "passed": 0, "failed": 0, "skipped": 0, "total": 0,
+                "output": str(e),
+                "duration": 0,
+                "timestamp": datetime.now().isoformat(),
+            }
+
+        with open(out_path, "w") as f:
+            json.dump(result, f)
+
+    thread = threading.Thread(target=_run, daemon=True)
+    thread.start()
+    return run_id
+
+
+def get_qa_runs(limit=10):
+    """Get recent test runs from stored JSON files."""
+    runs = []
+    if not os.path.isdir(QA_RUNS_DIR):
+        return runs
+    for fname in sorted(os.listdir(QA_RUNS_DIR), reverse=True)[:limit]:
+        if fname.endswith(".json"):
+            with open(os.path.join(QA_RUNS_DIR, fname)) as f:
+                runs.append(json.load(f))
+    return runs
+
+
 app = Flask(__name__)
 app.secret_key = "jobhunt-secret-2026"
 
@@ -422,6 +570,88 @@ def api_cv():
 @app.route("/about")
 def about():
     return render_template("about.html")
+
+
+@app.route("/marche-qa")
+def marche_qa():
+    return render_template("marche_qa.html")
+
+
+# ─── QA Routes ──────────────────────────────────────────────────
+
+@app.route("/qa")
+def qa_dashboard():
+    return render_template("qa.html")
+
+
+@app.route("/qa/api/test-cases")
+def qa_api_test_cases():
+    return jsonify(parse_feature_files())
+
+
+@app.route("/qa/api/runs", methods=["GET", "POST"])
+def qa_api_runs():
+    if request.method == "POST":
+        run_id = run_pytest_async()
+        return jsonify({"run_id": run_id, "status": "started"})
+    return jsonify({"runs": get_qa_runs(10)})
+
+
+@app.route("/qa/api/runs/<run_id>")
+def qa_api_run_detail(run_id):
+    path = os.path.join(QA_RUNS_DIR, f"{run_id}.json")
+    if os.path.exists(path):
+        with open(path) as f:
+            return jsonify(json.load(f))
+    return jsonify({"run_id": run_id, "status": "pending", "output": ""})
+
+
+@app.route("/qa/api/github/trigger", methods=["POST"])
+def qa_github_trigger():
+    if not GITHUB_TOKEN:
+        return jsonify({"error": "GITHUB_TOKEN not configured"}), 400
+    try:
+        resp = requests.post(
+            "https://api.github.com/repos/AtmanTest/jobhunt/actions/workflows/ci.yml/dispatches",
+            headers={"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"},
+            json={"ref": "main"},
+            timeout=10,
+        )
+        if resp.status_code in (204, 201):
+            return jsonify({"status": "triggered"})
+        return jsonify({"error": f"GitHub API error: {resp.status_code}", "detail": resp.text}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/qa/api/github/runs")
+def qa_github_runs():
+    if not GITHUB_TOKEN:
+        return jsonify({"runs": [], "error": "no token"})
+    try:
+        resp = requests.get(
+            "https://api.github.com/repos/AtmanTest/jobhunt/actions/runs?per_page=10",
+            headers={"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"},
+            timeout=10,
+        )
+        if resp.status_code != 200:
+            return jsonify({"runs": [], "error": f"API: {resp.status_code}"})
+        data = resp.json()
+        runs = []
+        for run in data.get("workflow_runs", []):
+            runs.append({
+                "id": run["id"],
+                "display_title": run.get("display_title") or "CI",
+                "event": run.get("event"),
+                "branch": run.get("head_branch"),
+                "status": run.get("status"),
+                "conclusion": run.get("conclusion"),
+                "created_at": run.get("created_at"),
+                "html_url": run.get("html_url"),
+            })
+        return jsonify({"runs": runs})
+    except Exception as e:
+        return jsonify({"runs": [], "error": str(e)}), 500
 
 
 if __name__ == "__main__":
