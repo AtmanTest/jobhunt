@@ -17,12 +17,19 @@ PROJECT_DIR = os.path.expanduser("~/Desktop/jobhunt")
 REPO = "AtmanTest/jobhunt"
 
 
-def run(cmd, timeout=30):
-    result = subprocess.run(cmd, shell=True, capture_output=True, text=True, 
-                          cwd=PROJECT_DIR, timeout=timeout)
-    if result.returncode != 0:
-        print(f"⚠ {cmd[:50]}: {result.stderr[:200]}")
-    return result.returncode == 0
+def run(cmd, timeout=60):
+    try:
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, 
+                              cwd=PROJECT_DIR, timeout=timeout)
+        if result.returncode != 0:
+            print(f"⚠ {cmd[:50]}: exit {result.returncode}")
+        return result.returncode == 0
+    except subprocess.TimeoutExpired:
+        print(f"⚠ {cmd[:50]}: timed out after {timeout}s")
+        return False
+    except Exception as e:
+        print(f"⚠ {cmd[:50]}: {e}")
+        return False
 
 
 def main():
@@ -38,8 +45,13 @@ def main():
     print("\n2️⃣ Exporting static JSON...")
     run('python3 -c "from scraper import export_static_json; export_static_json()"')
     
-    # 3. Git add, commit, push
-    print("\n3️⃣ Pushing to GitHub...")
+    # 3. Enrich jobs with AI (extract salary, tech stack, etc.) — skip if slow
+    print("\n3️⃣ Enriching jobs with AI...")
+    run('python3 auto_enrich.py --limit 5', timeout=60)
+    # Note: if enrichment times out, the site still works — data just won't be enriched
+    
+    # 4. Git add, commit, push
+    print("\n4️⃣ Pushing to GitHub...")
     run("git add -A")
     
     # Check if there's anything to commit

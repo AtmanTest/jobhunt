@@ -8,6 +8,7 @@ import hashlib
 from datetime import datetime
 import time
 import json
+import re
 
 
 SOURCES = [
@@ -87,6 +88,27 @@ def fetch_remoteok():
                         salary = f"From {currency}{salary_min:,.0f}"
                     elif salary_max:
                         salary = f"Up to {currency}{salary_max:,.0f}"
+                else:
+                    # Try to extract salary from description
+                    desc = item.get("description", "")
+                    # Patterns: $XXk-$YYk, $XX,000-$YY,000, XX€-YY€/day, TJM XXX€, $XX/hr
+                    patterns = [
+                        r'\$(\d{2,3})k\s*[-–]\s*\$?(\d{2,3})k',              # $80k-$120k
+                        r'\$(\d{2,3}[,\d]*)\s*[-–]\s*\$?(\d{2,3}[,\d]*)',     # $80,000-$120,000
+                        r'(\d{3,4})\s*[€€]\s*/?\s*(?:day|j(?:our)?)',          # 500€/day, 500€/j
+                        r'(?:tjm|TJ[MN]|taux\s+journalier)\s*:?\s*(\d{3,4})\s*[€€]?',  # TJM 500€
+                        r'\$(\d{2,3})\s*[-–]\s*\$?(\d{2,3})\s*/hr',            # $50-$70/hr
+                        r'(\d{2,3}[kK]?)\s*[-–]\s*(\d{2,3}[kK]?)\s*[€€]',      # 80k-120k€
+                    ]
+                    for pattern in patterns:
+                        m = re.search(pattern, desc)
+                        if m:
+                            groups = m.groups()
+                            if len(groups) == 2:
+                                salary = f"${groups[0]}-${groups[1]}"
+                            elif len(groups) == 1:
+                                salary = f"{groups[0]}€/j"
+                            break
                 
                 jobs.append({
                     "title": title,
@@ -172,21 +194,296 @@ def fetch_wwr():
     return jobs
 
 
+def fetch_wwr_rss():
+    """Fetch QA jobs from WWR RSS feed."""
+    import xml.etree.ElementTree as ET
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test engineer", "test automation", "tester",
+                       "testing", "automation engineer", "test lead",
+                       "test manager", "qa lead", "qa engineer",
+                       "software test", "software testing"]
+    try:
+        resp = requests.get(
+            "https://weworkremotely.com/remote-jobs.rss",
+            headers=headers, timeout=15
+        )
+        if resp.status_code == 200:
+            root = ET.fromstring(resp.text)
+            for item in root.iter("item"):
+                title = item.findtext("title", "")
+                title_lower = title.lower()
+                if not any(k in title_lower for k in filter_keywords):
+                    continue
+                link = item.findtext("link", "")
+                desc = item.findtext("description", "")
+                pubdate = item.findtext("pubDate", "")
+                jobs.append({
+                    "title": title,
+                    "company": "",
+                    "source": "WWR RSS",
+                    "url": link,
+                    "location": "Remote",
+                    "salary": "",
+                    "tags": "",
+                    "date": pubdate[:10] if len(pubdate) > 10 else datetime.now().strftime("%Y-%m-%d"),
+                    "description": desc,
+                    "raw_date": int(time.time()),
+                })
+        else:
+            print(f"  WWR RSS returned {resp.status_code}")
+    except Exception as e:
+        print(f"  WWR RSS error: {e}")
+    return jobs
+
+
+def fetch_wellfound():
+    """Scrape Wellfound (AngelList) for QA/SDET roles.
+    Note: Wellfound typically blocks scraping. Falls back gracefully.
+    """
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test engineer", "test automation", "tester",
+                       "testing", "automation engineer", "qa lead", "qa engineer"]
+    urls_to_try = [
+        "https://wellfound.com/role/s/quality-assurance",
+    ]
+    for url in urls_to_try:
+        try:
+            resp = requests.get(url, headers=headers, timeout=15)
+            if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, "html.parser")
+                cards = soup.select("div[class*='card'], div[class*='job'], li[class*='job'], article[class*='job']")
+                for card in cards[:50]:
+                    title_el = card.select_one("a[class*='title'], h2, h3, h4")
+                    if not title_el:
+                        continue
+                    title = title_el.get_text(strip=True)
+                    title_lower = title.lower()
+                    if not any(k in title_lower for k in filter_keywords):
+                        continue
+                    company_el = card.select_one("span[class*='company'], div[class*='company']")
+                    company = company_el.get_text(strip=True) if company_el else ""
+                    link_el = card.select_one("a[href*='/jobs/'], a[href*='/startups/']")
+                    url_val = "https://wellfound.com" + link_el["href"] if link_el and link_el.get("href") else ""
+                    if url_val and not url_val.startswith("http"):
+                        url_val = "https://wellfound.com" + url_val
+                    location_el = card.select_one("span[class*='location'], div[class*='location']")
+                    location = location_el.get_text(strip=True) if location_el else "Remote"
+                    jobs.append({
+                        "title": title, "company": company, "source": "Wellfound",
+                        "url": url_val, "location": location, "salary": "", "tags": "",
+                        "date": datetime.now().strftime("%Y-%m-%d"),
+                        "description": "", "raw_date": int(time.time()),
+                    })
+                if jobs:
+                    break  # Found jobs, stop trying
+            else:
+                print(f"  Wellfound returned {resp.status_code} for {url}")
+        except Exception as e:
+            print(f"  Wellfound error ({url}): {e}")
+    if not jobs:
+        print("  Wellfound: 0 jobs (site blocked scraping)")
+    return jobs
+
+
+def fetch_linkedin_rss():
+    """Parse LinkedIn RSS for QA jobs.
+    Note: LinkedIn RSS feeds are often deprecated/blocked. Falls back gracefully.
+    """
+    import xml.etree.ElementTree as ET
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test engineer", "test automation", "tester",
+                       "testing", "automation engineer", "qa lead", "qa engineer"]
+    urls_to_try = [
+        "https://www.linkedin.com/jobs/search/rss?keywords=QA+Engineer&location=Remote",
+    ]
+    for url in urls_to_try:
+        try:
+            resp = requests.get(url, headers=headers, timeout=15)
+            if resp.status_code == 200:
+                root = ET.fromstring(resp.text)
+                for item in root.iter("item"):
+                    title = item.findtext("title", "")
+                    title_lower = title.lower()
+                    if not any(k in title_lower for k in filter_keywords):
+                        continue
+                    link = item.findtext("link", "")
+                    desc = item.findtext("description", "")
+                    company = ""
+                    location = "Remote"
+                    title_clean = title
+                    if " at " in title:
+                        parts = title.split(" at ", 1)
+                        title_clean = parts[0].strip()
+                        company = parts[1].strip()
+                    jobs.append({
+                        "title": title_clean,
+                        "company": company, "source": "LinkedIn RSS",
+                        "url": link, "location": location, "salary": "", "tags": "",
+                        "date": datetime.now().strftime("%Y-%m-%d"),
+                        "description": desc, "raw_date": int(time.time()),
+                    })
+                if jobs:
+                    break
+            else:
+                print(f"  LinkedIn RSS returned {resp.status_code}")
+        except Exception as e:
+            print(f"  LinkedIn RSS error: {e}")
+    if not jobs:
+        print("  LinkedIn RSS: 0 jobs (RSS may be unavailable)")
+    return jobs
+
+
+def fetch_jobboard_io():
+    """Scrape jobboard.io for QA roles."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test engineer", "test automation", "tester",
+                       "testing", "automation engineer", "qa lead", "qa engineer"]
+    try:
+        resp = requests.get(
+            "https://remoteok.com/remote-quality-assurance-jobs",
+            headers=headers, timeout=15
+        )
+        if resp.status_code == 200:
+            soup = BeautifulSoup(resp.text, "html.parser")
+            for tr in soup.select("tr.job")[:50]:
+                title_el = tr.select_one("td[class*='position'] h2, a[class*='title']")
+                if not title_el:
+                    continue
+                title = title_el.get_text(strip=True)
+                title_lower = title.lower()
+                if not any(k in title_lower for k in filter_keywords):
+                    continue
+                company_el = tr.select_one("span[class*='company'], div[class*='company']")
+                company = company_el.get_text(strip=True) if company_el else ""
+                link_el = title_el if title_el.name == "a" else title_el.select_one("a")
+                url = link_el["href"] if link_el and link_el.get("href") else ""
+                if url and not url.startswith("http"):
+                    url = "https://remoteok.com" + url
+                jobs.append({
+                    "title": title, "company": company, "source": "JobBoard.io",
+                    "url": url, "location": "Remote", "salary": "", "tags": "",
+                    "date": datetime.now().strftime("%Y-%m-%d"),
+                    "description": "", "raw_date": int(time.time()),
+                })
+        else:
+            print(f"  JobBoard.io returned {resp.status_code}")
+    except Exception as e:
+        print(f"  JobBoard.io error: {e}")
+    return jobs
+
+
+def fetch_otta():
+    """Scrape Otta.com for QA/SDET roles.
+    Note: Otta may return 404 for some URLs as they use JS rendering.
+    Falls back gracefully.
+    """
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test engineer", "test automation", "tester",
+                       "testing", "automation engineer", "qa lead", "qa engineer"]
+    urls_to_try = [
+        "https://otta.com/jobs?role=quality-assurance",
+    ]
+    for url in urls_to_try:
+        try:
+            resp = requests.get(url, headers=headers, timeout=15)
+            if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, "html.parser")
+                cards = soup.select("a[href*='/jobs/'], div[class*='job-card'], article")
+                for card in cards[:50]:
+                    title_el = card.select_one("h2, h3, h4, span[class*='title']")
+                    if not title_el:
+                        continue
+                    title = title_el.get_text(strip=True)
+                    title_lower = title.lower()
+                    if not any(k in title_lower for k in filter_keywords):
+                        continue
+                    company_el = card.select_one("span[class*='company'], div[class*='company'], p[class*='company']")
+                    company = company_el.get_text(strip=True) if company_el else ""
+                    href = card.get("href") if card.name == "a" else ""
+                    if not href:
+                        link_el = card.select_one("a[href*='/jobs/']")
+                        href = link_el["href"] if link_el else ""
+                    url_val = "https://otta.com" + href if href and not href.startswith("http") else href
+                    jobs.append({
+                        "title": title, "company": company, "source": "Otta",
+                        "url": url_val, "location": "Remote", "salary": "", "tags": "",
+                        "date": datetime.now().strftime("%Y-%m-%d"),
+                        "description": "", "raw_date": int(time.time()),
+                    })
+                if jobs:
+                    break
+            else:
+                if resp.status_code not in [404, 403]:
+                    print(f"  Otta returned {resp.status_code}")
+        except Exception as e:
+            print(f"  Otta error: {e}")
+    if not jobs:
+        print("  Otta: 0 jobs (may require JS rendering)")
+    return jobs
+
+
 def fetch_all():
-    """Fetch jobs from all sources."""
+    """Fetch jobs from all sources - legacy wrapper."""
+    return fetch_all_new_sources()
+
+
+def fetch_all_new_sources():
+    """Fetch jobs from all sources including new ones."""
     all_jobs = []
     
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] Fetching RemoteOK...")
-    all_jobs.extend(fetch_remoteok())
+    sources = [
+        ("RemoteOK", fetch_remoteok),
+        ("WWR", fetch_wwr),
+        ("WWR RSS", fetch_wwr_rss),
+        ("Wellfound", fetch_wellfound),
+        ("LinkedIn RSS", fetch_linkedin_rss),
+        ("JobBoard.io", fetch_jobboard_io),
+        ("Otta", fetch_otta),
+    ]
     
-    # Be nice to servers
-    time.sleep(1)
+    for name, fetcher in sources:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Fetching {name}...")
+        try:
+            jobs = fetcher()
+            all_jobs.extend(jobs)
+            print(f"  -> {len(jobs)} jobs")
+        except Exception as e:
+            print(f"  -> Error: {e}")
+        time.sleep(1)  # Be nice to servers
     
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] Fetching WWR...")
-    all_jobs.extend(fetch_wwr())
+    # Deduplicate by URL
+    seen = set()
+    unique = []
+    for job in all_jobs:
+        url = job.get("url", "")
+        if url and url not in seen:
+            seen.add(url)
+            unique.append(job)
+        elif not url:
+            unique.append(job)
     
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] Total: {len(all_jobs)} jobs found")
-    return all_jobs
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Total: {len(unique)} unique jobs from {len(all_jobs)} total")
+    return unique
 
 
 def get_db():
@@ -227,6 +524,32 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_jobs_url ON jobs(url);
         CREATE INDEX IF NOT EXISTS idx_jobs_qa ON jobs(is_qa);
     """)
+    # Add new columns if they don't exist
+    new_columns = [
+        ("tech_stack", "TEXT"),
+        ("seniority", "TEXT"),
+        ("contract_type", "TEXT"),
+        ("remote_type", "TEXT"),
+        ("salary_min", "INTEGER"),
+        ("salary_max", "INTEGER"),
+        ("currency", "TEXT"),
+        ("ai_enriched", "INTEGER DEFAULT 0"),
+        ("saved", "INTEGER DEFAULT 0"),
+        ("applied_at", "DATETIME"),
+    ]
+    for col_name, col_type in new_columns:
+        try:
+            conn.execute(f"ALTER TABLE jobs ADD COLUMN {col_name} {col_type}")
+        except sqlite3.OperationalError:
+            pass  # Column already exists
+
+    # Update applications table
+    for col_name, col_type in [("notes", "TEXT"), ("job_title", "TEXT"), ("company", "TEXT")]:
+        try:
+            conn.execute(f"ALTER TABLE applications ADD COLUMN {col_name} {col_type}")
+        except sqlite3.OperationalError:
+            pass
+
     conn.commit()
     conn.close()
 
@@ -261,12 +584,20 @@ def save_jobs(jobs):
             cursor.execute("""
                 INSERT OR IGNORE INTO jobs
                 (title, company, source, url, location, salary, tags, 
-                 description, date, raw_date, is_qa)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 description, date, raw_date, is_qa,
+                 tech_stack, seniority, contract_type, remote_type,
+                 salary_min, salary_max, currency, ai_enriched, saved)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 job["title"], job["company"], job["source"], job["url"],
                 job["location"], job["salary"], job["tags"],
-                job["description"], job["date"], job["raw_date"], is_qa
+                job["description"], job["date"], job["raw_date"], is_qa,
+                job.get("tech_stack"), job.get("seniority"),
+                job.get("contract_type"), job.get("remote_type"),
+                job.get("salary_min"), job.get("salary_max"),
+                job.get("currency"), job.get("ai_enriched", 0),
+                job.get("saved", 0)
             ))
             if cursor.rowcount > 0:
                 new_count += 1
@@ -296,6 +627,37 @@ def get_jobs(filters=None):
         if filters.get("source"):
             query += " AND source = ?"
             params.append(filters["source"])
+        if filters.get("seniority"):
+            query += " AND seniority = ?"
+            params.append(filters["seniority"])
+        if filters.get("contract_type"):
+            query += " AND contract_type = ?"
+            params.append(filters["contract_type"])
+        if filters.get("remote_type"):
+            query += " AND remote_type = ?"
+            params.append(filters["remote_type"])
+        if filters.get("salary_min"):
+            query += " AND (salary_min >= ? OR salary_max >= ?)"
+            params.extend([filters["salary_min"], filters["salary_min"]])
+        if filters.get("salary_max"):
+            query += " AND salary_max <= ?"
+            params.append(filters["salary_max"])
+        if filters.get("tech_stack"):
+            # JSON contains: check if any keyword from tech_stack is in the tech_stack JSON array
+            query += " AND ("
+            terms = filters["tech_stack"].split(",")
+            conditions = []
+            for t in terms:
+                t = t.strip()
+                if t:
+                    conditions.append("tech_stack LIKE ?")
+                    params.append(f"%{t}%")
+            if conditions:
+                query += " OR ".join(conditions) + ")"
+        if filters.get("saved"):
+            query += " AND saved = 1"
+        if filters.get("applied_filter"):
+            query += " AND applied = 1"
     
     query += " ORDER BY raw_date DESC, date DESC LIMIT 200"
     
@@ -309,11 +671,11 @@ def export_static_json(output_path="docs/jobs.json"):
     """Export jobs to JSON for the static site."""
     import json, os
     jobs = get_jobs({"qa_only": True})
-    # Clean up for export
+    # Clean up for export - keep new enriched fields
     for j in jobs:
-        # Remove fields not needed in static export
         j.pop("description", None)
         j.pop("notes", None)
+        j.pop("cover_letter", None)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w") as f:
         json.dump({"jobs": jobs, "exported_at": datetime.now().isoformat()}, f, indent=2)
