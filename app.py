@@ -176,6 +176,23 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "jobs.db")
 # Initialize DB on import (needed for gunicorn on Render)
 init_db()
 
+# Auto-scrape on startup if DB is empty
+_conn = get_db()
+_count = _conn.execute("SELECT COUNT(*) FROM jobs").fetchone()[0]
+_conn.close()
+if _count < 10:
+    def _startup_scrape():
+        import time
+        time.sleep(2)  # Wait for server to start
+        try:
+            print("[Startup] DB vide, scraping en cours...")
+            jobs = fetch_all_new_sources()
+            n = save_jobs(jobs)
+            print(f"[Startup] {n} nouveaux jobs ajoutés")
+        except Exception as e:
+            print(f"[Startup] Erreur scrape: {e}")
+    threading.Thread(target=_startup_scrape, daemon=True).start()
+
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
