@@ -185,6 +185,29 @@ def get_db():
     return conn
 
 
+def compute_freshness_score(date_str):
+    """Return freshness score A/B/C/D based on how recent the date is.
+    A = today, B = 1-3 days, C = 4-7 days, D = 7+ days.
+    """
+    if not date_str:
+        return 'D'
+    try:
+        job_date = datetime.strptime(str(date_str)[:10], '%Y-%m-%d').date()
+        today = datetime.now().date()
+        delta = (today - job_date).days
+        if delta < 0:
+            return 'A'  # future date = brand new
+        if delta == 0:
+            return 'A'
+        if delta <= 3:
+            return 'B'
+        if delta <= 7:
+            return 'C'
+        return 'D'
+    except (ValueError, TypeError):
+        return 'D'
+
+
 # Auto-scrape LinkedIn pays au démarrage
 def _startup_scrape():
     import time
@@ -335,12 +358,13 @@ def index():
 
     for cid, cdata in COUNTRY_DATA.items():
         jobs = filter_jobs_by_country(cid)
-        # Enrichir avec score + TJM
+        # Enrichir avec score + TJM + fraîcheur
         for j in jobs:
             score, matched = match_job_to_cv(j)
             j['match_score'] = score
             j['matched_skills'] = matched[:5]
             j['tjm_analysis'] = analyze_tjm(j)
+            j['freshness_score'] = compute_freshness_score(j.get('date'))
         cdata['jobs'] = jobs
         countries[cid] = cdata
         cnt = len(jobs)

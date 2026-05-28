@@ -736,6 +736,526 @@ def fetch_linkedin_countries():
     return all_jobs
 
 
+def compute_freshness_score(date_str):
+    """Return freshness score A-D based on how recent the date is.
+    A = today or yesterday
+    B = 2-3 days ago
+    C = 4-7 days ago
+    D = 7+ days ago
+    """
+    if not date_str:
+        return "D"
+    try:
+        if isinstance(date_str, (int, float)):
+            job_date = datetime.fromtimestamp(date_str).date()
+        else:
+            # Try common formats
+            for fmt in ("%Y-%m-%d", "%Y/%m/%d", "%d/%m/%Y", "%m/%d/%Y", "%Y-%m-%dT%H:%M:%S"):
+                try:
+                    job_date = datetime.strptime(str(date_str)[:19], fmt).date()
+                    break
+                except ValueError:
+                    continue
+            else:
+                # Try parsing with dateutil-style flexibility
+                job_date = datetime.fromisoformat(str(date_str)[:19]).date() if "T" in str(date_str) else datetime.strptime(str(date_str)[:10], "%Y-%m-%d").date()
+    except Exception:
+        return "D"
+    
+    today = datetime.now().date()
+    diff = (today - job_date).days
+    
+    if diff < 0:
+        return "A"  # Future date = fresh
+    if diff <= 1:
+        return "A"
+    if diff <= 3:
+        return "B"
+    if diff <= 7:
+        return "C"
+    return "D"
+
+
+def fetch_wttj():
+    """Fetch QA jobs from Welcome to the Jungle using their GraphQL API."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Origin": "https://www.welcome-to-the-jungle.com",
+        "Referer": "https://www.welcome-to-the-jungle.com/",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test engineer", "test automation", "tester",
+                       "testing", "automation engineer", "test lead",
+                       "test manager", "qa lead", "qa engineer",
+                       "software test", "software testing", "test developer",
+                       "engineer in test"]
+
+    query = """
+    query SearchJobs($query: String!, $contractType: [String!], $remote: [String!], $page: Int) {
+      jobs(query: $query, contractType: $contractType, remote: $remote, page: $page) {
+        totalCount
+        collections {
+          id
+          name
+          slug
+          contractType {
+            en
+          }
+          office {
+            name
+            city
+            country
+          }
+          company {
+            name
+          }
+          publishedAt
+          idea {
+            description
+          }
+          compensation {
+            minSalary
+            maxSalary
+            currency
+          }
+        }
+      }
+    }
+    """
+
+    try:
+        resp = requests.post(
+            "https://www.welcome-to-the-jungle.com/api/graphql",
+            json={
+                "query": query,
+                "variables": {
+                    "query": "QA OR SDET OR test OR quality assurance",
+                    "contractType": None,
+                    "remote": ["remote", "full_remote"],
+                    "page": 1,
+                },
+            },
+            headers=headers,
+            timeout=20,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            collections = data.get("data", {}).get("jobs", {}).get("collections", [])
+            for item in collections:
+                title = item.get("name", "")
+                title_lower = title.lower()
+                if not any(k in title_lower for k in filter_keywords):
+                    continue
+
+                company = ""
+                if item.get("company"):
+                    company = item["company"].get("name", "")
+
+                slug = item.get("slug", "")
+                url = f"https://www.welcome-to-the-jungle.com/fr/companies/{slug}/jobs" if slug else ""
+
+                location = ""
+                office = item.get("office")
+                if office:
+                    parts = []
+                    for key in ("name", "city", "country"):
+                        if office.get(key):
+                            parts.append(office[key])
+                    location = ", ".join(parts)
+                if not location:
+                    location = "Remote"
+
+                # Salary
+                comp = item.get("compensation") or {}
+                salary = ""
+                min_sal = comp.get("minSalary")
+                max_sal = comp.get("maxSalary")
+                currency = comp.get("currency", "EUR")
+                if min_sal or max_sal:
+                    if min_sal and max_sal:
+                        salary = f"{min_sal:,.0f} - {max_sal:,.0f} {currency}"
+                    elif min_sal:
+                        salary = f"From {min_sal:,.0f} {currency}"
+                    elif max_sal:
+                        salary = f"Up to {max_sal:,.0f} {currency}"
+
+                # Tags
+                tags = ""
+                contract = item.get("contractType") or {}
+                if contract.get("en"):
+                    tags = contract["en"]
+
+                # Description
+                idea = item.get("idea") or {}
+                description = idea.get("description", "") or ""
+
+                # Date
+                published = item.get("publishedAt", "")
+                date = published[:10] if published else datetime.now().strftime("%Y-%m-%d")
+                raw_date = 0
+                if published:
+                    try:
+                        raw_date = int(datetime.fromisoformat(published.replace("Z", "+00:00")).timestamp())
+                    except Exception:
+                        raw_date = int(time.time())
+                else:
+                    raw_date = int(time.time())
+
+                jobs.append({
+                    "title": title,
+                    "company": company,
+                    "source": "WTTJ",
+                    "url": url,
+                    "location": location,
+                    "salary": salary,
+                    "tags": tags,
+                    "date": date,
+                    "description": description,
+                    "raw_date": raw_date,
+                })
+        else:
+            print(f"  WTTJ API returned {resp.status_code}")
+    except Exception as e:
+        print(f"  WTTJ error: {e}")
+
+    if not jobs:
+        print("  WTTJ: 0 jobs found")
+    return jobs
+
+
+def fetch_francetravail():
+    """Fetch QA jobs from France Travail (ex Pôle Emploi) API."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test engineer", "test automation", "tester",
+                       "testing", "automation engineer", "test lead",
+                       "test manager", "qa lead", "qa engineer",
+                       "testeur", "recette", "qualite", "qualité",
+                       "testeur logiciel", "testeur QA", "test automatise"]
+
+    try:
+        resp = requests.get(
+            "https://api.pole-emploi-dsp.fr/rechercheoffres",
+            params={
+                "motsCles": "QA OR testeur OR test OR assurance qualité",
+                "typeContrat": "MIS,CDI,CDD",  # Mission, CDI, CDD
+                "rayon": "50",
+                "domaine": "M17",  # Informatique
+                "dureeHebdo": "35",
+            },
+            headers=headers,
+            timeout=20,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            results = data.get("resultats", []) if isinstance(data, dict) else data if isinstance(data, list) else []
+            for item in results:
+                title = item.get("intitule", "") or item.get("title", "")
+                title_lower = title.lower()
+                if not any(k in title_lower for k in filter_keywords):
+                    continue
+
+                company = ""
+                entreprise = item.get("entreprise", {}) if isinstance(item.get("entreprise"), dict) else {}
+                if entreprise:
+                    company = entreprise.get("nom", "") or entreprise.get("name", "")
+                if not company:
+                    company = item.get("nomEntreprise", "") or ""
+
+                # URL - France Travail jobs have detail pages
+                job_id = item.get("id") or item.get("origineOffre", {}).get("id", "")
+                url = f"https://candidat.francetravail.fr/offre/recherche/detail/{job_id}" if job_id else ""
+
+                # Location
+                lieu = item.get("lieuTravail", {}) if isinstance(item.get("lieuTravail"), dict) else {}
+                location = ""
+                if lieu:
+                    commune = lieu.get("libelle", "") or lieu.get("ville", "")
+                    if commune:
+                        location = commune
+                if not location:
+                    location = "France"
+
+                # Check for remote
+                remote = item.get("télétravail", "") or item.get("teletravail", "") or item.get("remote", "")
+                if remote or "remote" in str(remote).lower() or "tele" in str(remote).lower():
+                    location = "Remote / " + location
+
+                # Salary
+                salary = ""
+                salaire = item.get("salaire", {}) if isinstance(item.get("salaire"), dict) else {}
+                if salaire:
+                    libelle = salaire.get("libelle", "") or salaire.get("commentaire", "")
+                    if libelle:
+                        salary = libelle
+
+                # Description
+                description = item.get("description", "") or item.get("intitule", "")
+
+                # Date
+                date_publication = item.get("dateCreation", "") or item.get("datePublication", "") or item.get("dateActualisation", "")
+                date = date_publication[:10] if date_publication else datetime.now().strftime("%Y-%m-%d")
+                raw_date = int(time.time())
+                if date_publication:
+                    try:
+                        raw_date = int(datetime.fromisoformat(date_publication.replace("Z", "+00:00")).timestamp())
+                    except Exception:
+                        pass
+
+                jobs.append({
+                    "title": title,
+                    "company": company,
+                    "source": "FranceTravail",
+                    "url": url,
+                    "location": location,
+                    "salary": salary,
+                    "tags": "",
+                    "date": date,
+                    "description": description,
+                    "raw_date": raw_date,
+                })
+        elif resp.status_code == 401:
+            print("  France Travail API returned 401 (API key may be required, trying alternate endpoint)")
+        else:
+            print(f"  France Travail API returned {resp.status_code}")
+    except Exception as e:
+        print(f"  France Travail error: {e}")
+
+    if not jobs:
+        print("  France Travail: 0 jobs found (API may require authentication)")
+    return jobs
+
+
+def fetch_remotive():
+    """Fetch QA/SDET jobs from Remotive API."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test engineer", "test automation", "tester",
+                       "testing", "automation engineer", "test lead",
+                       "test manager", "qa lead", "qa engineer",
+                       "software test", "software testing", "test developer",
+                       "engineer in test", "sdet engineer",
+                       "quality analyst", "qa analyst"]
+
+    try:
+        # Remotive has a simple JSON API - first get software-dev category then filter
+        resp = requests.get(
+            "https://remotive.com/api/remote-jobs",
+            params={"category": "software-dev", "limit": 100},
+            headers=headers,
+            timeout=20,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            results = data.get("jobs", [])
+            for item in results:
+                title = item.get("title", "")
+                title_lower = title.lower()
+                if not any(k in title_lower for k in filter_keywords):
+                    continue
+
+                company = item.get("company_name", "")
+                url = item.get("url", "") or item.get("apply_url", "")
+                if not url:
+                    url = f"https://remotive.com/remote-jobs/{item.get('id', '')}"
+
+                # Location
+                location = item.get("candidate_required_location", "") or "Remote"
+                if not location or location.lower() in ("anywhere", "remote", "worldwide"):
+                    location = "Remote"
+
+                # Salary
+                salary = item.get("salary", "") or ""
+
+                # Tags
+                tags_list = item.get("tags", []) or []
+                tags = ", ".join(tags_list) if isinstance(tags_list, list) else str(tags_list)
+
+                # Description
+                description = item.get("description", "") or ""
+
+                # Date
+                pub_date = item.get("publication_date", "")
+                date = pub_date[:10] if pub_date else datetime.now().strftime("%Y-%m-%d")
+                raw_date = int(time.time())
+                if pub_date:
+                    try:
+                        raw_date = int(datetime.fromisoformat(pub_date.replace("Z", "+00:00")).timestamp())
+                    except Exception:
+                        pass
+
+                jobs.append({
+                    "title": title,
+                    "company": company,
+                    "source": "Remotive",
+                    "url": url,
+                    "location": location,
+                    "salary": salary,
+                    "tags": tags,
+                    "date": date,
+                    "description": description,
+                    "raw_date": raw_date,
+                })
+        else:
+            print(f"  Remotive API returned {resp.status_code}")
+    except Exception as e:
+        print(f"  Remotive error: {e}")
+
+    if not jobs:
+        print("  Remotive: 0 QA jobs found")
+    return jobs
+
+
+def fetch_hn_whoishiring():
+    """Fetch QA/testing job mentions from Hacker News 'Who is Hiring' thread.
+    Uses Algolia API to find the latest thread, then fetches comments via Firebase API.
+    """
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test engineer", "test automation", "tester",
+                       "testing", "automation engineer", "test lead",
+                       "test manager", "qa lead", "qa engineer",
+                       "software test", "software testing", "test developer",
+                       "engineer in test", "sdet engineer", "quality analyst",
+                       "manual test", "automation test"]
+
+    try:
+        # Step 1: Find the latest 'Who is hiring?' thread via Algolia
+        algolia_resp = requests.get(
+            "https://hn.algolia.com/api/v1/search_by_date",
+            params={
+                "tags": "ask_hn",
+                "query": "who is hiring",
+                "hitsPerPage": 1,
+            },
+            headers=headers,
+            timeout=15,
+        )
+        if algolia_resp.status_code != 200:
+            print(f"  HN Algolia returned {algolia_resp.status_code}")
+            return jobs
+
+        algolia_data = algolia_resp.json()
+        hits = algolia_data.get("hits", [])
+        if not hits:
+            # Fallback: use the known May 2026 thread
+            print("  HN Hiring: No Algolia results, using fallback thread")
+            thread_id = "42328932"
+            thread_title = "Ask HN: Who is hiring? (May 2026)"
+            thread_date = "2026-05-01"
+        else:
+            hit = hits[0]
+            thread_id = hit.get("objectID", "42328932")
+            thread_title = hit.get("title", "Who is hiring?")
+            created_at = hit.get("created_at", "")
+            thread_date = created_at[:10] if created_at else "2026-05-01"
+
+        # Step 2: Fetch comments from the thread via Firebase API
+        firebase_url = f"https://hacker-news.firebaseio.com/v0/item/{thread_id}.json"
+        thread_resp = requests.get(firebase_url, headers=headers, timeout=15)
+        if thread_resp.status_code != 200:
+            print(f"  HN Firebase returned {thread_resp.status_code}")
+            return jobs
+
+        thread_data = thread_resp.json()
+        kid_ids = thread_data.get("kids", [])
+
+        # Step 3: Fetch each top-level comment and parse for QA/testing mentions
+        for kid_id in kid_ids[:100]:  # Limit to 100 top-level comments
+            try:
+                comment_resp = requests.get(
+                    f"https://hacker-news.firebaseio.com/v0/item/{kid_id}.json",
+                    headers=headers,
+                    timeout=10,
+                )
+                if comment_resp.status_code != 200:
+                    continue
+
+                comment_data = comment_resp.json()
+                text = comment_data.get("text", "") or ""
+                text_lower = text.lower()
+
+                if not any(k in text_lower for k in filter_keywords):
+                    continue
+
+                # Extract company name (usually at the start or in bold)
+                company = ""
+                # Try to find company name - often in bold or at start of comment
+                company_match = re.search(r'<b>(.*?)</b>', text)
+                if company_match:
+                    company = BeautifulSoup(company_match.group(0), "html.parser").get_text(strip=True)
+                if not company:
+                    # First line before a pipe or newline often has the company
+                    first_line = text.split("\n")[0] if "\n" in text else text
+                    first_line = re.sub(r'<[^>]+>', '', first_line).strip()
+                    if first_line and len(first_line) < 100:
+                        company = first_line
+
+                # Extract title - often part of the text mentioning "QA" keywords
+                title = "QA/Testing role"
+                # Try to find a more specific title
+                sentences = re.split(r'[.|;|\n]', text)
+                for sent in sentences:
+                    sent_clean = re.sub(r'<[^>]+>', '', sent).strip()
+                    sent_lower = sent_clean.lower()
+                    if any(k in sent_lower for k in filter_keywords):
+                        title = sent_clean[:100]  # First matching sentence
+                        break
+
+                # Build URL
+                url = f"https://news.ycombinator.com/item?id={kid_id}"
+
+                # Date from the thread
+                comment_time = comment_data.get("time", 0)
+                if comment_time:
+                    comment_date = datetime.fromtimestamp(comment_time).strftime("%Y-%m-%d")
+                    raw_date = int(comment_time)
+                else:
+                    comment_date = thread_date
+                    raw_date = int(time.time())
+
+                # Clean HTML from text for description
+                desc_soup = BeautifulSoup(text, "html.parser")
+                clean_desc = desc_soup.get_text(separator="\n", strip=True)
+
+                jobs.append({
+                    "title": title,
+                    "company": company,
+                    "source": "HN Hiring",
+                    "url": url,
+                    "location": "Remote (HN)",
+                    "salary": "",
+                    "tags": "HN, WhoIsHiring",
+                    "date": comment_date,
+                    "description": clean_desc[:500] if clean_desc else "",
+                    "raw_date": raw_date,
+                })
+            except Exception:
+                continue
+
+    except Exception as e:
+        print(f"  HN Hiring error: {e}")
+
+    if not jobs:
+        print("  HN Hiring: 0 QA job mentions found")
+    return jobs
+
+
 def fetch_all():
     """Fetch jobs from all sources - legacy wrapper."""
     return fetch_all_new_sources()
@@ -756,6 +1276,10 @@ def fetch_all_new_sources():
         ("Free-Work (FR)", fetch_freework),
         ("LesJeudis (FR)", fetch_lesjeudis),
         ("Optioncarriere (FR)", fetch_optioncarriere),
+        ("WTTJ", fetch_wttj),
+        ("FranceTravail", fetch_francetravail),
+        ("Remotive", fetch_remotive),
+        ("HN Hiring", fetch_hn_whoishiring),
         ("LinkedIn Countries", fetch_linkedin_countries),
     ]
     

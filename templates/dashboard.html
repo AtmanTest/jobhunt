@@ -309,6 +309,20 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
         }
+        /* Freshness badges */
+        .fresh-A { background: rgba(0,214,143,0.2); color: var(--green); }
+        .fresh-B { background: rgba(84,160,255,0.2); color: var(--blue); }
+        .fresh-C { background: rgba(255,159,67,0.2); color: var(--orange); }
+        .fresh-D { background: rgba(90,90,114,0.3); color: var(--text-muted); }
+        .fresh-badge {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
         .job-card.viewed .new-badge { display: none; }
         .status-badge {
             display: inline-block;
@@ -543,6 +557,14 @@
         <button class="rm-btn" data-rm="onsite">🏢 Sur site</button>
     </div>
 
+    <!-- Freshness filter -->
+    <div class="remote-filter" style="margin-top:6px;">
+        <button class="rm-btn active" data-fresh="all">📅 Toute date</button>
+        <button class="rm-btn" data-fresh="A">🆕 Aujourd'hui</button>
+        <button class="rm-btn" data-fresh="B">📆 &lt;3j</button>
+        <button class="rm-btn" data-fresh="C">📅 &lt;7j</button>
+    </div>
+
     <!-- Country tabs -->
     <div class="tabs" id="tabs">
         <button class="tab-btn active" data-tab="france">🇫🇷 France <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'france')|map(attribute='count')|first }}</span></button>
@@ -595,12 +617,15 @@
         <div class="job-list">
             {% if country_data.jobs %}
             {% for job in country_data.jobs %}
-            <div class="job-card {% if job.applied %}applied{% endif %} {% if job.viewed %}viewed{% endif %}" data-id="{{ job.id }}">
+            <div class="job-card {% if job.applied %}applied{% endif %} {% if job.viewed %}viewed{% endif %}" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}">
                 <div class="job-header">
                     <div>
                         <div class="job-title">
                             {{ job.title }}
                             {% if not job.viewed %}<span class="new-badge">Nouveau</span>{% endif %}
+                            <span class="fresh-badge fresh-{{ job.freshness_score or 'D' }}">
+                                {% if job.freshness_score == 'A' %}🔥 Nouveau{% elif job.freshness_score == 'B' %}📆 Récents{% elif job.freshness_score == 'C' %}📅 Semaine{% else %}📅 Ancien{% endif %}
+                            </span>
                             {% if job.is_qa %}<span class="qa-badge">QA</span>{% endif %}
                             {% if job.freelance_status %}
                             <span class="status-badge status-{{ job.freelance_status|lower }}">{{ job.freelance_status }}</span>
@@ -672,12 +697,15 @@
         <div class="job-list">
             {% if tous_jobs %}
             {% for job in tous_jobs %}
-            <div class="job-card {% if job.applied %}applied{% endif %} {% if job.viewed %}viewed{% endif %}" data-id="{{ job.id }}">
+            <div class="job-card {% if job.applied %}applied{% endif %} {% if job.viewed %}viewed{% endif %}" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}">
                 <div class="job-header">
                     <div>
                         <div class="job-title">
                             {{ job.title }}
                             {% if not job.viewed %}<span class="new-badge">Nouveau</span>{% endif %}
+                            <span class="fresh-badge fresh-{{ job.freshness_score or 'D' }}">
+                                {% if job.freshness_score == 'A' %}🔥 Nouveau{% elif job.freshness_score == 'B' %}📆 Récents{% elif job.freshness_score == 'C' %}📅 Semaine{% else %}📅 Ancien{% endif %}
+                            </span>
                             {% if job.is_qa %}<span class="qa-badge">QA</span>{% endif %}
                             {% if job.freelance_status %}
                             <span class="status-badge status-{{ job.freelance_status|lower }}">{{ job.freelance_status }}</span>
@@ -789,9 +817,14 @@
         document.querySelectorAll('.rm-btn').forEach(b => b.classList.toggle('active', b.dataset.rm === mode));
         const activePanel = document.querySelector('.tab-panel.active');
         if (!activePanel) return;
+        const freshBtn = document.querySelector('[data-fresh].active');
+        const freshMode = freshBtn ? freshBtn.dataset.fresh : 'all';
         activePanel.querySelectorAll('.job-card').forEach(card => {
             const type = detectRemoteType(card);
-            const match = (mode === 'all') || (mode === type);
+            const rmMatch = (mode === 'all') || (mode === type);
+            const f = card.dataset.freshness || 'D';
+            const freshMatch = (freshMode === 'all') || (freshMode === f);
+            const match = rmMatch && freshMatch;
             card.classList.toggle('filtered-out', !match);
             card.classList.toggle('filtered-in', match);
         });
@@ -805,8 +838,31 @@
             setTimeout(() => {
                 const activeRm = document.querySelector('.rm-btn.active');
                 if (activeRm) filterRemote(activeRm.dataset.rm);
+                const activeFresh = document.querySelector('[data-fresh].active');
+                if (activeFresh) filterFreshness(activeFresh.dataset.fresh);
             }, 50);
         });
+    });
+
+    // Freshness filter
+    function filterFreshness(fresh) {
+        document.querySelectorAll('[data-fresh]').forEach(b => b.classList.toggle('active', b.dataset.fresh === fresh));
+        const activePanel = document.querySelector('.tab-panel.active');
+        if (!activePanel) return;
+        activePanel.querySelectorAll('.job-card').forEach(card => {
+            const f = card.dataset.freshness || 'D';
+            const match = (fresh === 'all') || (fresh === f);
+            // Combine with remote filter: card stays visible if BOTH filters pass
+            const rmBtn = document.querySelector('.rm-btn.active');
+            const rmMode = rmBtn ? rmBtn.dataset.rm : 'all';
+            const rmType = detectRemoteType(card);
+            const rmMatch = (rmMode === 'all') || (rmMode === rmType);
+            card.classList.toggle('filtered-out', !(match && rmMatch));
+            card.classList.toggle('filtered-in', match && rmMatch);
+        });
+    }
+    document.querySelectorAll('[data-fresh]').forEach(btn => {
+        btn.addEventListener('click', () => filterFreshness(btn.dataset.fresh));
     });
 
     // Job card click → open URL + mark as viewed
