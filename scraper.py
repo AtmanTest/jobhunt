@@ -444,6 +444,191 @@ def fetch_otta():
     return jobs
 
 
+def fetch_freework():
+    """Fetch QA freelance jobs from Free-Work (French marketplace)."""
+    import urllib.parse
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "application/json",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test engineer", "test automation", "tester",
+                       "testing", "automation engineer", "qa lead", "qa engineer",
+                       "test lead", "testeur", "recette", "qualité", "qualite",
+                       "software test", "software testing", "test developer"]
+
+    try:
+        resp = requests.get(
+            "https://www.free-work.com/api/job_postings",
+            headers=headers, timeout=15
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            for item in data:
+                title = item.get("title", "")
+                title_lower = title.lower()
+                if not any(k in title_lower for k in filter_keywords):
+                    continue
+
+                company = ""
+                if isinstance(item.get("company"), dict):
+                    company = item["company"].get("name", "")
+
+                location = ""
+                loc_obj = item.get("location", {})
+                if isinstance(loc_obj, dict):
+                    loc_label = loc_obj.get("label", "")
+                    loc_country = loc_obj.get("country", "")
+                    location = f"{loc_label}" if loc_label else loc_country
+
+                # Build URL
+                slug = item.get("slug", "")
+                url = f"https://www.free-work.com/fr/tech-it/job-mission/{slug}" if slug else ""
+
+                # Extract salary
+                salary = ""
+                min_daily = item.get("minDailySalary")
+                max_daily = item.get("maxDailySalary")
+                currency = item.get("currency", "EUR")
+                if min_daily or max_daily:
+                    if min_daily and max_daily:
+                        salary = f"{min_daily} - {max_daily} {currency}/jour"
+                    elif min_daily:
+                        salary = f"From {min_daily} {currency}/jour"
+                    elif max_daily:
+                        salary = f"Up to {max_daily} {currency}/jour"
+
+                # Tags/skills
+                skills = item.get("skills", [])
+                tags = ", ".join(s.get("name", "") for s in skills if isinstance(s, dict)) if skills else ""
+
+                # Description
+                desc = item.get("description", "") or ""
+                candidate = item.get("candidateProfile", "") or ""
+                full_desc = f"{desc}\n{candidate}".strip()
+
+                # Date
+                created = item.get("createdAt", "")
+                date = created[:10] if created else datetime.now().strftime("%Y-%m-%d")
+
+                # Contract type
+                contracts = item.get("contracts", [])
+                contract_type = ""
+                if isinstance(contracts, list):
+                    for c in contracts:
+                        if isinstance(c, dict):
+                            ct = c.get("name", "").lower()
+                            if "freelance" in ct:
+                                contract_type = "freelance"
+                            elif "contract" in ct:
+                                contract_type = "contract"
+
+                jobs.append({
+                    "title": title,
+                    "company": company, "source": "Free-Work",
+                    "url": url, "location": location, "salary": salary,
+                    "tags": tags, "description": full_desc,
+                    "date": date, "raw_date": int(time.time()),
+                    "contract_type": contract_type or "freelance",
+                })
+
+        if not jobs:
+            print("  Free-Work: 0 QA jobs found")
+    except Exception as e:
+        print(f"  Free-Work error: {e}")
+
+    return jobs
+
+
+def fetch_linkedin_guest(country, location_query, keywords="QA"):
+    """Fetch jobs from LinkedIn guest search API for a specific country."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html",
+    }
+    jobs = []
+    from bs4 import BeautifulSoup
+
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test engineer", "test automation", "tester",
+                       "testing", "automation engineer", "qa lead", "qa engineer",
+                       "test lead", "test manager"]
+
+    encoded_location = requests.utils.quote(location_query)
+    encoded_keywords = requests.utils.quote(keywords)
+    urls = [
+        f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={encoded_keywords}&location={encoded_location}",
+        f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords={encoded_keywords}&location={encoded_location}&f_WT=2",
+    ]
+
+    for url in urls:
+        if jobs:
+            break
+        try:
+            resp = requests.get(url, headers=headers, timeout=20)
+            if resp.status_code != 200:
+                continue
+
+            soup = BeautifulSoup(resp.text, "html.parser")
+            cards = soup.find_all("div", class_="base-card")
+
+            for card in cards:
+                try:
+                    title_el = card.find("span", class_="sr-only")
+                    if not title_el:
+                        continue
+                    title = title_el.get_text(strip=True)
+                    title_lower = title.lower()
+                    if not any(k in title_lower for k in filter_keywords):
+                        continue
+
+                    link_el = card.find("a", class_="base-card__full-link")
+                    url = link_el["href"] if link_el and link_el.has_attr("href") else ""
+
+                    # Extract company name from the card
+                    company_el = card.find("a", class_="hidden-nested-link")
+                    company = company_el.get_text(strip=True) if company_el else ""
+
+                    # Location
+                    location_el = card.find("span", class_="job-search-card__location")
+                    location = location_el.get_text(strip=True) if location_el else location_query
+
+                    jobs.append({
+                        "title": title, "company": company, "source": f"LinkedIn {country}",
+                        "url": url, "location": location, "salary": "", "tags": "",
+                        "description": "", "date": datetime.now().strftime("%Y-%m-%d"),
+                        "raw_date": int(time.time()),
+                    })
+                except Exception:
+                    continue
+        except Exception as e:
+            print(f"  LinkedIn {country} error: {e}")
+
+    return jobs
+
+
+def fetch_linkedin_countries():
+    """Fetch QA jobs from LinkedIn for target countries."""
+    all_jobs = []
+    countries = {
+        "France": "France",
+        "Suisse": "Switzerland",
+        "Luxembourg": "Luxembourg",
+        "Dubaï": "Dubai",
+        "Singapour": "Singapore",
+    }
+    for country_name, location in countries.items():
+        try:
+            jobs = fetch_linkedin_guest(country_name, location)
+            all_jobs.extend(jobs)
+            print(f"  LinkedIn {country_name}: {len(jobs)} jobs")
+            time.sleep(1.5)  # Be nice to LinkedIn
+        except Exception as e:
+            print(f"  LinkedIn {country_name}: Error {e}")
+    return all_jobs
+
+
 def fetch_all():
     """Fetch jobs from all sources - legacy wrapper."""
     return fetch_all_new_sources()
@@ -461,6 +646,8 @@ def fetch_all_new_sources():
         ("LinkedIn RSS", fetch_linkedin_rss),
         ("JobBoard.io", fetch_jobboard_io),
         ("Otta", fetch_otta),
+        ("Free-Work (FR)", fetch_freework),
+        ("LinkedIn Countries", fetch_linkedin_countries),
     ]
     
     for name, fetcher in sources:

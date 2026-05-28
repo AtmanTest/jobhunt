@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobHunt — Marché QA Freelance</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f0f13;
+            --card: #1a1a24;
+            --card-hover: #22222f;
+            --border: #2a2a3a;
+            --border-subtle: rgba(42,42,58,0.5);
+            --text: #e4e4ef;
+            --text-dim: #8888a0;
+            --text-muted: #5a5a72;
+            --accent: #6c5ce7;
+            --accent-dim: #4a3db5;
+            --accent-glow: rgba(108,92,231,0.12);
+            --green: #00d68f;
+            --orange: #ff9f43;
+            --red: #ff6b6b;
+            --gold: #ffd93d;
+            --blue: #54a0ff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        /* Header */
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding: 14px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15,15,19,0.95);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .header-logo {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-nav { display: flex; gap: 6px; }
+        .header-nav a {
+            padding: 6px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-dim);
+            transition: all 0.2s;
+        }
+        .header-nav a:hover { color: var(--text); background: var(--card); }
+        .header-nav a.active { color: var(--accent); background: var(--accent-glow); }
+        .btn-primary {
+            background: var(--accent);
+            color: white !important;
+        }
+        .btn-primary:hover { background: #5f4dd0; }
+        .btn-outline {
+            border: 1px solid var(--border);
+            color: var(--text-dim) !important;
+        }
+        .btn-outline:hover { border-color: var(--accent); color: var(--text) !important; }
+
+        /* Container */
+        .container { max-width: 1200px; margin: 0 auto; padding: 24px 32px; }
+
+        /* Stats row */
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-chip {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+        .stat-chip .num {
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent);
+        }
+        .stat-chip .num.green { color: var(--green); }
+        .stat-chip .num.orange { color: var(--orange); }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            margin-bottom: 0;
+        }
+        .tab-btn {
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .tab-btn:hover { color: var(--text); background: var(--card-hover); }
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            background: var(--accent-glow);
+        }
+        .tab-btn .badge {
+            font-size: 10px;
+            background: var(--accent-glow);
+            color: var(--accent);
+            padding: 1px 7px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .tab-btn.active .badge { background: var(--accent); color: white; }
+
+        /* Tab content */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; animation: fadeIn 0.25s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Platform cards row */
+        .platforms-row {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            padding-bottom: 4px;
+        }
+        .platform-card {
+            flex: 0 0 200px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            transition: all 0.2s;
+            cursor: default;
+        }
+        .platform-card:hover { border-color: var(--accent); background: var(--card-hover); }
+        .platform-card .p-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .platform-card .p-name a { color: var(--accent); text-decoration: none; }
+        .platform-card .p-name a:hover { text-decoration: underline; }
+        .platform-card .p-desc {
+            font-size: 11px;
+            color: var(--text-dim);
+            line-height: 1.4;
+        }
+        .platform-card .p-tag {
+            display: inline-block;
+            font-size: 9px;
+            padding: 1px 7px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+        .tag-local { background: rgba(84,160,255,0.15); color: var(--blue); }
+        .tag-intl { background: rgba(108,92,231,0.15); color: var(--accent); }
+
+        /* TJM indicator */
+        .tjm-box {
+            background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(162,155,254,0.05));
+            border: 1px solid rgba(108,92,231,0.25);
+            border-radius: 10px;
+            padding: 12px 18px;
+            margin: 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 13px;
+        }
+        .tjm-box .rate {
+            color: var(--green);
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+        }
+        .tjm-box .label { color: var(--text-dim); }
+
+        /* Job cards */
+        .job-list { margin-top: 16px; }
+        .job-card {
+            background: var(--card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .job-card:hover {
+            background: var(--card-hover);
+            border-color: rgba(108,92,231,0.3);
+            transform: translateX(3px);
+        }
+        .job-card.applied { opacity: 0.5; }
+        .job-card.applied:hover { opacity: 0.7; }
+        .job-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .job-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .job-title .qa-badge {
+            display: inline-block;
+            background: var(--accent-glow);
+            color: var(--accent);
+            font-size: 9px;
+            font-weight: 600;
+            padding: 1px 7px;
+            border-radius: 4px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .job-company { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+        .job-meta {
+            display: flex;
+            gap: 12px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .job-meta span { display: flex; align-items: center; gap: 3px; }
+        .job-source {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 1px 7px;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+        }
+        .job-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+        .job-actions a, .job-actions button {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: all 0.15s;
+        }
+        .btn-apply {
+            background: var(--accent);
+            color: white !important;
+            border: none !important;
+        }
+        .btn-apply:hover { background: #5f4dd0; }
+        .applied-label {
+            font-size: 10px;
+            color: var(--green);
+            background: rgba(0,214,143,0.1);
+            padding: 3px 8px;
+            border-radius: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+        }
+        .empty-state .icon { font-size: 36px; margin-bottom: 10px; }
+        .empty-state h3 { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+        .empty-state p { font-size: 13px; }
+        .empty-state .platform-suggest {
+            margin-top: 16px;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .empty-state .platform-suggest a {
+            padding: 6px 14px;
+            border-radius: 8px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .empty-state .platform-suggest a:hover { background: var(--accent-glow); }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--green);
+            color: #0f0f13;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 12px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+            z-index: 2000;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) {
+            .container { padding: 12px 16px; }
+            .header { padding: 10px 16px; }
+            .tabs { gap: 0; }
+            .tab-btn { padding: 10px 12px; font-size: 12px; }
+            .platforms-row { gap: 8px; }
+            .platform-card { flex: 0 0 160px; }
+            .job-header { flex-direction: column; }
+            .job-actions { width: 100%; justify-content: flex-end; }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="header-left">
+        <span class="header-logo">⚡ JobHunt</span>
+    </div>
+    <div class="header-nav">
+        <a href="./" class="active">Dashboard</a>
+        <a href="./cv.html">📄 CV</a>
+        <a href="./qa.html">🧪 QA</a>
+        <a href="./marche-qa.html">🌍 Marché</a>
+        <a href="./about.html">À propos</a>
+        <a href="{{ url_for('refresh') }}" class="btn-primary" onclick="this.textContent='⏳...'">↻</a>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Stats row -->
+    <div class="stats-row">
+        <div class="stat-chip">
+            <span class="num">{{ stats.qa }}</span>
+            <span>Offres QA</span>
+        </div>
+        <div class="stat-chip">
+            <span class="num {% if stats.this_week > 0 %}green{% endif %}">{{ stats.this_week }}</span>
+            <span>Cette semaine</span>
+        </div>
+        <div class="stat-chip">
+            <span class="num orange">{{ country_counts|sum(attribute='count') }}</span>
+            <span>dans nos marchés</span>
+        </div>
+    </div>
+
+    <!-- Country tabs -->
+    <div class="tabs" id="tabs">
+        <button class="tab-btn active" data-tab="france">🇫🇷 France <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'france')|map(attribute='count')|first }}</span></button>
+        <button class="tab-btn" data-tab="suisse">🇨🇭 Suisse <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'suisse')|map(attribute='count')|first }}</span></button>
+        <button class="tab-btn" data-tab="luxembourg">🇱🇺 Luxembourg <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'luxembourg')|map(attribute='count')|first }}</span></button>
+        <button class="tab-btn" data-tab="dubai">🇦🇪 Dubaï / EAU <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'dubai')|map(attribute='count')|first }}</span></button>
+        <button class="tab-btn" data-tab="singapour">🇸🇬 Singapour <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'singapour')|map(attribute='count')|first }}</span></button>
+        <button class="tab-btn" data-tab="tous">🌐 Tous <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'tous')|map(attribute='count')|first }}</span></button>
+    </div>
+
+    {% for country_id, country_data in countries.items() %}
+    <div class="tab-panel {% if loop.first %}active{% endif %}" id="panel-{{ country_id }}">
+        <!-- TJM indicator + hack -->
+        <div class="tjm-box">
+            <span class="label">💶 TJM indicatif {{ country_data.flag }}</span>
+            <span class="rate">{{ country_data.tjm }}</span>
+            <span style="color:var(--text-dim);margin-left:4px;">—</span>
+            <span style="color:var(--text-dim);font-size:12px;">{{ country_data.tip }}</span>
+        </div>
+
+        <!-- Platform cards -->
+        <div style="font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:8px;">📌 Plateformes QA recommandées</div>
+        <div class="platforms-row">
+            {% for platform in country_data.platforms %}
+            <div class="platform-card">
+                <div class="p-name">
+                    {% if platform.url %}<a href="{{ platform.url }}" target="_blank">{{ platform.name }}</a>{% else %}{{ platform.name }}{% endif %}
+                    {% if platform.tag %}<span class="p-tag {{ 'tag-local' if platform.tag == 'local' else 'tag-intl' }}">{{ platform.tag == 'local' and 'Local' or 'Intl' }}</span>{% endif %}
+                </div>
+                <div class="p-desc">{{ platform.desc }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if country_data.tips %}
+        <div style="background:rgba(255,217,61,0.06);border:1px solid rgba(255,217,61,0.2);border-radius:10px;padding:12px 16px;margin:12px 0 16px;font-size:12px;color:var(--gold);">
+            💡 {{ country_data.tips }}
+        </div>
+        {% endif %}
+
+        <!-- Job listings -->
+        <div style="font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:10px;">
+            📋 Offres freelance QA — {{ country_data.flag }}
+            {% if country_data.jobs|length > 0 %}
+            <span style="color:var(--green);font-weight:400;">({{ country_data.jobs|length }})</span>
+            {% endif %}
+        </div>
+
+        <div class="job-list">
+            {% if country_data.jobs %}
+            {% for job in country_data.jobs %}
+            <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}">
+                <div class="job-header">
+                    <div>
+                        <div class="job-title">
+                            {{ job.title }}
+                            {% if job.is_qa %}<span class="qa-badge">QA</span>{% endif %}
+                        </div>
+                        <div class="job-company">{{ job.company }}</div>
+                        <div class="job-meta">
+                            <span>📍 {{ job.location }}</span>
+                            {% if job.salary %}<span>💰 {{ job.salary }}</span>{% endif %}
+                            <span>📅 {{ job.date }}</span>
+                            <span class="job-source">{{ job.source }}</span>
+                        </div>
+                    </div>
+                    <div class="job-actions">
+                        {% if job.applied %}
+                        <span class="applied-label">✓ Postulé</span>
+                        {% else %}
+                        <a href="{{ job.url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if job.tags %}
+                <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">
+                    {% for tag in job.tags.split(', ')[:5] %}
+                    <span style="background:var(--accent-glow);color:var(--accent);padding:1px 7px;border-radius:10px;font-size:10px;">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <div class="icon">🔍</div>
+                <h3>Aucune offre trouvée en {{ country_data.name }}</h3>
+                <p>Les scrapers actuels ne couvrent pas encore ce marché.</p>
+                <div class="platform-suggest">
+                    {% for platform in country_data.platforms[:4] %}
+                    {% if platform.url %}<a href="{{ platform.url }}" target="_blank">{{ platform.name }}</a>{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('panel-' + this.dataset.tab).classList.add('active');
+        });
+    });
+
+    // Job card click → open URL
+    document.querySelectorAll('.job-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const link = this.querySelector('.btn-apply');
+            if (link) window.open(link.href, '_blank');
+        });
+    });
+</script>
+</body>
+</html>

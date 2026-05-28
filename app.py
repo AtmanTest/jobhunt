@@ -184,17 +184,139 @@ def get_db():
 # ROUTES
 # ============================
 
+# ─── Country-based job filtering ──────────────────────────────
+COUNTRY_KEYWORDS = {
+    'france': ['France', 'Paris', 'Lyon', 'Toulouse', 'Nantes', 'Lille', 'Marseille', 'Bordeaux',
+               'Grenoble', 'Rennes', 'Strasbourg', 'Montpellier', 'Nice', 'Aix-en-Provence',
+               'Sophia Antipolis', 'Lille', 'Toulon', 'Le Mans', 'Brest', 'Metz', 'Nancy', 'Île-de-France'],
+    'suisse': ['Suisse', 'Switzerland', 'Genève', 'Geneva', 'Zürich', 'Zurich', 'Lausanne',
+               'Bern', 'Berne', 'Basel', 'Bâle', 'Lugano', 'Swiss'],
+    'luxembourg': ['Luxembourg', 'Luxemburg'],
+    'dubai': ['Dubai', 'Dubaï', 'UAE', 'Émirats', 'Emirates', 'Abu Dhabi', 'Qatar', 'Doha',
+              'Middle East', 'Moyen-Orient', 'Riyad', 'Dubaï'],
+    'singapour': ['Singapore', 'Singapour', 'SG'],
+}
+
+COUNTRY_DATA = {
+    'france': {
+        'name': 'France', 'flag': '🇫🇷',
+        'tjm': '550 - 700 €/jour',
+        'tip': 'Paris plus cher, missions longues 6-18 mois',
+        'tips': 'Mets à jour ton profil Malt avec "Playwright", "Xray/JIRA", "API testing". TJM entrée 550€/j, monte à 650€ après 2 missions.',
+        'platforms': [
+            {'name': 'Malt.fr', 'url': 'https://malt.fr', 'desc': '80% des missions QA passent ici. Incontournable.', 'tag': 'local'},
+            {'name': 'Free-Work', 'url': 'https://free-work.com', 'desc': 'SSII, banques, assurances. Beaucoup d\'annonces.', 'tag': 'local'},
+            {'name': 'Freelance-info', 'url': 'https://freelance-informatique.fr', 'desc': 'Missions en régions et niches.', 'tag': 'local'},
+            {'name': 'InFreelancing', 'url': 'https://infreelancing.com', 'desc': 'Missions longues, pas mal de QA.', 'tag': 'local'},
+            {'name': 'LinkedIn France', 'url': 'https://linkedin.com', 'desc': 'Recruteurs actifs, active #OpenToWork.', 'tag': 'intl'},
+        ]
+    },
+    'suisse': {
+        'name': 'Suisse', 'flag': '🇨🇭',
+        'tjm': '110 - 160 CHF/h',
+        'tip': 'Genève banque/pharma, Zurich fintech',
+        'tips': 'Spécialise-toi "QA Lead Banque" ou "Test Manager Pharma". ISTQB Advanced quasi obligatoire. Vise Genève en frontalier d\'abord.',
+        'platforms': [
+            {'name': 'Jem.ch', 'url': 'https://jem.ch', 'desc': 'LA plateforme suisse du contracting IT.', 'tag': 'local'},
+            {'name': 'SwissDevJobs', 'url': 'https://swissdevjobs.ch', 'desc': 'Annonces bien rémunérées, test automation.', 'tag': 'local'},
+            {'name': 'JobUp.ch', 'url': 'https://jobup.ch', 'desc': 'Portail généraliste, filtrer "Test/QA".', 'tag': 'local'},
+            {'name': 'Hays Switzerland', 'url': 'https://hays.ch', 'desc': 'Plus gros acteur contracting QA Suisse.', 'tag': 'intl'},
+            {'name': 'Robert Half CH', 'url': 'https://robert-half.ch', 'desc': 'Très présent missions QA.', 'tag': 'intl'},
+        ]
+    },
+    'luxembourg': {
+        'name': 'Luxembourg', 'flag': '🇱🇺',
+        'tjm': '550 - 750 €/jour',
+        'tip': 'Banque/finance, institutions UE',
+        'tips': 'Petit marché, 80% passe par les régies (Hays, NSI, SFE). Spécialisation SAP testing ou core banking = TJM max.',
+        'platforms': [
+            {'name': 'Hays Luxembourg', 'url': 'https://hays.lu', 'desc': 'Leader du contracting QA Lux.', 'tag': 'local'},
+            {'name': 'NSI Luxembourg', 'url': 'https://nsi.lu', 'desc': 'Régie majeure, missions longues durée.', 'tag': 'local'},
+            {'name': 'Moovijob', 'url': 'https://moovijob.com', 'desc': 'Portail emploi luxembourgeois, filtrer IT.', 'tag': 'local'},
+            {'name': 'LinkedIn Lux', 'url': 'https://linkedin.com', 'desc': 'Activer Luxembourg comme localisation.', 'tag': 'intl'},
+        ]
+    },
+    'dubai': {
+        'name': 'Dubaï / EAU', 'flag': '🇦🇪',
+        'tjm': '600 - 900 $/jour',
+        'tip': 'Fintech, consulting, missions 3-12 mois',
+        'tips': 'Le marché QA freelance à Dubaï est petit mais très bien payé. Passe par des boîtes de consulting internationales (Capgemini, Accenture) ou des plateformes spécialisées.',
+        'platforms': [
+            {'name': 'Testvox', 'url': 'https://testvox.com', 'desc': 'Plateforme QA freelance internationale, présente Dubaï.', 'tag': 'local'},
+            {'name': 'Truelancer', 'url': 'https://truelancer.ae', 'desc': 'Freelance généraliste, section QA active.', 'tag': 'local'},
+            {'name': 'Dubai Freelance', 'url': 'https://dubaifreelance.ae', 'desc': 'Portail freelance EAU.', 'tag': 'local'},
+            {'name': 'Toptal', 'url': 'https://toptal.com', 'desc': 'Réseau freelance premium, QA bien présent.', 'tag': 'intl'},
+        ]
+    },
+    'singapour': {
+        'name': 'Singapour', 'flag': '🇸🇬',
+        'tjm': '80 - 150 SGD/h',
+        'tip': 'Fintech asiatique, hub régional',
+        'tips': 'Marché exigeant, profils automation + ISTQB Advanced. Les missions sont souvent via agences de recrutement (Hays SG, Robert Walters) plutôt que plateformes.',
+        'platforms': [
+            {'name': 'NodeFlair', 'url': 'https://nodeflair.com', 'desc': 'Plateforme tech SG, filtres QA/disponible.', 'tag': 'local'},
+            {'name': 'Hays Singapore', 'url': 'https://hays.com.sg', 'desc': 'Recrutement contracting QA.', 'tag': 'local'},
+            {'name': 'Robert Walters SG', 'url': 'https://robertwalters.com.sg', 'desc': 'Agence majeure, missions QA.', 'tag': 'local'},
+            {'name': 'LinkedIn SG', 'url': 'https://linkedin.com', 'desc': 'Activer Singapore comme localisation.', 'tag': 'intl'},
+        ]
+    },
+}
+
+
+def filter_jobs_by_country(country_id):
+    """Filter jobs by country keywords + freelance/contract only."""
+    conn = get_db()
+    keywords = COUNTRY_KEYWORDS.get(country_id, [])
+    if not keywords:
+        return []
+
+    # Build location filter
+    placeholders = ' OR '.join(['location LIKE ?'] * len(keywords))
+    params = [f'%{k}%' for k in keywords]
+
+    query = f"""
+        SELECT * FROM jobs 
+        WHERE ({placeholders})
+        AND (contract_type IS NULL OR contract_type IN ('contract', 'freelance', 'contracting'))
+        ORDER BY raw_date DESC, date DESC LIMIT 50
+    """
+    cursor = conn.execute(query, params)
+    jobs = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return jobs
+
+
 @app.route("/")
 def index():
     stats = get_stats()
-    filters = {
-        "qa_only": request.args.get("qa", "1") == "1",
-        "not_applied": request.args.get("unapplied", "0") == "1",
-        "search": request.args.get("search", ""),
-        "source": request.args.get("source", ""),
-    }
-    jobs = get_jobs(filters)
-    return render_template("index.html", jobs=jobs, stats=stats, filters=filters)
+
+    # Build country data with jobs
+    countries = {}
+    country_counts = []
+    total_filtered = 0
+
+    for cid, cdata in COUNTRY_DATA.items():
+        jobs = filter_jobs_by_country(cid)
+        cdata['jobs'] = jobs
+        countries[cid] = cdata
+        cnt = len(jobs)
+        country_counts.append({'key': cid, 'count': cnt})
+        total_filtered += cnt
+
+    # 'tous' = all unique jobs from all countries (deduplicate by id)
+    all_jobs = []
+    seen_ids = set()
+    for cid, cdata in countries.items():
+        for job in cdata['jobs']:
+            if job['id'] not in seen_ids:
+                seen_ids.add(job['id'])
+                all_jobs.append(job)
+    country_counts.append({'key': 'tous', 'count': len(all_jobs)})
+
+    return render_template("dashboard.html",
+        stats=stats,
+        countries=countries,
+        country_counts=country_counts)
 
 
 @app.route("/refresh")
