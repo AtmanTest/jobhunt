@@ -263,9 +263,9 @@
             margin-left: 4px;
             vertical-align: middle;
         }
-        .status-validee { background: rgba(0,214,143,0.2); color: var(--green); }
-        .status-ambigue { background: rgba(255,159,67,0.2); color: var(--orange); }
-        .status-rejetee { background: rgba(255,107,107,0.2); color: var(--red); }
+        .status-validée { background: rgba(0,214,143,0.2); color: var(--green); }
+        .status-ambiguë { background: rgba(255,159,67,0.2); color: var(--orange); }
+        .status-rejetée { background: rgba(255,107,107,0.2); color: var(--red); }
         .job-chip {
             display: inline-block;
             font-size: 9px;
@@ -507,7 +507,7 @@
                         <div class="job-company">{{ job.company }}</div>
                         <div class="job-meta">
                             <span>📍 {{ job.location }}</span>
-                            {% if job.remote_type %}<span class="job-chip chip-{{ job.remote_type }}">{{ job.remote_type }}</span>{% endif %}
+                            {% if job.remote_type %}<span class="job-chip chip-{{ job.remote_type|lower }}">{{ job.remote_type }}</span>{% endif %}
                             {% if job.contract_type %}<span class="job-chip">{{ job.contract_type }}</span>{% endif %}
                             {% if job.salary %}<span>💰 {{ job.salary }}</span>{% endif %}
                             {% if job.budget_info %}<span>💶 {{ job.budget_info }}</span>{% endif %}
@@ -570,7 +570,7 @@
                         <div class="job-company">{{ job.company }}</div>
                         <div class="job-meta">
                             <span>📍 {{ job.location }}</span>
-                            {% if job.remote_type %}<span class="job-chip chip-{{ job.remote_type }}">{{ job.remote_type }}</span>{% endif %}
+                            {% if job.remote_type %}<span class="job-chip chip-{{ job.remote_type|lower }}">{{ job.remote_type }}</span>{% endif %}
                             {% if job.contract_type %}<span class="job-chip">{{ job.contract_type }}</span>{% endif %}
                             {% if job.salary %}<span>💰 {{ job.salary }}</span>{% endif %}
                             {% if job.budget_info %}<span>💶 {{ job.budget_info }}</span>{% endif %}

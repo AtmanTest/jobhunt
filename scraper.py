@@ -1029,60 +1029,81 @@ def classify_freelance_job(job):
     # Detect remote type
     remote_type = detect_remote_type(location, title, description)
     
-    # Adjust location if remote detected
-    if remote_type == "remote" and location and "france" not in location.lower() and "remote" not in location.lower():
-        # If remote but location only has a city name
-        location_display = f"{location} (remote)"
-    elif remote_type == "remote":
-        location_display = location or "Remote"
-    else:
-        location_display = location
-    
     # Calculate score
     score = c_score
-    # Bonus for explicit freelance indicators
     text_lower = f"{title} {description} {salary}".lower()
+    
+    # Source bonus: known freelance platforms
+    freelance_sources = [
+        "Free-Work", "LesJeudis", "Optioncarriere", "LinkedIn France",
+        "LinkedIn Suisse", "LinkedIn Luxembourg", "LinkedIn Dubaï",
+        "LinkedIn Singapour", "LinkedIn Countries", "Malt", "Comet"
+    ]
+    for fs in freelance_sources:
+        if fs.lower() in source.lower():
+            score += 2
+            break
+    
+    # Bonus for explicit freelance indicators
     if "/jour" in text_lower or "tjm" in text_lower:
-        score += 3
+        score += 4
     if "mission" in title.lower():
-        score += 2
-    if "freelance" in title.lower():
         score += 3
+    if "freelance" in title.lower():
+        score += 4
     if "consultant" in title.lower():
-        score += 1
-    if "sasu" in text_lower or "portage" in text_lower:
         score += 2
+    if "sasu" in text_lower or "portage" in text_lower:
+        score += 3
+    if "contract" in title.lower() or "contractor" in title.lower():
+        score += 3
+    if "régie" in text_lower or "regie" in text_lower:
+        score += 2
+    
+    # Bonus for QA+tech keywords (more likely freelance-friendly)
+    qa_bonus = ["qa engineer", "qa automation", "sdet", "test engineer",
+                 "test automation", "test lead", "qa lead", "test analyst",
+                 "testeur", "qa tester"]
+    for qk in qa_bonus:
+        if qk in title.lower():
+            score += 1
+            break
+    
+    # Bonus for remote/hybrid (common in freelance)
+    if remote_type in ("remote", "hybrid"):
+        score += 1
     
     # Penalty for explicit permanent indicators
     for kw in CDI_KEYWORDS:
         if kw in title.lower():
-            score -= 4
+            score -= 5
+    
+    # Check for salary-based clues (daily rate = freelance)
+    if salary:
+        sal_lower = salary.lower()
+        if "/jour" in sal_lower or "daily" in sal_lower or "/day" in sal_lower or "tjm" in sal_lower:
+            score += 3
+        elif "/mois" in sal_lower or "/year" in sal_lower or "/an" in sal_lower:
+            score -= 2  # Monthly salary = likely CDI
     
     # Determine status
-    if score >= 3:
+    if score >= 4:
         status = "VALIDÉE"
-    elif score >= 0:
-        # Check for ambiguous patterns
+    elif score >= 1:
         if "freelance ou cdi" in text_lower or "freelance or permanent" in text_lower:
             status = "AMBIGUË"
         else:
-            status = "VALIDÉE" if score >= 1 else "AMBIGUË"
+            status = "VALIDÉE"
     else:
-        status = "REJETÉE"
+        status = "AMBIGUË"
     
     if contract_type in ("stage/alternance", "cdi (rejeté)"):
-        status = "REJETÉE"
-    elif contract_type == "cdd" and score < 0:
         status = "REJETÉE"
     
     # Extract budget/TJM info
     budget_info = ""
     if salary:
         budget_info = salary
-    elif re.search(r"\d+\s*[-àà]\s*\d+\s*(€|eur|chf|usd|sgd)", text_lower):
-        match = re.search(r"(\d+\s*[-àà]\s*\d+\s*(€|eur|chf|usd|sgd)?/?(jour|day|h|hr)?)", text_lower, re.IGNORECASE)
-        if match:
-            budget_info = match.group(0)
     
     # Extract duration info
     duration_info = ""
@@ -1100,7 +1121,7 @@ def classify_freelance_job(job):
     
     return {
         "freelance_status": status,
-        "freelance_score": min(score, 10),  # Cap at 10
+        "freelance_score": min(max(score, 0), 10),  # Clamp 0-10
         "contract_type_fr": contract_type,
         "remote_type": remote_type,
         "duration_info": duration_info,
