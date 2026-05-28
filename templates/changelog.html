@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobHunt — Changelog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0f0f13; --card: #1a1a24; --border: #2a2a3a; --text: #e4e4ef; --text-dim: #8888a0; --accent: #6c5ce7; --green: #00d68f; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        .header { border-bottom: 1px solid var(--border); padding: 14px 32px; display: flex; align-items: center; background: rgba(15,15,19,0.95); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; }
+        .header-logo { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, var(--accent), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 32px; }
+        h1 { font-size: 24px; margin-bottom: 24px; }
+        .changelog { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px 32px; }
+        .changelog h2 { font-size: 18px; color: var(--accent); margin: 24px 0 12px; }
+        .changelog h3 { font-size: 14px; color: var(--text); margin: 16px 0 8px; }
+        .changelog ul { padding-left: 20px; margin-bottom: 12px; }
+        .changelog li { font-size: 13px; color: var(--text-dim); line-height: 1.7; margin-bottom: 4px; }
+        .changelog code { background: rgba(108,92,231,0.12); color: var(--accent); padding: 1px 5px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+        .changelog a { color: var(--accent); }
+        .changelog p { font-size: 13px; color: var(--text-dim); line-height: 1.6; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <span class="header-logo">⚡ JobHunt — Changelog v{{ version }}</span>
+</div>
+<div class="container">
+    <h1>📋 Changelog</h1>
+    <div class="changelog">
+        {{ content|safe }}
+    </div>
+    <div style="text-align:center;margin-top:24px;">
+        <a href="{{ url_for('index') }}" style="color:var(--accent);text-decoration:none;font-size:13px;">← Retour au Dashboard</a>
+    </div>
+</div>
+</body>
+</html>

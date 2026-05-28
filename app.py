@@ -18,6 +18,7 @@ from datetime import datetime
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from scraper import init_db, fetch_all, fetch_all_new_sources, save_jobs, get_jobs, mark_applied, get_stats, export_static_json, get_db as scraper_db
+from version import get_version, get_git_commit, get_git_tag, is_dirty, DB_SCHEMA_VERSION
 from cv_data import CV
 
 # ─── QA Module ───────────────────────────────────────────────────
@@ -353,7 +354,8 @@ def index():
         stats=stats,
         countries=countries,
         country_counts=country_counts,
-        tous_jobs=all_jobs)
+        tous_jobs=all_jobs,
+        version=get_version())
 
 
 @app.route("/refresh")
@@ -738,7 +740,25 @@ def api_cv():
 
 @app.route("/about")
 def about():
-    return render_template("about.html")
+    return render_template("about.html",
+        version=get_version(),
+        commit=get_git_commit(),
+        tag=get_git_tag(),
+        dirty=is_dirty(),
+        db_schema=DB_SCHEMA_VERSION)
+
+
+@app.route("/changelog")
+def changelog():
+    import markdown
+    try:
+        with open("CHANGELOG.md") as f:
+            html = markdown.markdown(f.read(), extensions=["fenced_code"])
+    except:
+        html = "<p>Changelog non disponible</p>"
+    return render_template("changelog.html",
+        content=html,
+        version=get_version())
 
 
 @app.route("/marche-qa")
