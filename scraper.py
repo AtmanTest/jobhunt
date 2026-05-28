@@ -648,6 +648,39 @@ def fetch_optioncarriere():
     return jobs
 
 
+def parse_relative_date(text):
+    """Parse LinkedIn-style relative dates like '1 week ago', '2 days ago', '30+ min ago'.
+    Returns YYYY-MM-DD string, or today if unparseable.
+    """
+    from datetime import timedelta
+    if not text:
+        return datetime.now().strftime("%Y-%m-%d"), int(time.time())
+    text = text.strip().lower()
+    import re
+    # Patterns: "X day(s) ago", "X week(s) ago", "X month(s) ago", "X hour(s) ago"
+    m = re.search(r'(\d+)\s*(d|day|days|h|hour|hours|min|minute|minutes|week|weeks|month|months)\s*ago', text)
+    if m:
+        num = int(m.group(1))
+        unit = m.group(2)
+        now = datetime.now()
+        if unit in ('d', 'day', 'days'):
+            delta = timedelta(days=num)
+        elif unit in ('h', 'hour', 'hours', 'min', 'minute', 'minutes'):
+            delta = timedelta(days=0)  # today for hours/minutes
+        elif unit in ('week', 'weeks'):
+            delta = timedelta(weeks=num)
+        elif unit in ('month', 'months'):
+            delta = timedelta(days=num * 30)
+        else:
+            delta = timedelta(days=0)
+        dt = now - delta
+        return dt.strftime("%Y-%m-%d"), int(dt.timestamp())
+    # "just now", "moments ago", "today"
+    if any(k in text for k in ('just now', 'moments ago', 'today', 'now')):
+        return datetime.now().strftime("%Y-%m-%d"), int(time.time())
+    return datetime.now().strftime("%Y-%m-%d"), int(time.time())
+
+
 def fetch_linkedin_guest(country, location_query, keywords="QA"):
     """Fetch jobs from LinkedIn guest search API for a specific country."""
     headers = {
@@ -701,11 +734,19 @@ def fetch_linkedin_guest(country, location_query, keywords="QA"):
                     location_el = card.find("span", class_="job-search-card__location")
                     location = location_el.get_text(strip=True) if location_el else location_query
 
+                    # Extract real publication date from <time> element
+                    time_el = card.find("time")
+                    date_str = datetime.now().strftime("%Y-%m-%d")
+                    raw_date = int(time.time())
+                    if time_el:
+                        time_text = time_el.get_text(strip=True)
+                        date_str, raw_date = parse_relative_date(time_text)
+
                     jobs.append({
                         "title": title, "company": company, "source": f"LinkedIn {country}",
                         "url": url, "location": location, "salary": "", "tags": "",
-                        "description": "", "date": datetime.now().strftime("%Y-%m-%d"),
-                        "raw_date": int(time.time()),
+                        "description": "", "date": date_str,
+                        "raw_date": raw_date,
                     })
                 except Exception:
                     continue

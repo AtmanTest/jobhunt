@@ -17,7 +17,7 @@ from datetime import datetime
 # Import scraper
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
-from scraper import init_db, fetch_all, fetch_all_new_sources, save_jobs, get_jobs, mark_applied, get_stats, export_static_json, get_db as scraper_db
+from scraper import init_db, fetch_all, fetch_all_new_sources, save_jobs, get_jobs, mark_applied, get_stats, export_static_json, get_db as scraper_db, compute_freshness_score
 from version import get_version, get_git_commit, get_git_tag, is_dirty, DB_SCHEMA_VERSION
 from matcher import match_job_to_cv, analyze_tjm, detect_duplicates, analyze_skills_gap, source_stats as src_stats
 from cv_data import CV
@@ -185,27 +185,6 @@ def get_db():
     return conn
 
 
-def compute_freshness_score(date_str):
-    """Return freshness score A/B/C/D based on how recent the date is.
-    A = today, B = 1-3 days, C = 4-7 days, D = 7+ days.
-    """
-    if not date_str:
-        return 'D'
-    try:
-        job_date = datetime.strptime(str(date_str)[:10], '%Y-%m-%d').date()
-        today = datetime.now().date()
-        delta = (today - job_date).days
-        if delta < 0:
-            return 'A'  # future date = brand new
-        if delta == 0:
-            return 'A'
-        if delta <= 3:
-            return 'B'
-        if delta <= 7:
-            return 'C'
-        return 'D'
-    except (ValueError, TypeError):
-        return 'D'
 
 
 # Auto-scrape LinkedIn pays au démarrage
@@ -338,6 +317,7 @@ def filter_jobs_by_country(country_id):
         WHERE ({placeholders})
         AND (freelance_status IS NULL OR freelance_status IN ('VALIDÉE', 'AMBIGUË'))
         ORDER BY 
+            viewed ASC,
             CASE freelance_status WHEN 'VALIDÉE' THEN 0 ELSE 1 END,
             raw_date DESC, date DESC LIMIT 100
     """
@@ -384,6 +364,12 @@ def index():
     # Top matches (top 10 tous pays)
     top_matches = sorted(all_jobs, key=lambda j: -j.get('match_score', 0))[:10]
 
+    # Jobs du Jour : les 3 plus récents (frais A en priorité)
+    fresh_jobs = [j for j in all_jobs if j.get('freshness_score') in ('A', 'B') and j.get('match_score', 0) >= 10]
+    jobs_of_day = []
+    if fresh_jobs:
+        jobs_of_day = sorted(fresh_jobs, key=lambda j: (-j.get('match_score', 0), -(j.get('freelance_score') or 0)))[:3]
+
     # Stats sources
     s_stats = src_stats(all_jobs)
     
@@ -396,6 +382,8 @@ def index():
         country_counts=country_counts,
         tous_jobs=all_jobs,
         top_matches=top_matches,
+        job_of_day=jobs_of_day[0] if jobs_of_day else None,
+        jobs_of_day=jobs_of_day,
         source_stats=s_stats,
         skills_gap=skills,
         version=get_version())

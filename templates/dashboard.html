@@ -24,6 +24,25 @@
             --red: #ff6b6b;
             --gold: #ffd93d;
             --blue: #54a0ff;
+            /* Section accent colors */
+            --sec-teal: #00d4aa;
+            --sec-teal-bg: rgba(0,212,170,0.04);
+            --sec-teal-border: rgba(0,212,170,0.15);
+            --sec-purple: #6c5ce7;
+            --sec-purple-bg: rgba(108,92,231,0.05);
+            --sec-purple-border: rgba(108,92,231,0.2);
+            --sec-green: #00d68f;
+            --sec-green-bg: rgba(0,214,143,0.04);
+            --sec-green-border: rgba(0,214,143,0.15);
+            --sec-blue: #54a0ff;
+            --sec-blue-bg: rgba(84,160,255,0.04);
+            --sec-blue-border: rgba(84,160,255,0.15);
+            --sec-orange: #ff9f43;
+            --sec-orange-bg: rgba(255,159,67,0.04);
+            --sec-orange-border: rgba(255,159,67,0.15);
+            --sec-gold: #ffd93d;
+            --sec-gold-bg: rgba(255,217,61,0.05);
+            --sec-gold-border: rgba(255,217,61,0.18);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -32,6 +51,7 @@
             color: var(--text);
             min-height: 100vh;
         }
+        /* Section containers */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -83,10 +103,109 @@
         /* Container */
         .container { max-width: 1200px; margin: 0 auto; padding: 24px 32px; }
 
-        /* Stats row */
+        /* Section wrapper for colored sections */
+        .section {
+            margin-bottom: 24px;
+            position: relative;
+        }
+        .section-inner {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px 20px;
+            transition: border-color 0.2s;
+        }
+        .section-inner:hover { border-color: rgba(108,92,231,0.2); }
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title .bar {
+            display: inline-block;
+            width: 3px;
+            height: 16px;
+            border-radius: 2px;
+        }
+        .section-title .bar.purple { background: var(--accent); }
+        .section-title .bar.green { background: var(--green); }
+        .section-title .bar.blue { background: var(--blue); }
+        .section-title .bar.gold { background: var(--gold); }
+        .section-title .bar.orange { background: var(--orange); }
+        /* Section containers with color accents */
+        .section-accent {
+            position: relative;
+            margin-bottom: 24px;
+            border-radius: 14px;
+            overflow: visible;
+        }
+        .section-accent::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 14px 14px 0 0;
+            z-index: 1;
+        }
+        .section-accent > *:first-child {
+            border-radius: 14px 14px 0 0;
+        }
+        .section-accent[data-color="teal"] { background: var(--sec-teal-bg); }
+        .section-accent[data-color="teal"]::before { background: linear-gradient(90deg, var(--sec-teal), #00f0c0); }
+        .section-accent[data-color="purple"] { background: var(--sec-purple-bg); }
+        .section-accent[data-color="purple"]::before { background: linear-gradient(90deg, var(--sec-purple), #a29bfe); }
+        .section-accent[data-color="green"] { background: var(--sec-green-bg); }
+        .section-accent[data-color="green"]::before { background: linear-gradient(90deg, var(--sec-green), #00f0a0); }
+        .section-accent[data-color="blue"] { background: var(--sec-blue-bg); }
+        .section-accent[data-color="blue"]::before { background: linear-gradient(90deg, var(--sec-blue), #7fb8ff); }
+        .section-accent[data-color="orange"] { background: var(--sec-orange-bg); }
+        .section-accent[data-color="orange"]::before { background: linear-gradient(90deg, var(--sec-orange), #ffb870); }
+        .section-accent[data-color="gold"] { background: var(--sec-gold-bg); }
+        .section-accent[data-color="gold"]::before { background: linear-gradient(90deg, var(--sec-gold), #ffe680); }
+
+        /* Section title accent bar */
+        .section-title-bar {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 18px 0;
+        }
+        .section-title-bar .bar {
+            display: inline-block;
+            width: 3px;
+            height: 16px;
+            border-radius: 2px;
+        }
+        .section-title-bar[data-color="teal"] { color: var(--sec-teal); }
+        .section-title-bar[data-color="teal"] .bar { background: var(--sec-teal); }
+        .section-title-bar[data-color="purple"] { color: var(--sec-purple); }
+        .section-title-bar[data-color="purple"] .bar { background: var(--sec-purple); }
+        .section-title-bar[data-color="green"] { color: var(--sec-green); }
+        .section-title-bar[data-color="green"] .bar { background: var(--sec-green); }
+        .section-title-bar[data-color="blue"] { color: var(--sec-blue); }
+        .section-title-bar[data-color="blue"] .bar { background: var(--sec-blue); }
+        .section-title-bar[data-color="orange"] { color: var(--sec-orange); }
+        .section-title-bar[data-color="orange"] .bar { background: var(--sec-orange); }
+        .section-title-bar[data-color="gold"] { color: var(--sec-gold); }
+        .section-title-bar[data-color="gold"] .bar { background: var(--sec-gold); }
+
+        /* Stats row accent */
         .stats-row {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
@@ -94,12 +213,63 @@
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: 10px;
-            padding: 10px 18px;
+            padding: 10px 16px;
             display: flex;
             align-items: center;
             gap: 10px;
             font-size: 13px;
+            transition: all 0.2s;
         }
+        .stat-chip:hover { border-color: rgba(108,92,231,0.25); background: var(--card-hover); }
+
+        /* Section titles with colored bars */
+        /* Top matches container */
+        .top-matches-section {
+            background: var(--sec-green-bg);
+            border: 1px solid var(--sec-green-border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            transition: border-color 0.2s;
+            position: relative;
+            overflow: visible;
+        }
+        .top-matches-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--sec-green), #00f0a0);
+            border-radius: 14px 14px 0 0;
+            z-index: 1;
+        }
+        .top-matches-section:hover { border-color: var(--green); }
+
+        /* Jobs listing area */
+        .jobs-listing-area {
+            background: var(--sec-blue-bg);
+            border: 1px solid var(--sec-blue-border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: visible;
+        }
+        .jobs-listing-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--sec-blue), #7fb8ff);
+            border-radius: 14px 14px 0 0;
+            z-index: 1;
+        }
+        .jobs-listing-area:hover { border-color: var(--blue); }
+        .jobs-listing-area .tabs { margin-top: 0; }
         .stat-chip .num {
             font-weight: 700;
             font-size: 16px;
@@ -255,25 +425,13 @@
         .tag-intl { background: rgba(108,92,231,0.15); color: var(--accent); }
 
         /* TJM indicator */
-        .tjm-box {
-            background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(162,155,254,0.05));
-            border: 1px solid rgba(108,92,231,0.25);
-            border-radius: 10px;
-            padding: 12px 18px;
-            margin: 16px 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            font-size: 13px;
-        }
-        .tjm-box .rate {
+        .section-accent[data-color="teal"] .rate {
             color: var(--green);
             font-weight: 700;
             font-family: 'JetBrains Mono', monospace;
             font-size: 15px;
         }
-        .tjm-box .label { color: var(--text-dim); }
+        .section-accent[data-color="teal"] .label { color: var(--text-dim); }
 
         /* Job cards */
         .job-list { margin-top: 16px; }
@@ -479,6 +637,154 @@
         }
         .toast.show { opacity: 1; transform: translateY(0); }
 
+        /* Pagination */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .page-btn {
+            min-width: 32px;
+            height: 32px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--card);
+            color: var(--text-dim);
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            padding: 0 8px;
+        }
+        .page-btn:hover { border-color: var(--accent); color: var(--text); }
+        .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .page-btn:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+        .page-info {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin: 0 6px;
+        }
+
+        /* Jobs du Jour */
+        .jobs-of-day {
+            background: var(--sec-purple-bg);
+            border: 1px solid var(--sec-purple-border);
+            border-radius: 14px;
+            margin-bottom: 20px;
+            padding: 0 0 16px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: visible;
+        }
+        .jobs-of-day::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--sec-purple), #a29bfe);
+            border-radius: 14px 14px 0 0;
+            z-index: 1;
+        }
+        .jobs-of-day:hover { border-color: var(--accent); box-shadow: 0 0 30px rgba(108,92,231,0.15); }
+        .jod-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px 0;
+        }
+        .jod-icon { font-size: 18px; }
+        .jod-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+        }
+        .jod-badge {
+            margin-left: auto;
+            font-size: 10px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #a29bfe);
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+        .jod-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 12px 16px 0;
+        }
+        .jod-card {
+            background: rgba(15,15,19,0.5);
+            border: 1px solid rgba(108,92,231,0.2);
+            border-radius: 12px;
+            padding: 14px;
+            text-decoration: none;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: all 0.25s;
+            position: relative;
+        }
+        .jod-card:hover { background: var(--card-hover); border-color: var(--accent); transform: translateY(-2px); }
+        .jod-card.viewed { opacity: 0.5; }
+        .jod-rank {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--accent);
+            opacity: 0.5;
+        }
+        .jod-card .jod-body { padding: 0; display: block; }
+        .jod-title { font-size: 14px; font-weight: 700; color: var(--text); }
+        .jod-match {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            background: var(--green);
+            color: #0f0f13;
+            padding: 1px 6px;
+            border-radius: 3px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .jod-card .jod-company { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
+        .jod-card .jod-meta {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        .jod-card .jod-skills { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 4px; }
+        .jod-card .jod-skills span {
+            background: rgba(0,214,143,0.1);
+            color: var(--green);
+            padding: 1px 6px;
+            border-radius: 8px;
+            font-size: 9px;
+        }
+        .jod-cta {
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent);
+            border-top: 1px solid rgba(108,92,231,0.15);
+            padding-top: 8px;
+            margin-top: auto;
+        }
+
         @media (max-width: 768px) {
             .container { padding: 12px 16px; }
             .header { padding: 10px 16px; }
@@ -509,6 +815,7 @@
 
 <div class="container">
     <!-- Stats row -->
+    <div class="section-accent" data-color="teal">
     <div class="stats-row">
         <div class="stat-chip">
             <span class="num">{{ stats.qa }}</span>
@@ -531,11 +838,48 @@
             <span>🤖 API Balance</span>
         </div>
     </div>
+    </div><!-- /section-accent teal -->
+
+    <!-- Jobs du Jour -->
+    {% if jobs_of_day %}
+    <div class="jobs-of-day">
+        <div class="jod-header">
+            <span class="jod-icon">🌟</span>
+            <span class="jod-label">Jobs du Jour</span>
+            <span class="jod-badge">{{ jobs_of_day|length }} fraîches</span>
+        </div>
+        <div class="jod-grid">
+        {% for job in jobs_of_day %}
+        <a href="{{ job.url }}" target="_blank" class="jod-card" onclick="fetch('/api/job/{{ job.id }}/click');this.closest('.jod-card').classList.add('viewed')">
+            <div class="jod-rank">#{{ loop.index }}</div>
+            <div class="jod-body">
+                <div class="jod-title">
+                    {{ job.title }}
+                    <span class="jod-match">{{ job.match_score }}%</span>
+                </div>
+                <div class="jod-company">{{ job.company }}</div>
+                <div class="jod-meta">
+                    <span>📍 {{ job.location }}</span>
+                    {% if job.remote_type %}<span class="job-chip chip-{{ job.remote_type|lower }}">{{ job.remote_type }}</span>{% endif %}
+                    {% if job.salary %}<span>💰 {{ job.salary }}</span>{% endif %}
+                    <span>📅 {{ job.date }}</span>
+                    <span class="job-source">{{ job.source }}</span>
+                </div>
+                {% if job.matched_skills %}
+                <div class="jod-skills">{% for s in job.matched_skills %}<span>{{ s }}</span>{% endfor %}</div>
+                {% endif %}
+            </div>
+            <div class="jod-cta">Postuler ↗</div>
+        </a>
+        {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Top matches section -->
     {% if top_matches %}
-    <div style="margin-bottom:16px;">
-        <div style="font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:8px;">🎯 Top matches CV</div>
+    <div class="top-matches-section">
+    <div class="section-title"><span class="bar green"></span> 🎯 Top matches CV</div>
         <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;">
             {% for j in top_matches[:6] %}
             <a href="/cover-letter/{{ j.id }}" style="flex:0 0 200px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--text);transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
@@ -548,8 +892,7 @@
         </div>
     </div>
     {% endif %}
-
-    <!-- Remote mode filter -->
+    <div class="jobs-listing-area">
     <div class="remote-filter">
         <button class="rm-btn active" data-rm="all">🌐 Tous</button>
         <button class="rm-btn" data-rm="remote">🌍 Remote</button>
@@ -579,7 +922,7 @@
     {% for country_id, country_data in countries.items() %}
     <div class="tab-panel {% if loop.first %}active{% endif %}" id="panel-{{ country_id }}">
         <!-- TJM indicator + hack -->
-        <div class="tjm-box">
+        <div class="section-accent" data-color="teal" style="padding: 12px 18px; margin: 16px 0; font-size: 13px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
             <span class="label">💶 TJM indicatif {{ country_data.flag }}</span>
             <span class="rate">{{ country_data.tjm }}</span>
             <span style="color:var(--text-dim);margin-left:4px;">—</span>
@@ -587,8 +930,9 @@
         </div>
 
         <!-- Platform cards -->
+        <div class="section-accent" data-color="orange" style="padding: 12px 12px 8px; border: 1px solid var(--sec-orange-border); border-radius: 12px; margin: 12px 0;">
         <div style="font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:8px;">📌 Plateformes QA recommandées</div>
-        <div class="platforms-row">
+        <div class="platforms-row" style="margin-top:0;">
             {% for platform in country_data.platforms %}
             <div class="platform-card">
                 <div class="p-name">
@@ -599,9 +943,9 @@
             </div>
             {% endfor %}
         </div>
-
+        </div><!-- /section-accent orange -->
         {% if country_data.tips %}
-        <div style="background:rgba(255,217,61,0.06);border:1px solid rgba(255,217,61,0.2);border-radius:10px;padding:12px 16px;margin:12px 0 16px;font-size:12px;color:var(--gold);">
+        <div class="section-accent" data-color="gold" style="padding: 12px 16px; margin: 12px 0 16px; font-size: 12px; color: var(--gold);">
             💡 {{ country_data.tips }}
         </div>
         {% endif %}
@@ -614,7 +958,7 @@
             {% endif %}
         </div>
 
-        <div class="job-list">
+        <div class="job-list paginated-list" data-per-page="3">
             {% if country_data.jobs %}
             {% for job in country_data.jobs %}
             <div class="job-card {% if job.applied %}applied{% endif %} {% if job.viewed %}viewed{% endif %}" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}">
@@ -690,11 +1034,13 @@
             </div>
             {% endif %}
         </div>
+        <!-- Pagination controls -->
+        <div class="pagination" data-panel="{{ country_id }}"></div>
     </div>
     {% endfor %}
     <!-- Tous panel -->
     <div class="tab-panel {% if countries|length == 0 %}active{% endif %}" id="panel-tous">
-        <div class="job-list">
+        <div class="job-list paginated-list" data-per-page="3">
             {% if tous_jobs %}
             {% for job in tous_jobs %}
             <div class="job-card {% if job.applied %}applied{% endif %} {% if job.viewed %}viewed{% endif %}" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}">
@@ -765,10 +1111,14 @@
             </div>
             {% endif %}
         </div>
+        <!-- Pagination controls -->
+        <div class="pagination" data-panel="tous"></div>
     </div>
+</div>
 </div>
 
 <!-- LinkedIn panel -->
+<div class="section-accent" data-color="blue" style="padding: 16px 0;">
 <div class="tab-panel" id="panel-linkedin">
     <div class="container" style="padding:16px 0;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
@@ -780,6 +1130,7 @@
         </div>
     </div>
 </div>
+</div><!-- /section-accent blue -->
 
 <!-- Footer -->
 <div style="text-align:center;padding:24px 32px;font-size:11px;color:var(--text-muted);border-top:1px solid var(--border-subtle);margin-top:32px;">
@@ -814,7 +1165,7 @@
         return 'onsite';
     }
     function filterRemote(mode) {
-        document.querySelectorAll('.rm-btn').forEach(b => b.classList.toggle('active', b.dataset.rm === mode));
+        document.querySelectorAll('[data-rm]').forEach(b => b.classList.toggle('active', b.dataset.rm === mode));
         const activePanel = document.querySelector('.tab-panel.active');
         if (!activePanel) return;
         const freshBtn = document.querySelector('[data-fresh].active');
@@ -829,14 +1180,14 @@
             card.classList.toggle('filtered-in', match);
         });
     }
-    document.querySelectorAll('.rm-btn').forEach(btn => {
+    document.querySelectorAll('[data-rm]').forEach(btn => {
         btn.addEventListener('click', () => filterRemote(btn.dataset.rm));
     });
     // Re-filter when tab changes
     document.querySelectorAll('.tab-btn').forEach(tab => {
         tab.addEventListener('click', function() {
             setTimeout(() => {
-                const activeRm = document.querySelector('.rm-btn.active');
+                const activeRm = document.querySelector('[data-rm].active');
                 if (activeRm) filterRemote(activeRm.dataset.rm);
                 const activeFresh = document.querySelector('[data-fresh].active');
                 if (activeFresh) filterFreshness(activeFresh.dataset.fresh);
@@ -849,16 +1200,15 @@
         document.querySelectorAll('[data-fresh]').forEach(b => b.classList.toggle('active', b.dataset.fresh === fresh));
         const activePanel = document.querySelector('.tab-panel.active');
         if (!activePanel) return;
+        const rmBtn = document.querySelector('[data-rm].active');
+        const rmMode = rmBtn ? rmBtn.dataset.rm : 'all';
         activePanel.querySelectorAll('.job-card').forEach(card => {
             const f = card.dataset.freshness || 'D';
-            const match = (fresh === 'all') || (fresh === f);
-            // Combine with remote filter: card stays visible if BOTH filters pass
-            const rmBtn = document.querySelector('.rm-btn.active');
-            const rmMode = rmBtn ? rmBtn.dataset.rm : 'all';
+            const freshMatch = (fresh === 'all') || (fresh === f);
             const rmType = detectRemoteType(card);
             const rmMatch = (rmMode === 'all') || (rmMode === rmType);
-            card.classList.toggle('filtered-out', !(match && rmMatch));
-            card.classList.toggle('filtered-in', match && rmMatch);
+            card.classList.toggle('filtered-out', !(freshMatch && rmMatch));
+            card.classList.toggle('filtered-in', freshMatch && rmMatch);
         });
     }
     document.querySelectorAll('[data-fresh]').forEach(btn => {
@@ -878,6 +1228,125 @@
                 const badge = this.querySelector('.new-badge');
                 if (badge) badge.remove();
             }
+        });
+    });
+
+    // Pagination: show 3 cards per page
+    const PER_PAGE = 3;
+    function initPagination(panelId) {
+        const panel = document.getElementById(panelId);
+        if (!panel) return;
+        const list = panel.querySelector('.paginated-list');
+        const paginationEl = panel.querySelector('.pagination');
+        if (!list || !paginationEl) return;
+        const cards = Array.from(list.querySelectorAll('.job-card'));
+        const totalPages = Math.max(1, Math.ceil(cards.length / PER_PAGE));
+        let currentPage = parseInt(paginationEl.dataset.page || '1');
+        if (currentPage > totalPages) currentPage = 1;
+
+        function showPage(page) {
+            currentPage = page;
+            paginationEl.dataset.page = page;
+            cards.forEach((card, i) => {
+                const shouldShow = Math.floor(i / PER_PAGE) === page - 1;
+                card.style.display = shouldShow ? '' : 'none';
+            });
+            renderPagination();
+            // Re-apply filters on new page
+            const rmBtn = document.querySelector('[data-rm].active');
+            const rmMode = rmBtn ? rmBtn.dataset.rm : 'all';
+            const freshBtn = document.querySelector('[data-fresh].active');
+            const freshMode = freshBtn ? freshBtn.dataset.fresh : 'all';
+            if (rmMode !== 'all' || freshMode !== 'all') {
+                const visible = panel.querySelectorAll('.job-card[style*="display: block"], .job-card:not([style*="display"])');
+                visible.forEach(card => {
+                    const rmType = detectRemoteType(card);
+                    const rmMatch = (rmMode === 'all') || (rmMode === rmType);
+                    const f = card.dataset.freshness || 'D';
+                    const freshMatch = (freshMode === 'all') || (freshMode === f);
+                    const match = rmMatch && freshMatch;
+                    card.classList.toggle('filtered-out', !match);
+                    card.classList.toggle('filtered-in', match);
+                });
+            }
+        }
+
+        function renderPagination() {
+            paginationEl.innerHTML = '';
+            if (totalPages <= 1) return;
+            // Prev
+            const prev = document.createElement('button');
+            prev.className = 'page-btn';
+            prev.textContent = '‹';
+            prev.disabled = currentPage <= 1;
+            prev.onclick = () => showPage(currentPage - 1);
+            paginationEl.appendChild(prev);
+            // Page numbers
+            const maxVisible = 5;
+            let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let end = Math.min(totalPages, start + maxVisible - 1);
+            if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+            if (start > 1) {
+                const first = document.createElement('button');
+                first.className = 'page-btn';
+                first.textContent = '1';
+                first.onclick = () => showPage(1);
+                paginationEl.appendChild(first);
+                if (start > 2) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-info';
+                    dots.textContent = '…';
+                    paginationEl.appendChild(dots);
+                }
+            }
+            for (let i = start; i <= end; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+                btn.textContent = i;
+                btn.onclick = () => showPage(i);
+                paginationEl.appendChild(btn);
+            }
+            if (end < totalPages) {
+                if (end < totalPages - 1) {
+                    const dots = document.createElement('span');
+                    dots.className = 'page-info';
+                    dots.textContent = '…';
+                    paginationEl.appendChild(dots);
+                }
+                const last = document.createElement('button');
+                last.className = 'page-btn';
+                last.textContent = totalPages;
+                last.onclick = () => showPage(totalPages);
+                paginationEl.appendChild(last);
+            }
+            // Next
+            const next = document.createElement('button');
+            next.className = 'page-btn';
+            next.textContent = '›';
+            next.disabled = currentPage >= totalPages;
+            next.onclick = () => showPage(currentPage + 1);
+            paginationEl.appendChild(next);
+            // Info
+            const info = document.createElement('span');
+            info.className = 'page-info';
+            const startNum = (currentPage - 1) * PER_PAGE + 1;
+            const endNum = Math.min(currentPage * PER_PAGE, cards.length);
+            info.textContent = `${startNum}-${endNum} / ${cards.length}`;
+            paginationEl.appendChild(info);
+        }
+
+        showPage(currentPage);
+    }
+
+    // Init all country panels + tous
+    document.querySelectorAll('.tab-panel[id^="panel-"]').forEach(p => {
+        if (p.id !== 'panel-linkedin') initPagination(p.id);
+    });
+    // Re-init on tab switch
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const panelId = 'panel-' + this.dataset.tab;
+            setTimeout(() => initPagination(panelId), 60);
         });
     });
 
