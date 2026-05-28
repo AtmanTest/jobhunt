@@ -355,7 +355,7 @@ def refresh():
     return redirect(url_for("index"))
 
 
-@app.route("/api/refresh", methods=["POST"])
+@app.route("/api/refresh", methods=["GET", "POST"])
 def api_refresh():
     """API endpoint to trigger refresh."""
     def do_scrape():
