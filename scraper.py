@@ -838,6 +838,11 @@ def init_db():
         ("ai_enriched", "INTEGER DEFAULT 0"),
         ("saved", "INTEGER DEFAULT 0"),
         ("viewed", "INTEGER DEFAULT 0"),
+        ("freelance_status", "TEXT"),
+        ("freelance_score", "INTEGER DEFAULT 0"),
+        ("duration_info", "TEXT"),
+        ("budget_info", "TEXT"),
+        ("source_publish_date", "TEXT"),
         ("applied_at", "DATETIME"),
     ]
     for col_name, col_type in new_columns:
@@ -855,6 +860,253 @@ def init_db():
 
     conn.commit()
     conn.close()
+
+
+
+
+
+# ─── Freelance Classifier ──────────────────────────────────────────
+
+FREELANCE_KEYWORDS = [
+    "freelance", "freelancer", "free-lance", "free lance",
+    "mission", "independan", "consultant", "contractor", "contracting",
+    "regie", "prestation", "prestataire", "extern", "externalisation",
+    "tjm", "/jour", "per day", "/day", "daily rate",
+    "sasu", "portage", "salaire en mission",
+]
+
+CDI_KEYWORDS = [
+    "cdi", "permanent", "full-time", "full time", "employe permanent",
+    "indetermine", "indéterminé", "temps plein", "en cdi",
+    "poste fixe", "salarie", "salarié",
+]
+
+CDD_KEYWORDS = [
+    "cdd", "fixed-term", "fixed term", "duree determinee", "durée déterminée",
+    "temporaire", "temporary", "contrat court",
+]
+
+STAGE_KEYWORDS = [
+    "stage", "intern", "internship", "alternance", "apprenti",
+    "apprenticeship", "junior", "debutant", "débutant",
+]
+
+EXCLUDE_KEYWORDS = [
+    "cdi", "cdd", "stage", "intern", "alternance", "apprenti",
+    "interim", "intérim", "salarie", "salarié",
+    "employee", "temps plein", "full time employee",
+]
+
+REMOTE_KEYWORDS = {
+    "remote": ["remote", "full remote", "full-remote", "work from home",
+               "work-from-home", "wfh", "home office", "100% remote",
+               "100% tele", "a distance", "à distance", "telework",
+               "teleworking", "telecommute", "teletravail", "télétravail",
+               "100% distanciel", "distanciel"],
+    "hybrid": ["hybrid", "hybride", "mixte", "presentiel partiel",
+               "partiellement", "2 jours", "3 jours", "2-3 jours"],
+    "onsite": ["on-site", "on site", "sur site", "sur place",
+               "presentiel", "présentiel", "site based",
+               "en agence", "au bureau"],
+}
+
+REMOTE_OVERRIDE_LOCATIONS = {
+    "à distance": "remote", "a distance": "remote",
+    "remote": "remote", "100% remote": "remote",
+    "télétravail": "remote", "teletravail": "remote",
+    "full remote": "remote",
+}
+
+
+def detect_remote_type(location, title, description=""):
+    """Detect if job is remote/hybrid/onsite."""
+    text = f"{location} {title} {description}".lower()
+    
+    for rtype, keywords in REMOTE_KEYWORDS.items():
+        for kw in keywords:
+            if kw in text:
+                return rtype
+    
+    # Check location override
+    for loc_val, result in REMOTE_OVERRIDE_LOCATIONS.items():
+        if loc_val in location.lower():
+            return result
+    
+    # Default: look for location hints
+    if not location or location.strip() in ("", "-", "N/A"):
+        return "remote"  # No location specified = assume remote
+    if location.lower() in ("france", "france métropolitaine", "national"):
+        return "remote"
+    
+    return ""  # Unknown
+
+
+def detect_contract_type(title, description=""):
+    """Detect freelance vs CDI vs CDD vs stage."""
+    text = f"{title} {description}".lower()
+    
+    # First check for explicit "freelance ou CDI" which is ambiguous
+    if "freelance ou cdi" in text or "freelance or permanent" in text:
+        return "ambigüe", None
+    
+    # Score-based detection
+    score = 0
+    detected_type = None
+    
+    for kw in FREELANCE_KEYWORDS:
+        if kw in text:
+            score += 2
+    for kw in CDI_KEYWORDS:
+        if kw in text:
+            score -= 3
+    for kw in CDD_KEYWORDS:
+        if kw in text:
+            score -= 2
+    for kw in STAGE_KEYWORDS:
+        if kw in text:
+            score -= 4
+    
+    if score >= 2:
+        return "mission/freelance", score
+    elif score <= -2:
+        if "stage" in text or "alternance" in text or "intern" in text:
+            return "stage/alternance", score
+        if "cdd" in text or "temporaire" in text:
+            return "cdd", score
+        return "cdi (rejeté)", score
+    elif score >= 0:
+        return "ambigüe", score
+    else:
+        return "probablement cdi (à vérifier)", score
+
+
+def detect_linkedin_date(card):
+    """Try to extract real posting date from LinkedIn card."""
+    try:
+        # LinkedIn often has time-ago text like "il y a 2 heures", "3 days ago"
+        time_el = card.select_one("time, .job-search-card__listdate, [datetime], .posting-date")
+        if time_el:
+            datetime_attr = time_el.get("datetime", "")
+            if datetime_attr:
+                return datetime_attr[:10]  # YYYY-MM-DD
+            text = time_el.get_text(strip=True)
+            # Parse relative dates
+            now = int(time.time())
+            text_lower = text.lower()
+            if "heure" in text_lower or "hour" in text_lower:
+                hours = int(re.search(r"\d+", text).group()) if re.search(r"\d+", text) else 1
+                return datetime.fromtimestamp(now - hours * 3600).strftime("%Y-%m-%d")
+            if "jour" in text_lower or "day" in text_lower or "día" in text_lower:
+                days = int(re.search(r"\d+", text).group()) if re.search(r"\d+", text) else 1
+                return datetime.fromtimestamp(now - days * 86400).strftime("%Y-%m-%d")
+            if "semaine" in text_lower or "week" in text_lower:
+                weeks = int(re.search(r"\d+", text).group()) if re.search(r"\d+", text) else 1
+                return datetime.fromtimestamp(now - weeks * 604800).strftime("%Y-%m-%d")
+            if "mois" in text_lower or "month" in text_lower:
+                months = int(re.search(r"\d+", text).group()) if re.search(r"\d+", text) else 1
+                return datetime.fromtimestamp(now - months * 2592000).strftime("%Y-%m-%d")
+    except:
+        pass
+    return None
+
+
+def classify_freelance_job(job):
+    """Classify a job as freelance VALIDÉE, AMBIGUË, or REJETÉE.
+    Returns dict with freelance_status, freelance_score, contract_type_fr, remote_type, duration_info, budget_info, source_publish_date
+    """
+    title = job.get("title", "")
+    description = job.get("description", "")
+    location = job.get("location", "")
+    salary = job.get("salary", "")
+    source = job.get("source", "")
+    
+    # Detect contract type
+    contract_type, c_score = detect_contract_type(title, description)
+    if contract_type is None and c_score is None:
+        contract_type = "ambigüe"
+        c_score = 0
+    
+    # Detect remote type
+    remote_type = detect_remote_type(location, title, description)
+    
+    # Adjust location if remote detected
+    if remote_type == "remote" and location and "france" not in location.lower() and "remote" not in location.lower():
+        # If remote but location only has a city name
+        location_display = f"{location} (remote)"
+    elif remote_type == "remote":
+        location_display = location or "Remote"
+    else:
+        location_display = location
+    
+    # Calculate score
+    score = c_score
+    # Bonus for explicit freelance indicators
+    text_lower = f"{title} {description} {salary}".lower()
+    if "/jour" in text_lower or "tjm" in text_lower:
+        score += 3
+    if "mission" in title.lower():
+        score += 2
+    if "freelance" in title.lower():
+        score += 3
+    if "consultant" in title.lower():
+        score += 1
+    if "sasu" in text_lower or "portage" in text_lower:
+        score += 2
+    
+    # Penalty for explicit permanent indicators
+    for kw in CDI_KEYWORDS:
+        if kw in title.lower():
+            score -= 4
+    
+    # Determine status
+    if score >= 3:
+        status = "VALIDÉE"
+    elif score >= 0:
+        # Check for ambiguous patterns
+        if "freelance ou cdi" in text_lower or "freelance or permanent" in text_lower:
+            status = "AMBIGUË"
+        else:
+            status = "VALIDÉE" if score >= 1 else "AMBIGUË"
+    else:
+        status = "REJETÉE"
+    
+    if contract_type in ("stage/alternance", "cdi (rejeté)"):
+        status = "REJETÉE"
+    elif contract_type == "cdd" and score < 0:
+        status = "REJETÉE"
+    
+    # Extract budget/TJM info
+    budget_info = ""
+    if salary:
+        budget_info = salary
+    elif re.search(r"\d+\s*[-àà]\s*\d+\s*(€|eur|chf|usd|sgd)", text_lower):
+        match = re.search(r"(\d+\s*[-àà]\s*\d+\s*(€|eur|chf|usd|sgd)?/?(jour|day|h|hr)?)", text_lower, re.IGNORECASE)
+        if match:
+            budget_info = match.group(0)
+    
+    # Extract duration info
+    duration_info = ""
+    dur_patterns = [
+        r"(\d+\s*(mois|months|semaines|weeks|ans|years|an))",
+        r"dur[ée]e.*?\d+.*?(mois|semaines|ans)",
+        r"mission.*?\d+.*?(mois|semaines)",
+        r"(\d+)\s*(-|à|to)\s*(\d+)\s*(mois|months)",
+    ]
+    for p in dur_patterns:
+        m = re.search(p, text_lower)
+        if m:
+            duration_info = m.group(0)
+            break
+    
+    return {
+        "freelance_status": status,
+        "freelance_score": min(score, 10),  # Cap at 10
+        "contract_type_fr": contract_type,
+        "remote_type": remote_type,
+        "duration_info": duration_info,
+        "budget_info": budget_info,
+        "source_publish_date": "",
+    }
 
 
 def save_jobs(jobs):
@@ -884,24 +1136,39 @@ def save_jobs(jobs):
         if not is_qa:
             is_qa = 1 if any(k in tags_lower for k in tag_keywords) else 0
         
+        # Run freelance classifier
+        classification = classify_freelance_job(job)
+        freelance_status = classification["freelance_status"]
+        freelance_score = classification["freelance_score"]
+        duration_info = classification.get("duration_info", "")
+        budget_info = classification.get("budget_info", "")
+        
+        # Skip rejected jobs
+        if freelance_status == "REJETÉE":
+            continue
+        
         try:
             cursor.execute("""
                 INSERT OR IGNORE INTO jobs
                 (title, company, source, url, location, salary, tags, 
                  description, date, raw_date, is_qa,
                  tech_stack, seniority, contract_type, remote_type,
-                 salary_min, salary_max, currency, ai_enriched, saved)
+                 salary_min, salary_max, currency, ai_enriched, saved,
+                 freelance_status, freelance_score, duration_info, budget_info)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                        ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?)
             """, (
                 job["title"], job["company"], job["source"], job["url"],
                 job["location"], job["salary"], job["tags"],
                 job["description"], job["date"], job["raw_date"], is_qa,
                 job.get("tech_stack"), job.get("seniority"),
-                job.get("contract_type"), job.get("remote_type"),
+                classification.get("contract_type_fr", job.get("contract_type")),
+                classification.get("remote_type", job.get("remote_type")),
                 job.get("salary_min"), job.get("salary_max"),
                 job.get("currency"), job.get("ai_enriched", 0),
-                job.get("saved", 0)
+                job.get("saved", 0),
+                freelance_status, freelance_score, duration_info, budget_info
             ))
             if cursor.rowcount > 0:
                 new_count += 1

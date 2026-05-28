@@ -254,6 +254,43 @@
             50% { opacity: 0.6; }
         }
         .job-card.viewed .new-badge { display: none; }
+        .status-badge {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+        .status-validee { background: rgba(0,214,143,0.2); color: var(--green); }
+        .status-ambigue { background: rgba(255,159,67,0.2); color: var(--orange); }
+        .status-rejetee { background: rgba(255,107,107,0.2); color: var(--red); }
+        .job-chip {
+            display: inline-block;
+            font-size: 9px;
+            padding: 1px 6px;
+            border-radius: 3px;
+            margin-right: 4px;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+        .chip-remote { border-color: var(--blue); color: var(--blue); }
+        .chip-hybrid { border-color: var(--gold); color: var(--gold); }
+        .chip-onsite { border-color: var(--orange); color: var(--orange); }
+        .score-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .score-high { background: rgba(0,214,143,0.2); color: var(--green); }
+        .score-mid { background: rgba(255,159,67,0.2); color: var(--orange); }
+        .score-low { background: rgba(255,107,107,0.2); color: var(--red); }
         .job-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
         .job-title {
             font-size: 14px;
@@ -460,11 +497,21 @@
                             {{ job.title }}
                             {% if not job.viewed %}<span class="new-badge">Nouveau</span>{% endif %}
                             {% if job.is_qa %}<span class="qa-badge">QA</span>{% endif %}
+                            {% if job.freelance_status %}
+                            <span class="status-badge status-{{ job.freelance_status|lower }}">{{ job.freelance_status }}</span>
+                            {% endif %}
+                            {% if job.freelance_score %}
+                            <span class="score-circle {% if job.freelance_score >= 7 %}score-high{% elif job.freelance_score >= 3 %}score-mid{% else %}score-low{% endif %}">{{ job.freelance_score }}/10</span>
+                            {% endif %}
                         </div>
                         <div class="job-company">{{ job.company }}</div>
                         <div class="job-meta">
                             <span>📍 {{ job.location }}</span>
+                            {% if job.remote_type %}<span class="job-chip chip-{{ job.remote_type }}">{{ job.remote_type }}</span>{% endif %}
+                            {% if job.contract_type %}<span class="job-chip">{{ job.contract_type }}</span>{% endif %}
                             {% if job.salary %}<span>💰 {{ job.salary }}</span>{% endif %}
+                            {% if job.budget_info %}<span>💶 {{ job.budget_info }}</span>{% endif %}
+                            {% if job.duration_info %}<span>⏱ {{ job.duration_info }}</span>{% endif %}
                             <span>📅 {{ job.date }}</span>
                             <span class="job-source">{{ job.source }}</span>
                         </div>
@@ -513,11 +560,21 @@
                             {{ job.title }}
                             {% if not job.viewed %}<span class="new-badge">Nouveau</span>{% endif %}
                             {% if job.is_qa %}<span class="qa-badge">QA</span>{% endif %}
+                            {% if job.freelance_status %}
+                            <span class="status-badge status-{{ job.freelance_status|lower }}">{{ job.freelance_status }}</span>
+                            {% endif %}
+                            {% if job.freelance_score %}
+                            <span class="score-circle {% if job.freelance_score >= 7 %}score-high{% elif job.freelance_score >= 3 %}score-mid{% else %}score-low{% endif %}">{{ job.freelance_score }}/10</span>
+                            {% endif %}
                         </div>
                         <div class="job-company">{{ job.company }}</div>
                         <div class="job-meta">
                             <span>📍 {{ job.location }}</span>
+                            {% if job.remote_type %}<span class="job-chip chip-{{ job.remote_type }}">{{ job.remote_type }}</span>{% endif %}
+                            {% if job.contract_type %}<span class="job-chip">{{ job.contract_type }}</span>{% endif %}
                             {% if job.salary %}<span>💰 {{ job.salary }}</span>{% endif %}
+                            {% if job.budget_info %}<span>💶 {{ job.budget_info }}</span>{% endif %}
+                            {% if job.duration_info %}<span>⏱ {{ job.duration_info }}</span>{% endif %}
                             <span>📅 {{ job.date }}</span>
                             <span class="job-source">{{ job.source }}</span>
                         </div>

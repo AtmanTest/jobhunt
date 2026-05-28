@@ -311,8 +311,10 @@ def filter_jobs_by_country(country_id):
     query = f"""
         SELECT * FROM jobs 
         WHERE ({placeholders})
-        AND (contract_type IS NULL OR contract_type IN ('contract', 'freelance', 'contracting'))
-        ORDER BY raw_date DESC, date DESC LIMIT 50
+        AND (freelance_status IS NULL OR freelance_status IN ('VALIDÉE', 'AMBIGUË'))
+        ORDER BY 
+            CASE freelance_status WHEN 'VALIDÉE' THEN 0 ELSE 1 END,
+            raw_date DESC, date DESC LIMIT 100
     """
     cursor = conn.execute(query, params)
     jobs = [dict(r) for r in cursor.fetchall()]
