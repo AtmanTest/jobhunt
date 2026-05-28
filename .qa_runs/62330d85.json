@@ -1,0 +1,1 @@
+{"run_id": "62330d85", "status": "failed", "passed": 0, "failed": 0, "skipped": 0, "total": 0, "output": "'str' object has no attribute 'returncode'", "duration": 0, "timestamp": "2026-05-28T11:56:07.197027"}
