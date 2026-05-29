@@ -208,9 +208,30 @@ def _populate_from_github():
 # Initialize DB on import (needed for gunicorn on Render)
 init_db()
 
-# On Render: populate DB from GitHub if empty
-if ON_RENDER:
+
+DB_POPULATED = False
+
+
+def _ensure_db_populated():
+    """Lazy populate DB from GitHub on first request if on Render."""
+    global DB_POPULATED
+    if DB_POPULATED:
+        return
+    if not (os.environ.get("RENDER") or not os.path.exists(DB_PATH)):
+        DB_POPULATED = True
+        return
+    # Check if DB has data
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cnt = conn.execute("SELECT COUNT(*) FROM jobs").fetchone()[0]
+        conn.close()
+        if cnt > 0:
+            DB_POPULATED = True
+            return
+    except:
+        pass
     _populate_from_github()
+    DB_POPULATED = True
 
 
 def get_db():
@@ -368,6 +389,7 @@ def filter_jobs_by_country(country_id):
 
 @app.route("/")
 def index():
+    _ensure_db_populated()
     stats = get_stats()
 
     # Build country data with jobs
