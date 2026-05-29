@@ -1007,12 +1007,27 @@ def api_cv():
 
 @app.route("/about")
 def about():
+    import subprocess
+    log_entries = []
+    try:
+        r = subprocess.run(
+            ["git", "log", "--oneline", "--format=%H|%s|%ar", "-30"],
+            capture_output=True, text=True, timeout=5,
+            cwd=os.path.dirname(__file__),
+        )
+        for line in r.stdout.strip().split("\n"):
+            if "|" in line:
+                parts = line.split("|", 2)
+                log_entries.append({"hash": parts[0][:7], "msg": parts[1], "date": parts[2] if len(parts) > 2 else ""})
+    except:
+        pass
     return render_template("about.html",
         version=get_version(),
         commit=get_git_commit(),
         tag=get_git_tag(),
         dirty=is_dirty(),
-        db_schema=DB_SCHEMA_VERSION)
+        db_schema=DB_SCHEMA_VERSION,
+        log_entries=log_entries)
 
 
 @app.route("/changelog")
