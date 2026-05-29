@@ -115,6 +115,7 @@ CV = {
         "Environments": "Android, iOS, Web, Windows, Linux, macOS",
         "Tools": "Confluence, ServiceNow, Redmine, Dynatrace, Tuleap",
         "Other": "SAP HANA, AutoIT, Agile/Scrum, SAFe, SDLC, UAT",
+        "Agentic IA": "Hermes Agent, ClawBot, Claude Code, Codex CLI, DeepSeek API, Prompt Engineering, LLM orchestration, MCP, Multi-agent orchestration, Agent-driven QA pipelines",
     },
     "languages": ["Français (native)", "English (fluent)"],
 }
