@@ -908,6 +908,13 @@
         <button class="rm-btn" data-fresh="C">📅 &lt;7j</button>
     </div>
 
+    <!-- Zone filter: France only toggle -->
+    <div class="remote-filter" id="loc-filter-row" style="margin-top:6px;">
+        <button class="rm-btn active" data-loc="all">🇫🇷 Toute la France</button>
+        <button class="rm-btn" data-loc="idf">🏙️ Île-de-France</button>
+        <button class="rm-btn" data-loc="province">🌿 Province</button>
+    </div>
+
     <!-- Country tabs -->
     <div class="tabs" id="tabs">
         <button class="tab-btn active" data-tab="france">🇫🇷 France <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'france')|map(attribute='count')|first }}</span></button>
@@ -1148,6 +1155,20 @@
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             const panel = document.getElementById('panel-' + this.dataset.tab);
             if (panel) panel.classList.add('active');
+            // Show IDF filter row only when France tab is active
+            const locRow = document.getElementById('loc-filter-row');
+            if (locRow) {
+                if (this.dataset.tab === 'france') {
+                    locRow.style.display = '';
+                } else {
+                    locRow.style.display = 'none';
+                    // Reset location filter to 'all'
+                    const activeLoc = document.querySelector('[data-loc].active');
+                    if (activeLoc && activeLoc.dataset.loc !== 'all') {
+                        filterLocation('all');
+                    }
+                }
+            }
             // Load LinkedIn jobs when that tab is clicked
             if (this.dataset.tab === 'linkedin') loadLinkedInJobs();
         });
@@ -1170,15 +1191,21 @@
         if (!activePanel) return;
         const freshBtn = document.querySelector('[data-fresh].active');
         const freshMode = freshBtn ? freshBtn.dataset.fresh : 'all';
+        const locBtn = document.querySelector('[data-loc].active');
+        const locMode = locBtn ? locBtn.dataset.loc : 'all';
         activePanel.querySelectorAll('.job-card').forEach(card => {
             const type = detectRemoteType(card);
             const rmMatch = (mode === 'all') || (mode === type);
             const f = card.dataset.freshness || 'D';
             const freshMatch = (freshMode === 'all') || (freshMode === f);
-            const match = rmMatch && freshMatch;
+            const zone = detectLocationZone(card);
+            const locMatch = (locMode === 'all') || (locMode === zone);
+            const match = rmMatch && freshMatch && locMatch;
             card.classList.toggle('filtered-out', !match);
             card.classList.toggle('filtered-in', match);
         });
+        // Re-init pagination
+        if (activePanel && activePanel.id) initPagination(activePanel.id);
     }
     document.querySelectorAll('[data-rm]').forEach(btn => {
         btn.addEventListener('click', () => filterRemote(btn.dataset.rm));
@@ -1191,6 +1218,8 @@
                 if (activeRm) filterRemote(activeRm.dataset.rm);
                 const activeFresh = document.querySelector('[data-fresh].active');
                 if (activeFresh) filterFreshness(activeFresh.dataset.fresh);
+                const activeLoc = document.querySelector('[data-loc].active');
+                if (activeLoc) filterLocation(activeLoc.dataset.loc);
             }, 50);
         });
     });
@@ -1202,17 +1231,77 @@
         if (!activePanel) return;
         const rmBtn = document.querySelector('[data-rm].active');
         const rmMode = rmBtn ? rmBtn.dataset.rm : 'all';
+        const locBtn = document.querySelector('[data-loc].active');
+        const locMode = locBtn ? locBtn.dataset.loc : 'all';
         activePanel.querySelectorAll('.job-card').forEach(card => {
             const f = card.dataset.freshness || 'D';
             const freshMatch = (fresh === 'all') || (fresh === f);
             const rmType = detectRemoteType(card);
             const rmMatch = (rmMode === 'all') || (rmMode === rmType);
-            card.classList.toggle('filtered-out', !(freshMatch && rmMatch));
-            card.classList.toggle('filtered-in', freshMatch && rmMatch);
+            const zone = detectLocationZone(card);
+            const locMatch = (locMode === 'all') || (locMode === zone);
+            const match = freshMatch && rmMatch && locMatch;
+            card.classList.toggle('filtered-out', !match);
+            card.classList.toggle('filtered-in', match);
         });
+        // Re-init pagination
+        if (activePanel && activePanel.id) initPagination(activePanel.id);
     }
     document.querySelectorAll('[data-fresh]').forEach(btn => {
         btn.addEventListener('click', () => filterFreshness(btn.dataset.fresh));
+    });
+
+    // IDF keywords
+    const IDF_KEYWORDS = [
+        'paris', 'île-de-france', 'ile-de-france', 'idf', 'boulogne', 'nanterre',
+        'courbevoie', 'levallois', 'neuilly', 'puteaux', 'issy', 'montreuil',
+        'vincennes', 'saint-denis', 'saint-ouen', 'clichy', 'asnières', 'colombes',
+        'rueil', 'suresnes', 'meudon', 'boulogne-billancourt', 'versailles',
+        'cergy', 'pontoise', 'evry', 'créteil', 'bobigny', 'noisy', 'chelles',
+        'meaux', 'melun', 'poissy', 'sartrouville', 'argenteuil', 'gennevilliers',
+        'fontenay', 'montrouge', 'malakoff', 'bagneux', 'châtillon', 'châtenay',
+        'sèvres', 'saint-cloud', 'garches', 'vaucresson', 'marnes', 'ville-d\'avray',
+        'champigny', 'saint-maur', 'maisons-alfort', 'althon', 'vitry', 'ivry',
+        'choisy', 'thiais', 'orly', 'villeneuve', 'aubervilliers', 'la courneuve',
+        'stains', 'drancy', 'livry', 'pantin', 'bondy', 'rosny', 'gagny',
+        'villemomble', 'aulnay', 'le blanc-mesnil', 'le bourget', 'dugny',
+        '7500', '7501', '7502', '7503', '7504', '7505', '7506', '7507', '7508',
+        '7509', '7510', '7511', '7512', '7513', '7514', '7515', '7516', '7517',
+        '7518', '7519', '7520', '77', '78', '91', '92', '93', '94', '95',
+        'la défense', 'porte de', 'paris ', 'banlieue'
+    ];
+    function detectLocationZone(card) {
+        const text = (card.querySelector('.job-meta')?.textContent || card.textContent).toLowerCase();
+        for (const kw of IDF_KEYWORDS) {
+            if (text.includes(kw)) return 'idf';
+        }
+        return 'province';
+    }
+    function filterLocation(loc) {
+        document.querySelectorAll('[data-loc]').forEach(b => b.classList.toggle('active', b.dataset.loc === loc));
+        const activePanel = document.querySelector('.tab-panel.active');
+        if (!activePanel) return;
+        const rmBtn = document.querySelector('[data-rm].active');
+        const rmMode = rmBtn ? rmBtn.dataset.rm : 'all';
+        const freshBtn = document.querySelector('[data-fresh].active');
+        const freshMode = freshBtn ? freshBtn.dataset.fresh : 'all';
+        activePanel.querySelectorAll('.job-card').forEach(card => {
+            const zone = detectLocationZone(card);
+            const locMatch = (loc === 'all') || (loc === zone);
+            const rmType = detectRemoteType(card);
+            const rmMatch = (rmMode === 'all') || (rmMode === rmType);
+            const f = card.dataset.freshness || 'D';
+            const freshMatch = (freshMode === 'all') || (freshMode === f);
+            const match = locMatch && rmMatch && freshMatch;
+            card.classList.toggle('filtered-out', !match);
+            card.classList.toggle('filtered-in', match);
+        });
+        // Re-init pagination to reflect filtered cards
+        const panelId = activePanel.id;
+        if (panelId) initPagination(panelId);
+    }
+    document.querySelectorAll('[data-loc]').forEach(btn => {
+        btn.addEventListener('click', () => filterLocation(btn.dataset.loc));
     });
 
     // Job card click → open URL + mark as viewed
@@ -1239,39 +1328,30 @@
         const list = panel.querySelector('.paginated-list');
         const paginationEl = panel.querySelector('.pagination');
         if (!list || !paginationEl) return;
-        const cards = Array.from(list.querySelectorAll('.job-card'));
-        const totalPages = Math.max(1, Math.ceil(cards.length / PER_PAGE));
-        let currentPage = parseInt(paginationEl.dataset.page || '1');
-        if (currentPage > totalPages) currentPage = 1;
+        const allCards = Array.from(list.querySelectorAll('.job-card'));
+        let currentPage = 1;
 
-        function showPage(page) {
-            currentPage = page;
-            paginationEl.dataset.page = page;
-            cards.forEach((card, i) => {
-                const shouldShow = Math.floor(i / PER_PAGE) === page - 1;
-                card.style.display = shouldShow ? '' : 'none';
-            });
-            renderPagination();
-            // Re-apply filters on new page
-            const rmBtn = document.querySelector('[data-rm].active');
-            const rmMode = rmBtn ? rmBtn.dataset.rm : 'all';
-            const freshBtn = document.querySelector('[data-fresh].active');
-            const freshMode = freshBtn ? freshBtn.dataset.fresh : 'all';
-            if (rmMode !== 'all' || freshMode !== 'all') {
-                const visible = panel.querySelectorAll('.job-card[style*="display: block"], .job-card:not([style*="display"])');
-                visible.forEach(card => {
-                    const rmType = detectRemoteType(card);
-                    const rmMatch = (rmMode === 'all') || (rmMode === rmType);
-                    const f = card.dataset.freshness || 'D';
-                    const freshMatch = (freshMode === 'all') || (freshMode === f);
-                    const match = rmMatch && freshMatch;
-                    card.classList.toggle('filtered-out', !match);
-                    card.classList.toggle('filtered-in', match);
-                });
-            }
+        function getVisibleCards() {
+            return allCards.filter(c => !c.classList.contains('filtered-out'));
         }
 
-        function renderPagination() {
+        function showPage(page) {
+            const visible = getVisibleCards();
+            const totalPages = Math.max(1, Math.ceil(visible.length / PER_PAGE));
+            if (page > totalPages) page = totalPages;
+            if (page < 1) page = 1;
+            currentPage = page;
+            paginationEl.dataset.page = page;
+            // Hide all first, then show current page
+            allCards.forEach(card => { card.style.display = 'none'; });
+            const start = (page - 1) * PER_PAGE;
+            const pageCards = visible.slice(start, start + PER_PAGE);
+            pageCards.forEach(card => { card.style.display = ''; });
+            renderPagination(totalPages);
+        }
+
+        function renderPagination(tp) {
+            const totalPages = tp;
             paginationEl.innerHTML = '';
             if (totalPages <= 1) return;
             // Prev
