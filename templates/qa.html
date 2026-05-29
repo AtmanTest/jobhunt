@@ -1,820 +1,216 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QA Dashboard — JobHunt</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #0f0f13;
-            --card: #1a1a24;
-            --card-hover: #22222f;
-            --border: #2a2a3a;
-            --text: #e4e4ef;
-            --text-dim: #8888a0;
-            --text-muted: #5a5a72;
-            --accent: #6c5ce7;
-            --accent-dim: #4a3db5;
-            --accent-glow: rgba(108, 92, 231, 0.15);
-            --green: #00d68f;
-            --green-bg: rgba(0, 214, 143, 0.1);
-            --orange: #ff9f43;
-            --orange-bg: rgba(255, 159, 67, 0.1);
-            --red: #ff6b6b;
-            --red-bg: rgba(255, 107, 107, 0.1);
-            --blue: #54a0ff;
-            --blue-bg: rgba(84, 160, 255, 0.1);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-        }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA — JobHunt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  :root { --bg:#f8f9fb; --surface:#fff; --border:#e8ecf0; --border-light:#f0f2f5; --text:#1a1d23; --text2:#4a5060; --text3:#8a92a5; --accent:#0a2540; --blue:#2563eb; --blue-bg:rgba(37,99,235,0.06); --green:#059669; --green-bg:rgba(5,150,105,0.08); --orange:#d97706; --orange-bg:rgba(217,119,6,0.08); --red:#dc2626; --radius:10px; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-        /* Header */
-        .header {
-            border-bottom: 1px solid var(--border);
-            padding: 14px 32px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(15,15,19,0.95);
-            backdrop-filter: blur(12px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .header-left { display: flex; align-items: center; gap: 12px; }
-        .header-logo {
-            font-size: 18px;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--accent), #a29bfe);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .header-badge {
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            background: var(--accent-glow);
-            color: var(--accent);
-            padding: 3px 8px;
-            border-radius: 6px;
-            border: 1px solid rgba(108,92,231,0.3);
-        }
-        .header-nav { display: flex; gap: 6px; }
-        .header-nav a {
-            padding: 6px 14px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-dim);
-            transition: all 0.2s;
-        }
-        .header-nav a:hover { color: var(--text); background: var(--card); }
-        .header-nav a.active { color: var(--accent); background: var(--accent-glow); }
+  .top-nav { position:sticky; top:0; z-index:100; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; background:rgba(255,255,255,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); }
+  .top-nav a { font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; padding:4px 10px; border-radius:6px; transition:all 0.15s; }
+  .top-nav a:hover { color:var(--text); background:var(--border-light); }
+  .top-nav a.active { color:var(--accent); background:var(--blue-bg); font-weight:600; }
 
-        /* Container */
-        .container { max-width: 1400px; margin: 0 auto; padding: 24px 32px; }
+  .main { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px 24px; margin-bottom:14px; }
 
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            margin-bottom: 28px;
-        }
-        .stat-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 20px 24px;
-            transition: all 0.2s;
-        }
-        .stat-card:hover { border-color: var(--text-muted); }
-        .stat-card .number {
-            font-size: 32px;
-            font-weight: 700;
-            line-height: 1;
-        }
-        .stat-card .number.pass { color: var(--green); }
-        .stat-card .number.fail { color: var(--red); }
-        .stat-card .number.skip { color: var(--orange); }
-        .stat-card .number.total { color: var(--text); }
-        .stat-card .number.rate { color: var(--accent); }
-        .stat-card .label {
-            font-size: 11px;
-            color: var(--text-dim);
-            margin-top: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .stat-card .sub {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
+  .section-title { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1.8px; color:var(--blue); margin-bottom:10px; }
+  .section-title .bar { display:flex; gap:4px; align-items:center; }
+  .section-title .bar::after { content:''; flex:1; height:1px; background:linear-gradient(90deg, var(--border), transparent); margin-left:8px; }
 
-        /* Section */
-        .section {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-        .section-header {
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .section-header h2 {
-            font-size: 15px;
-            font-weight: 600;
-        }
-        .section-header .badge {
-            font-size: 11px;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-weight: 500;
-        }
-        .badge-pass { background: var(--green-bg); color: var(--green); }
-        .badge-fail { background: var(--red-bg); color: var(--red); }
-        .badge-pending { background: var(--orange-bg); color: var(--orange); }
-        .badge-idle { background: var(--blue-bg); color: var(--blue); }
+  .btn-row { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+  .btn { padding:6px 14px; border-radius:7px; font-size:11px; font-weight:600; cursor:pointer; border:none; font-family:inherit; display:inline-flex; align-items:center; gap:5px; transition:all 0.15s; }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-primary:hover { opacity:0.9; }
+  .btn-outline { background:var(--surface); color:var(--text2); border:1px solid var(--border); }
+  .btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+  .btn-sm { padding:4px 10px; font-size:10px; }
 
-        /* Run Status */
-        .run-status {
-            padding: 24px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .run-status-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            flex-shrink: 0;
-        }
-        .run-status-icon.success { background: var(--green-bg); color: var(--green); }
-        .run-status-icon.failure { background: var(--red-bg); color: var(--red); }
-        .run-status-icon.pending { background: var(--orange-bg); color: var(--orange); }
-        .run-status-icon.running { background: var(--blue-bg); color: var(--blue); animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .run-status-info h3 { font-size: 15px; font-weight: 600; }
-        .run-status-info p { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
-        .run-status-info .detail { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+  .status-dot { display:inline-block; width:6px; height:6px; border-radius:50%; margin-right:4px; }
+  .status-dot.green { background:var(--green); }
+  .status-dot.orange { background:var(--orange); }
+  .status-dot.red { background:var(--red); }
 
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 18px;
-            border-radius: 9px;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 500;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-        }
-        .btn-primary:hover { background: var(--accent-dim); transform: translateY(-1px); }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .btn-secondary {
-            background: var(--card);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-        .btn-secondary:hover { background: var(--card-hover); }
-        .btn-danger {
-            background: var(--red-bg);
-            color: var(--red);
-        }
-        .btn-danger:hover { background: rgba(255,107,107,0.2); }
-        .btn-sm { padding: 5px 12px; font-size: 12px; border-radius: 7px; }
-        .btn-icon { width: 34px; height: 34px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 8px; }
+  .feature-file { margin-bottom:12px; }
+  .feature-file .fname { font-size:12px; font-weight:600; color:var(--accent); margin-bottom:4px; display:flex; align-items:center; gap:6px; }
+  .feature-file .fname .count { font-size:10px; font-weight:500; color:var(--text3); }
+  .scenario { padding:6px 0 6px 14px; border-left:2px solid var(--border); margin-bottom:4px; }
+  .scenario .sname { font-size:11px; font-weight:500; color:var(--text); }
+  .scenario .steps { font-size:10px; color:var(--text3); font-family:'JetBrains Mono', monospace; margin-top:2px; }
+  .scenario .tags { display:flex; gap:3px; flex-wrap:wrap; margin-top:2px; }
+  .scenario .tags span { font-size:8px; padding:1px 5px; border-radius:3px; background:var(--blue-bg); color:var(--blue); }
 
-        /* Spinner */
-        .spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid var(--border);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            display: inline-block;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+  .run-item { padding:10px 0; border-bottom:1px solid var(--border-light); display:flex; align-items:center; gap:12px; }
+  .run-item:last-child { border-bottom:none; }
+  .run-item .run-id { font-size:10px; font-family:'JetBrains Mono', monospace; color:var(--text3); }
+  .run-item .run-status { font-size:11px; font-weight:600; }
+  .run-item .run-meta { font-size:10px; color:var(--text3); margin-left:auto; }
 
-        /* Test Cases List */
-        .test-cases { padding: 0; }
-        .test-category {
-            border-bottom: 1px solid var(--border);
-        }
-        .test-category:last-child { border-bottom: none; }
-        .test-category-title {
-            padding: 12px 24px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            transition: background 0.2s;
-            user-select: none;
-        }
-        .test-category-title:hover { background: var(--card-hover); }
-        .test-category-title .count {
-            font-size: 11px;
-            font-weight: 500;
-            color: var(--text-muted);
-            text-transform: none;
-            letter-spacing: 0;
-        }
-        .test-item {
-            display: flex;
-            align-items: center;
-            padding: 10px 24px 10px 40px;
-            border-top: 1px solid var(--border);
-            transition: background 0.2s;
-        }
-        .test-item:hover { background: var(--card-hover); }
-        .test-item .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            margin-right: 12px;
-        }
-        .test-item .status-dot.pass { background: var(--green); }
-        .test-item .status-dot.fail { background: var(--red); }
-        .test-item .status-dot.skip { background: var(--orange); }
-        .test-item .status-dot.unknown { background: var(--text-muted); }
-        .test-item .name {
-            flex: 1;
-            font-size: 13px;
-        }
-        .test-item .name .scenario {
-            color: var(--text-dim);
-            font-size: 12px;
-        }
-        .test-item .duration {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-family: 'JetBrains Mono', monospace;
-            margin-left: 12px;
-        }
+  .gh-run { padding:8px 0; border-bottom:1px solid var(--border-light); display:flex; align-items:center; gap:10px; font-size:11px; }
+  .gh-run:last-child { border-bottom:none; }
+  .gh-run .gh-status { font-size:10px; font-weight:600; padding:2px 8px; border-radius:4px; }
+  .gh-run .gh-completed { background:var(--green-bg); color:var(--green); }
+  .gh-run .gh-failure { background:var(--orange-bg); color:var(--orange); }
+  .gh-run .gh-in_progress { background:var(--blue-bg); color:var(--blue); }
+  .gh-run a { color:var(--accent); text-decoration:none; }
+  .gh-run a:hover { text-decoration:underline; }
 
-        /* Runs Timeline */
-        .runs-timeline { padding: 16px 24px; }
-        .run-entry {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-        }
-        .run-entry:last-child { border-bottom: none; }
-        .run-entry .run-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-        .run-entry .run-dot.success { background: var(--green); }
-        .run-entry .run-dot.failure { background: var(--red); }
-        .run-entry .run-dot.cancelled { background: var(--orange); }
-        .run-entry .run-dot.running { background: var(--blue); animation: pulse 1.5s infinite; }
-        .run-entry .run-info { flex: 1; }
-        .run-entry .run-info .title { font-size: 13px; font-weight: 500; }
-        .run-entry .run-info .meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-        .run-entry .run-stats { display: flex; gap: 10px; font-size: 11px; }
-        .run-entry .run-stats span { padding: 2px 8px; border-radius: 10px; }
-        .run-entry .run-stats .pass-count { background: var(--green-bg); color: var(--green); }
-        .run-entry .run-stats .fail-count { background: var(--red-bg); color: var(--red); }
-        .run-entry .run-stats .skip-count { background: var(--orange-bg); color: var(--orange); }
+  .empty { text-align:center; padding:40px 20px; color:var(--text3); font-size:13px; }
+  .empty .icon { font-size:28px; margin-bottom:6px; }
 
-        /* Run Detail */
-        .run-detail { display: none; padding: 16px 24px; }
-        .run-detail.open { display: block; }
-        .run-detail pre {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            line-height: 1.6;
-            color: var(--text-dim);
-            background: rgba(0,0,0,0.3);
-            padding: 16px;
-            border-radius: 10px;
-            max-height: 400px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
-        .run-detail pre .pass-text { color: var(--green); }
-        .run-detail pre .fail-text { color: var(--red); }
-        .run-detail pre .skip-text { color: var(--orange); }
+  .toast { position:fixed; bottom:20px; right:20px; background:var(--green); color:#fff; padding:8px 16px; border-radius:8px; font-size:11px; font-weight:600; opacity:0; transform:translateY(20px); transition:all 0.3s; z-index:2000; }
+  .toast.show { opacity:1; transform:translateY(0); }
+  .toast.error { background:var(--red); }
 
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 60px 24px;
-        }
-        .empty-state .icon { font-size: 40px; margin-bottom: 16px; }
-        .empty-state h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
-        .empty-state p { font-size: 14px; color: var(--text-dim); max-width: 400px; margin: 0 auto; }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 500;
-            z-index: 999;
-            animation: slideUp 0.3s ease;
-            max-width: 360px;
-        }
-        .toast.success { background: var(--green-bg); border: 1px solid var(--green); color: var(--green); }
-        .toast.error { background: var(--red-bg); border: 1px solid var(--red); color: var(--red); }
-        .toast.info { background: var(--blue-bg); border: 1px solid var(--blue); color: var(--blue); }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        /* Progress bar */
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: var(--border);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-        .progress-bar .fill {
-            height: 100%;
-            border-radius: 3px;
-            transition: width 0.5s ease;
-        }
-        .progress-bar .fill.green { background: var(--green); }
-        .progress-bar .fill.orange { background: var(--orange); }
-        .progress-bar .fill.red { background: var(--red); }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container { padding: 16px; }
-            .header { padding: 12px 16px; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .header-nav a { font-size: 12px; padding: 5px 10px; }
-        }
-    </style>
+  @media(max-width:640px) { .main { padding:0 8px; } .card { padding:14px 16px; } }
+</style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-left">
-            <span class="header-logo">JobHunt</span>
-            <span class="header-badge">QA</span>
-        </div>
-        <div class="header-nav">
-            <a href="/">Dashboard</a>
-            <a href="/cv">CV</a>
-            <a href="/qa" class="active">QA</a>
-            <a href="/about">About</a>
-        </div>
+
+<div class="top-nav">
+  <div>
+    <a href="{{ url_for('index') }}">Dashboard</a>
+    <a href="{{ url_for('cv_page') }}">CV</a>
+    <a href="#" class="active">QA</a>
+    <a href="{{ url_for('stats_page') }}">Stats</a>
+  </div>
+  <div>
+    <a href="{{ url_for('about') }}">À propos</a>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Actions -->
+  <div class="card">
+    <div class="section-title"><span class="bar">Tests</span></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="runTests()">▶ Run Tests</button>
+      <button class="btn btn-outline" onclick="triggerGitHub()">⚡ GitHub Actions</button>
+      <button class="btn btn-outline btn-sm" onclick="location.reload()">↻ Refresh</button>
     </div>
+    <div id="latest-run" style="font-size:11px;color:var(--text3);"></div>
+  </div>
 
-    <div class="container">
-        <!-- Stats -->
-        <div class="stats-grid" id="statsGrid">
-            <div class="stat-card">
-                <div class="number total" id="totalTests">—</div>
-                <div class="label">Total Tests</div>
-            </div>
-            <div class="stat-card">
-                <div class="number pass" id="passedTests">—</div>
-                <div class="label">Passed</div>
-            </div>
-            <div class="stat-card">
-                <div class="number fail" id="failedTests">—</div>
-                <div class="label">Failed</div>
-            </div>
-            <div class="stat-card">
-                <div class="number skip" id="skippedTests">—</div>
-                <div class="label">Skipped</div>
-            </div>
-            <div class="stat-card">
-                <div class="number rate" id="passRate">—</div>
-                <div class="label">Pass Rate</div>
-                <div class="sub">dernier run</div>
-            </div>
-            <div class="stat-card">
-                <div class="number total" id="scenarioCount">—</div>
-                <div class="label">Scenarios</div>
-                <div class="sub">feature files</div>
-            </div>
-        </div>
+  <!-- Test Cases -->
+  <div class="card">
+    <div class="section-title"><span class="bar">🧪 Cas de test</span></div>
+    <div id="test-cases"><div class="empty">Chargement…</div></div>
+  </div>
 
-        <!-- Actions Row -->
-        <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-            <button class="btn btn-primary" id="runLocalBtn" onclick="runLocalTests()">
-                ▶ Run Tests (Local)
-            </button>
-            <button class="btn btn-secondary" id="runGithubBtn" onclick="runGithubActions()">
-                ⚡ Trigger GitHub Actions
-            </button>
-            <button class="btn btn-secondary btn-sm" onclick="refreshAll()">
-                ↻ Refresh
-            </button>
-        </div>
+  <!-- GitHub Runs -->
+  <div class="card">
+    <div class="section-title"><span class="bar">📋 GitHub Actions</span></div>
+    <div id="gh-runs"><div class="empty">Chargement…</div></div>
+  </div>
 
-        <!-- Last Run Status -->
-        <div class="section" id="lastRunSection">
-            <div class="section-header">
-                <h2>Latest Test Run</h2>
-                <span class="badge badge-idle" id="runBadge">No runs yet</span>
-            </div>
-            <div class="empty-state" id="noRunState">
-                <div class="icon">🧪</div>
-                <h3>Aucun run de tests</h3>
-                <p>Lance les tests localement ou via GitHub Actions. Les résultats apparaîtront ici en temps réel.</p>
-            </div>
-            <div id="runResult" style="display:none;">
-                <div class="run-status" id="runStatusHeader">
-                    <div class="run-status-icon" id="runIcon">✓</div>
-                    <div class="run-status-info">
-                        <h3 id="runTitle">—</h3>
-                        <p id="runSummary">—</p>
-                        <div class="detail" id="runDetail">—</div>
-                    </div>
-                </div>
-                <div class="progress-bar" id="runProgressBar" style="margin:0 24px 16px;">
-                    <div class="fill" id="runProgressFill" style="width:0%"></div>
-                </div>
-                <div id="runOutput" class="run-detail open">
-                    <pre id="runOutputPre"><span class="pass-text">✓</span> Waiting for results…</pre>
-                </div>
-            </div>
-        </div>
+</div>
 
-        <!-- Test Cases -->
-        <div class="section">
-            <div class="section-header">
-                <h2>🧪 Test Cases</h2>
-                <span class="count" id="featureCount" style="font-size:12px;color:var(--text-muted);">— features</span>
-            </div>
-            <div class="test-cases" id="testCasesList">
-                <div class="empty-state">
-                    <div class="icon">📁</div>
-                    <h3>Loading…</h3>
-                </div>
-            </div>
-        </div>
+<div class="toast" id="toast"></div>
 
-        <!-- GitHub Runs History -->
-        <div class="section">
-            <div class="section-header">
-                <h2>📋 GitHub Actions Runs</h2>
-                <span style="font-size:12px;color:var(--text-muted);" id="ghRunsCount">—</span>
-            </div>
-            <div class="runs-timeline" id="ghRunsList">
-                <div class="empty-state">
-                    <div class="icon">🔄</div>
-                    <h3>Loading runs…</h3>
-                </div>
-            </div>
-        </div>
-    </div>
+<script>
+function toast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show' + (err ? ' error' : '');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
 
-    <script>
-        const API_BASE = '/qa/api';
-
-        // ============================================================
-        // Initial Load
-        // ============================================================
-        document.addEventListener('DOMContentLoaded', () => {
-            refreshAll();
-            loadGithubRuns();
-        });
-
-        function refreshAll() {
-            loadStats();
-            loadTestCases();
+// Load test cases
+fetch('/qa/api/test-cases')
+  .then(r => r.json())
+  .then(data => {
+    const el = document.getElementById('test-cases');
+    if (!data.categories || data.categories.length === 0) {
+      el.innerHTML = '<div class="empty"><div class="icon">📂</div>Aucun fichier .feature trouvé</div>';
+      return;
+    }
+    let html = '';
+    data.categories.forEach(cat => {
+      html += '<div class="feature-file">';
+      html += `<div class="fname">📄 ${cat.file} <span class="count">(${cat.scenarios.length} scénarios)</span></div>`;
+      cat.scenarios.forEach(sc => {
+        html += '<div class="scenario">';
+        html += `<div class="sname">${sc.name}</div>`;
+        if (sc.tags && sc.tags.length) {
+          html += '<div class="tags">' + sc.tags.map(t => `<span>@${t}</span>`).join('') + '</div>';
         }
-
-        // ============================================================
-        // Stats + Test Cases (local)
-        // ============================================================
-        async function loadStats() {
-            try {
-                const [scenariosRes, runsRes] = await Promise.all([
-                    fetch(`${API_BASE}/test-cases`),
-                    fetch(`${API_BASE}/runs`)
-                ]);
-                const scenarios = await scenariosRes.json();
-                const runs = await runsRes.json();
-
-                // Total scenarios count
-                let totalScenarios = 0;
-                for (const cat of scenarios.categories) {
-                    totalScenarios += cat.scenarios.length;
-                }
-                document.getElementById('scenarioCount').textContent = totalScenarios;
-                document.getElementById('featureCount').textContent = `${scenarios.categories.length} features`;
-
-                // Latest run stats
-                if (runs.runs && runs.runs.length > 0) {
-                    const last = runs.runs[0];
-                    document.getElementById('totalTests').textContent = last.total || '-';
-                    document.getElementById('passedTests').textContent = last.passed || '-';
-                    document.getElementById('failedTests').textContent = last.failed || '-';
-                    document.getElementById('skippedTests').textContent = last.skipped || '-';
-                    const rate = last.total > 0 ? Math.round((last.passed / last.total) * 100) : '-';
-                    document.getElementById('passRate').textContent = rate !== '-' ? rate + '%' : '-';
-                } else {
-                    document.getElementById('totalTests').textContent = '—';
-                    document.getElementById('passedTests').textContent = '—';
-                    document.getElementById('failedTests').textContent = '—';
-                    document.getElementById('skippedTests').textContent = '—';
-                    document.getElementById('passRate').textContent = '—';
-                }
-            } catch (e) {
-                console.error('loadStats:', e);
-            }
+        if (sc.steps) {
+          html += '<div class="steps">' + sc.steps.join(' │ ') + '</div>';
         }
+        html += '</div>';
+      });
+      html += '</div>';
+    });
+    el.innerHTML = html;
+  })
+  .catch(() => document.getElementById('test-cases').innerHTML = '<div class="empty"><div class="icon">❌</div>Erreur de chargement</div>');
 
-        async function loadTestCases() {
-            try {
-                const res = await fetch(`${API_BASE}/test-cases`);
-                const data = await res.json();
-                renderTestCases(data.categories);
-            } catch (e) {
-                console.error('loadTestCases:', e);
-                document.getElementById('testCasesList').innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">⚠️</div>
-                        <h3>Error loading test cases</h3>
-                        <p>${e.message}</p>
-                    </div>`;
-            }
-        }
+// Load latest runs
+fetch('/qa/api/runs')
+  .then(r => r.json())
+  .then(data => {
+    const el = document.getElementById('latest-run');
+    const runs = data.runs || [];
+    if (runs.length === 0) { el.innerHTML = '<span style="color:var(--text3)">Aucun run de tests</span>'; return; }
+    const last = runs[0];
+    const status = last.status === 'completed' ? (last.failed === 0 ? '✅' : '❌') : '⏳';
+    el.innerHTML = `${status} Dernier run: ${last.passed||0} passed, ${last.failed||0} failed, ${last.skipped||0} skipped — ${last.duration}s`;
+  })
+  .catch(() => {});
 
-        function renderTestCases(categories) {
-            const container = document.getElementById('testCasesList');
-            if (!categories || categories.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">📁</div>
-                        <h3>Aucun test case trouvé</h3>
-                        <p>Les fichiers .feature seront listés ici.</p>
-                    </div>`;
-                return;
-            }
+// Load GitHub runs
+fetch('/qa/api/github/runs')
+  .then(r => r.json())
+  .then(data => {
+    const el = document.getElementById('gh-runs');
+    if (data.error) {
+      el.innerHTML = '<div class="empty"><div class="icon">⚡</div>GitHub token non configuré</div>';
+      return;
+    }
+    const runs = data.runs || [];
+    if (runs.length === 0) { el.innerHTML = '<div class="empty"><div class="icon">📋</div>Aucun run GitHub Actions</div>'; return; }
+    let html = '';
+    runs.forEach(r => {
+      const statusClass = r.conclusion === 'success' ? 'gh-completed' : r.conclusion === 'failure' ? 'gh-failure' : r.status === 'in_progress' ? 'gh-in_progress' : '';
+      const label = r.conclusion === 'success' ? '✅ Success' : r.conclusion === 'failure' ? '❌ Failed' : r.status === 'in_progress' ? '⏳ Running' : '⬜ ' + r.status;
+      html += '<div class="gh-run">';
+      html += `<span class="gh-status ${statusClass}">${label}</span>`;
+      html += `<a href="${r.html_url}" target="_blank">${r.display_title || 'CI'}</a>`;
+      html += `<span style="color:var(--text3);margin-left:auto;">${r.branch} · ${(r.created_at||'').substring(0,10)}</span>`;
+      html += '</div>';
+    });
+    el.innerHTML = html;
+  })
+  .catch(() => document.getElementById('gh-runs').innerHTML = '<div class="empty"><div class="icon">❌</div>Erreur de chargement</div>');
 
-            container.innerHTML = categories.map((cat, ci) => `
-                <div class="test-category">
-                    <div class="test-category-title" onclick="toggleCategory(${ci})">
-                        <span>${cat.category}</span>
-                        <span class="count">${cat.scenarios.length} scenarios</span>
-                    </div>
-                    <div id="cat-${ci}" style="display:none;">
-                        ${cat.scenarios.map(sc => `
-                            <div class="test-item">
-                                <div class="status-dot unknown"></div>
-                                <div class="name">
-                                    ${sc.name}
-                                    <div class="scenario">${sc.tags ? sc.tags.join(' ') : ''}</div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
-        }
+function runTests() {
+  const btn = event.target; btn.textContent = '⏳ Running...'; btn.disabled = true;
+  fetch('/qa/api/runs', {method:'POST'})
+    .then(r => r.json())
+    .then(d => { toast('Tests lancés (run: ' + d.run_id + ')'); setTimeout(() => location.reload(), 3000); })
+    .catch(e => toast('Erreur: ' + e, true))
+    .finally(() => { btn.textContent = '▶ Run Tests'; btn.disabled = false; });
+}
 
-        function toggleCategory(idx) {
-            const el = document.getElementById(`cat-${idx}`);
-            el.style.display = el.style.display === 'none' ? 'block' : 'none';
-        }
-
-        // ============================================================
-        // Run Tests (Local)
-        // ============================================================
-        async function runLocalTests() {
-            const btn = document.getElementById('runLocalBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Running…';
-
-            showRunInProgress('Running tests locally…');
-
-            try {
-                const res = await fetch(`${API_BASE}/runs`, { method: 'POST' });
-                const data = await res.json();
-                if (data.error) throw new Error(data.error);
-
-                // Poll for results
-                pollRunResult(data.run_id);
-            } catch (e) {
-                showRunError(e.message);
-                btn.disabled = false;
-                btn.innerHTML = '▶ Run Tests (Local)';
-            }
-        }
-
-        function pollRunResult(runId) {
-            const interval = setInterval(async () => {
-                try {
-                    const res = await fetch(`${API_BASE}/runs/${runId}`);
-                    const data = await res.json();
-                    if (data.status === 'completed' || data.status === 'failed') {
-                        clearInterval(interval);
-                        displayRunResult(data);
-                        document.getElementById('runLocalBtn').disabled = false;
-                        document.getElementById('runLocalBtn').innerHTML = '▶ Run Tests (Local)';
-                        loadStats();
-                    } else if (data.output) {
-                        updateRunOutput(data.output);
-                    }
-                } catch (e) {
-                    console.error('poll error:', e);
-                }
-            }, 1000);
-
-            // Timeout after 120s
-            setTimeout(() => {
-                clearInterval(interval);
-                document.getElementById('runLocalBtn').disabled = false;
-                document.getElementById('runLocalBtn').innerHTML = '▶ Run Tests (Local)';
-            }, 120000);
-        }
-
-        function showRunInProgress(msg) {
-            document.getElementById('noRunState').style.display = 'none';
-            document.getElementById('runResult').style.display = 'block';
-            document.getElementById('runBadge').textContent = 'Running';
-            document.getElementById('runBadge').className = 'badge badge-pending';
-            document.getElementById('runIcon').className = 'run-status-icon running';
-            document.getElementById('runIcon').textContent = '⟳';
-            document.getElementById('runTitle').textContent = msg;
-            document.getElementById('runSummary').textContent = 'En cours d\'exécution…';
-            document.getElementById('runDetail').textContent = new Date().toLocaleString();
-            document.getElementById('runOutputPre').innerHTML = '<span class="skip-text">⟳</span> Running pytest…';
-            document.getElementById('runProgressFill').style.width = '30%';
-            document.getElementById('runProgressFill').className = 'fill orange';
-        }
-
-        function updateRunOutput(output) {
-            const pre = document.getElementById('runOutputPre');
-            if (output) {
-                const formatted = output
-                    .replace(/✓|PASSED|passed/g, m => `<span class="pass-text">${m}</span>`)
-                    .replace(/FAILED|FAIL|✗|✘/g, m => `<span class="fail-text">${m}</span>`)
-                    .replace(/skipped|SKIP/g, m => `<span class="skip-text">${m}</span>`);
-                pre.innerHTML = formatted;
-                pre.scrollTop = pre.scrollHeight;
-            }
-        }
-
-        function displayRunResult(data) {
-            const success = data.status === 'completed';
-            document.getElementById('runBadge').textContent = success ? '✓ Passed' : '✗ Failed';
-            document.getElementById('runBadge').className = success ? 'badge badge-pass' : 'badge badge-fail';
-            document.getElementById('runIcon').className = `run-status-icon ${success ? 'success' : 'failure'}`;
-            document.getElementById('runIcon').textContent = success ? '✓' : '✗';
-            document.getElementById('runTitle').textContent = success ? 'All tests passed' : 'Some tests failed';
-            document.getElementById('runSummary').textContent = `${data.passed || 0} passed, ${data.failed || 0} failed, ${data.skipped || 0} skipped`;
-
-            const pct = data.total > 0 ? Math.round((data.passed / data.total) * 100) : 0;
-            document.getElementById('runProgressFill').style.width = pct + '%';
-            document.getElementById('runProgressFill').className = pct >= 80 ? 'fill green' : pct >= 50 ? 'fill orange' : 'fill red';
-
-            if (data.output) {
-                updateRunOutput(data.output);
-            }
-        }
-
-        function showRunError(msg) {
-            document.getElementById('noRunState').style.display = 'none';
-            document.getElementById('runResult').style.display = 'block';
-            document.getElementById('runBadge').textContent = 'Error';
-            document.getElementById('runBadge').className = 'badge badge-fail';
-            document.getElementById('runIcon').className = 'run-status-icon failure';
-            document.getElementById('runIcon').textContent = '✗';
-            document.getElementById('runTitle').textContent = 'Run failed';
-            document.getElementById('runSummary').textContent = msg;
-            document.getElementById('runDetail').textContent = new Date().toLocaleString();
-            document.getElementById('runOutputPre').innerHTML = `<span class="fail-text">✗</span> ${msg}`;
-            document.getElementById('runProgressFill').style.width = '0%';
-            document.getElementById('runProgressFill').className = 'fill red';
-        }
-
-        // ============================================================
-        // GitHub Actions
-        // ============================================================
-        async function runGithubActions() {
-            const btn = document.getElementById('runGithubBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Triggering…';
-
-            try {
-                const res = await fetch(`${API_BASE}/github/trigger`, { method: 'POST' });
-                const data = await res.json();
-                if (data.error) throw new Error(data.error);
-                showToast('✅ GitHub Actions workflow triggered!', 'success');
-                setTimeout(() => loadGithubRuns(), 2000);
-            } catch (e) {
-                showToast('❌ ' + e.message, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '⚡ Trigger GitHub Actions';
-            }
-        }
-
-        async function loadGithubRuns() {
-            try {
-                const res = await fetch(`${API_BASE}/github/runs`);
-                const data = await res.json();
-                renderGithubRuns(data.runs || []);
-            } catch (e) {
-                document.getElementById('ghRunsList').innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">⚠️</div>
-                        <h3>Cannot fetch GitHub runs</h3>
-                        <p>Configure GITHUB_TOKEN with actions:read scope.</p>
-                    </div>`;
-            }
-        }
-
-        function renderGithubRuns(runs) {
-            const container = document.getElementById('ghRunsList');
-            document.getElementById('ghRunsCount').textContent = `${runs.length} runs`;
-
-            if (runs.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">🔄</div>
-                        <h3>Aucun run GitHub Actions</h3>
-                        <p>Les runs apparaîtront après le premier push du workflow CI.</p>
-                    </div>`;
-                return;
-            }
-
-            container.innerHTML = runs.map(run => {
-                const status = run.conclusion || run.status;
-                const icon = status === 'success' ? '✓' : status === 'failure' ? '✗' : status === 'cancelled' ? '⊘' : '⟳';
-                return `
-                    <div class="run-entry">
-                        <div class="run-dot ${status}"></div>
-                        <div class="run-info">
-                            <div class="title">${run.display_title || run.event || 'CI'}</div>
-                            <div class="meta">${run.branch || 'main'} · ${new Date(run.created_at).toLocaleString()}</div>
-                        </div>
-                        <div class="run-stats">
-                            ${run.passed !== undefined ? `<span class="pass-count">${run.passed} ✓</span>` : ''}
-                            ${run.failed !== undefined ? `<span class="fail-count">${run.failed} ✗</span>` : ''}
-                            ${run.skipped !== undefined ? `<span class="skip-count">${run.skipped} ⊘</span>` : ''}
-                        </div>
-                        <a href="${run.html_url}" target="_blank" class="btn btn-secondary btn-sm">View ↗</a>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // ============================================================
-        // Toast
-        // ============================================================
-        function showToast(msg, type = 'info') {
-            const existing = document.querySelector('.toast');
-            if (existing) existing.remove();
-
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.textContent = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 4000);
-        }
-    </script>
+function triggerGitHub() {
+  const btn = event.target; btn.textContent = '⏳...'; btn.disabled = true;
+  fetch('/qa/api/github/trigger', {method:'POST'})
+    .then(r => r.json())
+    .then(d => {
+      if (d.error) { toast('Erreur: ' + d.error, true); return; }
+      toast('Workflow déclenché ✓');
+      setTimeout(() => location.reload(), 2000);
+    })
+    .catch(e => toast('Erreur: ' + e, true))
+    .finally(() => { btn.textContent = '⚡ GitHub Actions'; btn.disabled = false; });
+}
+</script>
 </body>
 </html>
