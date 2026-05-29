@@ -13,7 +13,7 @@ if os.path.exists(token_file):
     with open(token_file) as f:
         GH_TOKEN = f.read().strip()
 
-PROJECT_DIR = os.path.expanduser("~/Desktop/jobhunt")
+PROJECT_DIR = os.path.expanduser("~/jobhunt")
 REPO = "AtmanTest/jobhunt"
 
 

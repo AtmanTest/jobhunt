@@ -14,21 +14,30 @@ from datetime import datetime
 BASE_DIR = os.path.dirname(__file__)
 OUTPUT_FILE = os.path.join(BASE_DIR, "linkedin_jobs.json")
 
+# ─── Filtres d'exclusion (titles qui ne sont PAS du QA logiciel) ──
+EXCLUDE_TITLES = [
+    "clinical quality", "healthcare quality", "quality coordinator",
+    "nursing", "registered nurse", "pharmacy", "medical quality",
+    "quality improvement coordinator",
+]
+
 # ─── Recherches multi-pays, multi-mots-clés ────────────────────
 SEARCHES = [
     # France
-    {"keywords": "QA+quality+assurance+test", "country": "France", "location": "France"},
-    {"keywords": "test+automation+Playwright+Cypress+Selenium", "country": "France", "location": "France"},
-    {"keywords": "QA+freelance+test", "country": "France", "location": "France"},
+    {"keywords": "QA+test", "country": "France", "location": "France"},
+    {"keywords": "test+automation", "country": "France", "location": "France"},
+    {"keywords": "testeur+logiciel", "country": "France", "location": "France"},
+    {"keywords": "qualité+assurance+test", "country": "France", "location": "France"},
+    {"keywords": "quality+assurance", "country": "France", "location": "France"},
     # Suisse
-    {"keywords": "QA+quality+assurance+test", "country": "Suisse", "location": "Suisse"},
-    {"keywords": "test+automation+QA", "country": "Suisse", "location": "Suisse"},
+    {"keywords": "QA+test", "country": "Suisse", "location": "Suisse"},
+    {"keywords": "test+automation", "country": "Suisse", "location": "Suisse"},
     # Luxembourg
-    {"keywords": "QA+quality+assurance", "country": "Luxembourg", "location": "Luxembourg"},
+    {"keywords": "QA+test", "country": "Luxembourg", "location": "Luxembourg"},
     # Dubaï
-    {"keywords": "QA+quality+assurance+test", "country": "Dubaï", "location": "Duba%C3%AF"},
+    {"keywords": "QA+test", "country": "Dubaï", "location": "Duba%C3%AF"},
     # Singapour
-    {"keywords": "QA+quality+assurance+test", "country": "Singapour", "location": "Singapour"},
+    {"keywords": "QA+test", "country": "Singapour", "location": "Singapour"},
 ]
 
 
@@ -41,10 +50,10 @@ def chrome_exec(js_code):
 
 
 def chrome_navigate(url):
-    """Navigate active tab."""
-    b64 = __import__('base64').b64encode(f'window.location.href = "{url}";'.encode()).decode()
-    cmd = f'tell application "Google Chrome" to execute (active tab of front window) javascript "eval(atob(\\\"{b64}\\\"))"'
+    """Navigate active tab using direct URL set (more reliable than JS eval)."""
+    cmd = f'tell application "Google Chrome" to set URL of active tab of front window to "{url}"'
     subprocess.run(["osascript", "-e", cmd], capture_output=True, timeout=10)
+    time.sleep(1)
 
 
 def scrape_search(keywords, location, country):
@@ -136,15 +145,32 @@ def scrape_job_description(url):
     return chrome_exec(js)
 
 
+def normalize_title(raw):
+    t = raw.strip().split("\\n")[0].strip()
+    t = t.split("with verification")[0].strip()
+    t = t.split("•")[0].strip()
+    return t.lower().strip()
+
+def is_excluded(title_lower):
+    for excl in EXCLUDE_TITLES:
+        if excl in title_lower:
+            return True
+    return False
+
 def main():
     all_jobs = []
-    seen_urls = set()
+    seen_keys = set()
     
     for search in SEARCHES:
         jobs = scrape_search(search["keywords"], search["location"], search["country"])
         for job in jobs:
-            if job["url"] and job["url"] not in seen_urls:
-                seen_urls.add(job["url"])
+            key = (normalize_title(job["title"]), job.get("company", "").strip().lower())
+            if key not in seen_keys:
+                seen_keys.add(key)
+                norm_title = normalize_title(job["title"])
+                if is_excluded(norm_title):
+                    print(f"   ✗ Exclu: {job['title'][:60]}")
+                    continue
                 all_jobs.append(job)
     
     # Save results

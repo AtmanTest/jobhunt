@@ -1711,7 +1711,16 @@ def save_jobs(jobs):
     
     new_count = 0
     for job in jobs:
-        # Generate a unique URL hash for dedup
+        # Also check title+company dedup (catches same job with different URLs)
+        norm_title = job["title"].strip().lower()[:100]
+        norm_company = job.get("company", "").strip().lower()[:100]
+        existing = cursor.execute(
+            "SELECT id FROM jobs WHERE LOWER(TRIM(title)) = ? AND LOWER(TRIM(company)) = ?",
+            (norm_title, norm_company)
+        ).fetchone()
+        if existing:
+            continue
+        
         url_hash = hashlib.md5(job["url"].encode()).hexdigest()
         
         # Check if QA-related

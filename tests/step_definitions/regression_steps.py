@@ -9,7 +9,7 @@ import json
 import sqlite3
 
 import pytest
-from pytest_bdd import given, parsers, then, when
+from pytest_bdd import given, parsers, then, when, scenarios
 
 
 # ---------------------------------------------------------------------------
