@@ -387,6 +387,38 @@ def filter_jobs_by_country(country_id):
     return jobs
 
 
+@app.route("/debug")
+def debug_info():
+    """Debug endpoint to check app state."""
+    lines = []
+    lines.append(f"Python: {sys.version}")
+    lines.append(f"DB exists: {os.path.exists(DB_PATH)}")
+    if os.path.exists(DB_PATH):
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cnt = conn.execute("SELECT COUNT(*) FROM jobs").fetchone()[0]
+            cols = conn.execute("PRAGMA table_info(jobs)").fetchall()
+            lines.append(f"Jobs count: {cnt}")
+            lines.append(f"Columns: {len(cols)}")
+            conn.close()
+        except Exception as e:
+            lines.append(f"DB error: {e}")
+    lines.append(f"ON_RENDER: {os.environ.get('RENDER', 'not set')}")
+    lines.append(f"CWD: {os.getcwd()}")
+    lines.append(f"Files: {os.listdir('.')[:20]}")
+    import traceback
+    try:
+        _ensure_db_populated()
+        conn = get_db()
+        cnt = conn.execute("SELECT COUNT(*) FROM jobs").fetchone()[0]
+        lines.append(f"After populate: {cnt} jobs")
+        conn.close()
+    except Exception as e:
+        lines.append(f"Populate error: {e}")
+        lines.append(traceback.format_exc())
+    return "<pre>" + "\n".join(lines) + "</pre>"
+
+
 @app.route("/")
 def index():
     _ensure_db_populated()
