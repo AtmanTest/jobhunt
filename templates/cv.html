@@ -5,191 +5,271 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CV — {{ cv.name }} | JobHunt</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
   :root {
-    --bg: #07070d;
-    --bg-alt: #0c0c16;
-    --card: #12121e;
-    --card-hover: #181828;
-    --border: #1e1e32;
-    --border-light: #2a2a44;
-    --text: #e8e8f0;
-    --text-dim: #8888a8;
-    --text-muted: #55557a;
-    --accent: #7c6cf0;
-    --accent-dim: #5a4bc0;
-    --accent-glow: rgba(124,108,240,0.12);
-    --green: #00d68f;
-    --green-dim: rgba(0,214,143,0.12);
-    --orange: #ff9f43;
-    --blue: #54a0ff;
-    --gold: #ffd93d;
-    --radius: 12px;
-    --radius-lg: 16px;
+    --bg: #050510;
+    --bg-alt: #08081a;
+    --card: #0c0c22;
+    --card-hover: #111133;
+    --border: #1a1a40;
+    --border-light: #2a2a55;
+    --text: #e0e0f0;
+    --text-dim: #8888b8;
+    --text-muted: #555580;
+    --cyan: #00e5ff;
+    --cyan-dim: rgba(0,229,255,0.08);
+    --magenta: #b388ff;
+    --accent: #7c4dff;
+    --accent-dim: #5a35cc;
+    --accent-glow: rgba(124,77,255,0.12);
+    --green: #00e676;
+    --green-dim: rgba(0,230,118,0.08);
+    --orange: #ff9100;
+    --pink: #ff4081;
+    --radius: 14px;
+    --radius-lg: 18px;
   }
+
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
+    overflow-x: hidden;
   }
   ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-  .bg-grid {
+  /* ── Animated Background ── */
+  canvas#particles {
     position: fixed; inset: 0; z-index: 0;
-    background-image:
-      linear-gradient(rgba(124,108,240,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(124,108,240,0.03) 1px, transparent 1px);
-    background-size: 60px 60px;
+    width: 100vw; height: 100vh;
     pointer-events: none;
   }
-  .bg-glow {
-    position: fixed; top: -30vh; right: -10vw;
-    width: 60vw; height: 70vh;
-    background: radial-gradient(ellipse, rgba(124,108,240,0.05) 0%, transparent 70%);
+  .scanline {
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,229,255,0.015) 2px,
+      rgba(0,229,255,0.015) 4px
+    );
+  }
+  .glow-1 {
+    position: fixed; top: -30vh; left: -10vw;
+    width: 70vw; height: 70vh;
+    background: radial-gradient(ellipse, rgba(124,77,255,0.06) 0%, transparent 70%);
     pointer-events: none; z-index: 0;
-    animation: drift 14s ease-in-out infinite alternate;
+    animation: drift1 12s ease-in-out infinite alternate;
   }
-  @keyframes drift {
+  .glow-2 {
+    position: fixed; bottom: -20vh; right: -15vw;
+    width: 50vw; height: 60vh;
+    background: radial-gradient(ellipse, rgba(0,229,255,0.04) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+    animation: drift2 15s ease-in-out infinite alternate;
+  }
+  @keyframes drift1 {
     0% { transform: translate(0,0) scale(1); }
-    100% { transform: translate(-8vw,5vh) scale(1.1); }
+    100% { transform: translate(12vw,8vh) scale(1.15); }
   }
+  @keyframes drift2 {
+    0% { transform: translate(0,0) scale(1); }
+    100% { transform: translate(-10vw,-5vh) scale(1.1); }
+  }
+
   .app { position:relative; z-index:1; }
 
-  /* Header */
+  /* ── Header ── */
   .header {
     position: sticky; top:0; z-index:100;
-    height: 56px; padding: 0 32px;
+    height: 52px; padding: 0 32px;
     display: flex; align-items: center; justify-content: space-between;
-    background: rgba(7,7,13,0.85);
-    backdrop-filter: blur(20px) saturate(1.4);
-    border-bottom: 1px solid var(--border);
+    background: rgba(5,5,16,0.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(26,26,64,0.6);
   }
+  .header-left { display: flex; align-items: center; gap: 12px; }
   .header-logo {
-    font-size: 15px; font-weight: 800;
-    background: linear-gradient(135deg, var(--accent), #a89bff);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    letter-spacing: -0.5px;
+    font-size: 13px; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--cyan);
+    letter-spacing: 0.5px;
   }
-  .header-logo span { font-weight: 400; -webkit-text-fill-color: var(--text-dim); }
-  .header-nav { display: flex; gap: 4px; }
+  .header-logo::before { content: '> '; color: var(--text-muted); }
+  .header-nav { display: flex; gap: 2px; align-items: center; }
   .header-nav a {
-    padding: 6px 14px; border-radius: 8px; text-decoration: none;
-    font-size: 13px; font-weight: 500; color: var(--text-dim);
+    padding: 5px 12px; border-radius: 6px; text-decoration: none;
+    font-size: 12px; font-weight: 500; color: var(--text-dim);
     transition: all 0.2s;
   }
   .header-nav a:hover { color: var(--text); background: var(--card); }
   .header-nav a.active { color: var(--accent); background: var(--accent-glow); }
 
-  /* Container */
-  .main { max-width: 960px; margin: 0 auto; padding: 32px 24px 60px; }
+  /* ── Main ── */
+  .main { max-width: 920px; margin: 0 auto; padding: 28px 20px 50px; }
 
-  /* Profile Card */
-  .profile-card {
+  /* ── Profile Terminal ── */
+  .profile-terminal {
     background: var(--card);
-    border: 1px solid var(--border);
+    border: 1px solid rgba(0,229,255,0.12);
     border-radius: var(--radius-lg);
-    padding: 40px 40px 32px;
-    margin-bottom: 28px;
-    position: relative; overflow: hidden;
+    margin-bottom: 24px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 40px rgba(124,77,255,0.04);
   }
-  .profile-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--accent), #a89bff, var(--green));
+  .profile-terminal::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--cyan), var(--accent), var(--magenta));
   }
-  .profile-card .name {
-    font-size: 32px; font-weight: 800;
-    background: linear-gradient(135deg, var(--accent), #a89bff);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  .term-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 18px;
+    background: rgba(0,0,0,0.3);
+    border-bottom: 1px solid rgba(26,26,64,0.3);
+  }
+  .term-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .term-dot.red { background: #ff5f56; }
+  .term-dot.yellow { background: #ffbd2e; }
+  .term-dot.green { background: #27c93f; }
+  .term-title {
+    font-size: 10px; font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted); margin-left: 8px;
+  }
+  .term-body { padding: 24px 28px 20px; }
+  .term-name {
+    font-size: 30px; font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--cyan);
     letter-spacing: -0.5px;
   }
-  .profile-card .title {
-    font-size: 16px; color: var(--text-dim); margin-top: 4px; font-weight: 500;
+  .term-name .cursor {
+    display: inline-block;
+    width: 10px; height: 24px;
+    background: var(--cyan);
+    margin-left: 4px; vertical-align: middle;
+    animation: blink 1s step-end infinite;
   }
-  .profile-card .status-row {
-    display: flex; gap: 14px; flex-wrap: wrap;
-    margin-top: 10px; font-size: 12px; color: var(--text-muted);
+  @keyframes blink { 50% { opacity: 0; } }
+  .term-title-row {
+    font-size: 14px; color: var(--text-dim);
+    margin-top: 4px; font-weight: 400;
   }
-  .profile-card .status-row span { display: flex; align-items: center; gap: 4px; }
-  .profile-card .summary {
-    margin-top: 18px; font-size: 14px; line-height: 1.7;
-    color: var(--text-dim); max-width: 720px;
+  .term-title-row .highlight { color: var(--magenta); }
+  .term-meta {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    margin-top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--text-muted);
   }
-  .profile-card .lang-row {
-    margin-top: 16px; display: flex; gap: 6px; flex-wrap: wrap;
+  .term-meta span { display: flex; align-items: center; gap: 5px; }
+  .term-meta .key { color: var(--cyan); }
+  .term-summary {
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(0,229,255,0.06);
+    border-radius: 10px;
+    font-size: 13px; line-height: 1.7; color: var(--text-dim);
   }
-  .profile-card .lang-row span {
-    font-size: 11px; font-weight: 500;
-    background: var(--accent-glow); color: var(--accent);
-    padding: 3px 12px; border-radius: 8px;
+  .term-summary::before {
+    content: '/* '; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;
+  }
+  .term-summary::after {
+    content: ' */'; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;
+  }
+  .lang-chips {
+    margin-top: 14px; display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .lang-chips span {
+    font-size: 10px; font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 3px 10px; border-radius: 6px;
+    border: 1px solid rgba(0,229,255,0.15);
+    color: var(--cyan);
   }
 
-  /* Sections */
-  .section { margin-bottom: 28px; }
+  /* ── Section ── */
+  .section { margin-bottom: 22px; }
   .section-header {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 16px; padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.5px;
   }
-  .section-header .icon {
-    width: 28px; height: 28px; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-  }
-  .section-header .icon.purple { background: var(--accent-glow); }
-  .section-header .icon.green { background: var(--green-dim); }
-  .section-header .icon.blue { background: rgba(84,160,255,0.12); }
-  .section-header .icon.gold { background: rgba(255,217,61,0.1); }
-  .section-header .icon.orange { background: rgba(255,159,67,0.1); }
-  .section-header h2 {
-    font-size: 14px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1.5px; color: var(--text);
+  .section-header::before { content: '##'; color: var(--text-muted); margin-right: 4px; }
+  .section-header .bar {
+    flex: 1; height: 1px;
+    background: linear-gradient(90deg, rgba(124,77,255,0.3), transparent);
+    margin-left: 8px;
   }
 
-  /* Experience Cards */
+  /* ── Experience Cards ── */
   .exp-card {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 20px 22px;
+    padding: 18px 20px;
     margin-bottom: 8px;
-    transition: all 0.25s;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
   }
   .exp-card:hover {
+    border-color: rgba(124,77,255,0.25);
     background: var(--card-hover);
-    border-color: var(--border-light);
-    transform: translateX(3px);
+    transform: translateX(4px);
+    box-shadow: 0 0 20px rgba(124,77,255,0.04);
   }
-  .exp-card .exp-top {
+  .exp-card::before {
+    content: '';
+    position: absolute; left: 0; top: 10px; bottom: 10px; width: 2px;
+    background: var(--accent);
+    border-radius: 1px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .exp-card:hover::before { opacity: 0.5; }
+
+  .exp-top {
     display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
   }
-  .exp-card .exp-role {
-    font-size: 15px; font-weight: 600; color: var(--text);
+  .exp-role {
+    font-size: 14px; font-weight: 600; color: var(--text);
   }
-  .exp-card .exp-company {
-    color: var(--accent);
+  .exp-company { color: var(--accent); }
+  .exp-period {
+    font-size: 11px; font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted); white-space: nowrap;
   }
-  .exp-card .exp-period {
-    font-size: 12px; color: var(--text-muted); white-space: nowrap;
+  .exp-desc {
+    font-size: 12.5px; line-height: 1.7; color: var(--text-dim);
+    margin-top: 7px;
   }
-  .exp-card .exp-desc {
-    font-size: 13px; line-height: 1.7; color: var(--text-dim);
-    margin-top: 8px;
+  .exp-tags {
+    display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px;
   }
-  .exp-card .exp-tags {
-    display: flex; gap: 4px; flex-wrap: wrap; margin-top: 10px;
-  }
-  .exp-card .exp-tags span {
-    font-size: 10px; font-weight: 500;
-    background: var(--accent-glow); color: var(--accent);
-    padding: 2px 9px; border-radius: 6px;
+  .exp-tags span {
+    font-size: 9px; font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 2px 8px; border-radius: 4px;
+    background: rgba(124,77,255,0.08);
+    color: var(--magenta);
+    border: 1px solid rgba(124,77,255,0.1);
   }
 
-  /* Skills Grid */
+  /* ── Skills Grid ── */
   .skills-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -198,125 +278,182 @@
   .skill-card {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px 18px;
-    transition: all 0.2s;
+    border-radius: 10px;
+    padding: 14px 16px;
+    transition: all 0.25s;
   }
-  .skill-card:hover { border-color: var(--border-light); background: var(--card-hover); }
+  .skill-card:hover {
+    border-color: rgba(0,229,255,0.15);
+    background: var(--card-hover);
+  }
   .skill-card .sk-cat {
-    font-size: 10px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1.5px; color: var(--accent); margin-bottom: 6px;
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1.5px; color: var(--cyan); margin-bottom: 5px;
   }
   .skill-card .sk-items {
-    font-size: 13px; line-height: 1.6; color: var(--text-dim);
+    font-size: 12px; line-height: 1.6; color: var(--text-dim);
   }
   .skill-card.agentic {
-    border-color: rgba(0,214,143,0.25);
-    background: rgba(0,214,143,0.03);
+    border-color: rgba(0,230,118,0.2);
+    background: rgba(0,230,118,0.03);
   }
+  .skill-card.agentic:hover { border-color: rgba(0,230,118,0.3); }
   .skill-card.agentic .sk-cat { color: var(--green); }
 
-  /* Certifications */
-  .certs-grid {
-    display: grid;
-    gap: 6px;
+  /* ── Certifications ── */
+  .certs-list {
+    display: grid; gap: 5px;
   }
   .cert-item {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 12px 16px;
-    font-size: 13px; color: var(--text-dim);
+    padding: 10px 15px;
+    font-size: 12.5px; color: var(--text-dim);
     transition: all 0.2s;
   }
-  .cert-item:hover { border-color: var(--border-light); background: var(--card-hover); }
-  .cert-item .cert-year {
-    font-size: 11px; color: var(--text-muted); margin-left: 6px;
+  .cert-item:hover {
+    border-color: var(--border-light);
+    background: var(--card-hover);
+  }
+  .cert-item .year {
+    font-size: 10px; font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted); margin-left: 6px;
   }
 
-  /* Print/PDF Button */
-  .print-btn {
+  /* ── Print / PDF Button ── */
+  .action-bar {
+    position: fixed; bottom: 24px; right: 24px;
+    z-index: 200;
+    display: flex; gap: 6px;
+  }
+  .action-btn {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 14px; border-radius: 8px;
-    background: var(--accent); color: #fff;
-    border: none; font-family: inherit; font-size: 12px; font-weight: 600;
-    cursor: pointer; transition: all 0.2s; text-decoration: none;
+    padding: 8px 16px; border-radius: 10px;
+    background: rgba(124,77,255,0.9);
+    backdrop-filter: blur(12px);
+    color: #fff; border: 1px solid rgba(124,77,255,0.3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    cursor: pointer; text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(124,77,255,0.2);
   }
-  .print-btn:hover { background: var(--accent-dim); }
+  .action-btn:hover {
+    background: var(--accent-dim);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 28px rgba(124,77,255,0.3);
+  }
+  .action-btn.secondary {
+    background: rgba(12,12,34,0.9);
+    border-color: var(--border);
+    box-shadow: none;
+  }
+  .action-btn.secondary:hover {
+    background: var(--card-hover);
+    border-color: var(--border-light);
+  }
 
-  /* Footer */
+  /* ── Footer ── */
   .footer {
-    text-align: center; padding: 20px 32px;
-    font-size: 11px; color: var(--text-muted);
+    text-align: center; padding: 18px 32px;
+    font-size: 10px; font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
     border-top: 1px solid var(--border);
   }
   .footer a { color: var(--accent); text-decoration: none; }
 
+  /* ── Print ── */
   @media print {
-    .header, .print-btn, .footer, .bg-grid, .bg-glow { display: none; }
+    .header, .action-bar, .footer, .scanline, .glow-1, .glow-2, canvas#particles { display: none; }
     body { background: #fff; color: #1a1a2e; }
-    .profile-card { background: #f8f8fb; border: 1px solid #ddd; }
-    .profile-card::before { display: none; }
-    .profile-card .name { -webkit-text-fill-color: #1a1a2e; color: #1a1a2e; background: none; }
+    .profile-terminal { background: #f8f8fb; border: 1px solid #ddd; box-shadow: none; }
+    .profile-terminal::before { display: none; }
+    .term-bar { background: #eee; border-color: #ddd; }
+    .term-name { color: #1a1a2e; }
+    .term-name .cursor { display: none; }
+    .term-summary { background: #f0f0f5; border-color: #ddd; }
+    .term-summary::before, .term-summary::after { display: none; }
+    .lang-chips span { border-color: #ddd; color: #555; }
     .exp-card, .skill-card, .cert-item { background: #f8f8fb; border: 1px solid #ddd; }
-    .exp-card:hover { transform: none; }
-    .card { break-inside: avoid; }
+    .exp-card:hover { transform: none; box-shadow: none; }
+    .exp-card::before { display: none; }
+    .section-header::before { color: #aaa; }
+    .section-header .bar { background: linear-gradient(90deg, rgba(0,0,0,0.1), transparent); }
   }
+
   @media (max-width: 640px) {
-    .main { padding: 16px; }
-    .profile-card { padding: 24px 20px; }
-    .profile-card .name { font-size: 24px; }
+    .main { padding: 12px; }
+    .term-body { padding: 16px; }
+    .term-name { font-size: 22px; }
     .skills-grid { grid-template-columns: 1fr; }
-    .exp-card .exp-top { flex-direction: column; }
+    .exp-top { flex-direction: column; gap: 2px; }
+    .action-bar { right: 12px; bottom: 12px; }
+    .action-btn { padding: 6px 12px; font-size: 10px; }
   }
 </style>
 </head>
 <body>
-<div class="bg-grid"></div>
-<div class="bg-glow"></div>
+<canvas id="particles"></canvas>
+<div class="scanline"></div>
+<div class="glow-1"></div>
+<div class="glow-2"></div>
 
 <div class="app">
 
+  <!-- Header -->
   <div class="header">
-    <div class="header-logo">JobHunt <span>· CV</span></div>
+    <div class="header-left">
+      <div class="header-logo">~/cv.sh</div>
+    </div>
     <div class="header-nav">
-      <a href="{{ url_for('index') }}">Dashboard</a>
-      <a href="#" class="active">CV</a>
-      <a href="{{ url_for('qa_dashboard') }}">QA</a>
-      <a href="{{ url_for('marche_qa') }}">Marché</a>
-      <a href="{{ url_for('stats_page') }}">Stats</a>
-      <a href="{{ url_for('about') }}">À propos</a>
-      <a href="#" onclick="window.print()" class="active" style="background:var(--accent);color:#fff;font-weight:600;" onmouseover="this.style.background='var(--accent-dim)'" onmouseout="this.style.background='var(--accent)'">📄 Exporter PDF</a>
+      <a href="{{ url_for('index') }}">dashboard</a>
+      <a href="#" class="active">cv</a>
+      <a href="{{ url_for('qa_dashboard') }}">qa</a>
+      <a href="{{ url_for('marche_qa') }}">marche</a>
+      <a href="{{ url_for('stats_page') }}">stats</a>
+      <a href="{{ url_for('about') }}">about</a>
     </div>
   </div>
 
+  <!-- Main -->
   <div class="main">
 
-    <!-- Profile Card -->
-    <div class="profile-card">
-      <div class="name">{{ cv.name }}</div>
-      <div class="title">{{ cv.title }}</div>
-      <div class="status-row">
-        <span>🏢 {{ cv.status }}</span>
-        <span>📍 {{ cv.location }}</span>
-        {% if cv.phone %}<span>📱 {{ cv.phone }}</span>{% endif %}
-        {% if cv.email %}<span>📧 {{ cv.email }}</span>{% endif %}
-        {% if cv.linkedin %}<span>🔗 {{ cv.linkedin }}</span>{% endif %}
+    <!-- Terminal Profile Card -->
+    <div class="profile-terminal">
+      <div class="term-bar">
+        <span class="term-dot red"></span>
+        <span class="term-dot yellow"></span>
+        <span class="term-dot green"></span>
+        <span class="term-title">profile — zsh</span>
       </div>
-      <div class="summary">{{ cv.summary }}</div>
-      <div class="lang-row">
-        {% for lang in cv.languages %}
-        <span>{{ lang }}</span>
-        {% endfor %}
+      <div class="term-body">
+        <div class="term-name">
+          {{ cv.name }}<span class="cursor"></span>
+        </div>
+        <div class="term-title-row">
+          <span class="highlight">~/$</span> {{ cv.title }}
+        </div>
+        <div class="term-meta">
+          <span><span class="key">status</span>=<span style="color:var(--green);">"{{ cv.status }}"</span></span>
+          <span><span class="key">location</span>=<span style="color:var(--green);">"{{ cv.location }}"</span></span>
+          {% if cv.phone %}<span><span class="key">phone</span>=<span style="color:var(--green);">"{{ cv.phone }}"</span></span>{% endif %}
+          {% if cv.email %}<span><span class="key">email</span>=<span style="color:var(--green);">"{{ cv.email }}"</span></span>{% endif %}
+          {% if cv.linkedin %}<span><span class="key">linkedin</span>=<span style="color:var(--green);">"{{ cv.linkedin }}"</span></span>{% endif %}
+        </div>
+        <div class="term-summary">{{ cv.summary }}</div>
+        <div class="lang-chips">
+          {% for lang in cv.languages %}
+          <span>{{ lang }}</span>
+          {% endfor %}
+        </div>
       </div>
     </div>
 
     <!-- Experience -->
     <div class="section">
-      <div class="section-header">
-        <div class="icon purple">💼</div>
-        <h2>Expérience</h2>
-      </div>
+      <div class="section-header">experience<span class="bar"></span></div>
       {% for exp in cv.experience %}
       <div class="exp-card">
         <div class="exp-top">
@@ -337,12 +474,9 @@
       {% endfor %}
     </div>
 
-    <!-- Technical Skills -->
+    <!-- Skills -->
     <div class="section">
-      <div class="section-header">
-        <div class="icon green">⚙️</div>
-        <h2>Compétences techniques</h2>
-      </div>
+      <div class="section-header">skills<span class="bar"></span></div>
       <div class="skills-grid">
         {% for category, items in cv.technical_skills.items() %}
         <div class="skill-card {% if category == 'Agentic IA' %}agentic{% endif %}">
@@ -355,25 +489,92 @@
 
     <!-- Certifications -->
     <div class="section">
-      <div class="section-header">
-        <div class="icon blue">🏅</div>
-        <h2>Certifications</h2>
-      </div>
-      <div class="certs-grid">
+      <div class="section-header">certifications<span class="bar"></span></div>
+      <div class="certs-list">
         {% for cert in cv.certifications %}
-        <div class="cert-item">
-          {{ cert.name }}{% if cert.year %}<span class="cert-year">({{ cert.year }})</span>{% endif %}
-        </div>
+        <div class="cert-item">{{ cert.name }}{% if cert.year %}<span class="year">({{ cert.year }})</span>{% endif %}</div>
         {% endfor %}
       </div>
     </div>
 
   </div>
 
+  <!-- Footer -->
   <div class="footer">
-    JobHunt · <a href="{{ url_for('index') }}">← Retour au Dashboard</a>
+    <a href="{{ url_for('index') }}">← dashboard</a> &middot; cv v2
+  </div>
+
+  <!-- Action buttons -->
+  <div class="action-bar">
+    <a href="{{ url_for('index') }}" class="action-btn secondary">← dashboard</a>
+    <a href="#" onclick="window.print()" class="action-btn">📄 pdf</a>
   </div>
 
 </div>
+
+<!-- Particles -->
+<script>
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let w, h, particles = [];
+
+function resize() {
+  w = canvas.width = window.innerWidth;
+  h = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * w;
+    this.y = Math.random() * h;
+    this.size = Math.random() * 1.5 + 0.3;
+    this.speedX = (Math.random() - 0.5) * 0.3;
+    this.speedY = (Math.random() - 0.5) * 0.3;
+    this.opacity = Math.random() * 0.4 + 0.1;
+    this.hue = Math.random() < 0.5 ? 255 : 160; // purple or cyan
+  }
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    if (this.x < 0 || this.x > w || this.y < 0 || this.y > h) this.reset();
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = this.hue === 255
+      ? `rgba(124, 77, 255, ${this.opacity})`
+      : `rgba(0, 229, 255, ${this.opacity})`;
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+function animate() {
+  ctx.clearRect(0, 0, w, h);
+  particles.forEach(p => { p.update(); p.draw(); });
+  // Draw connections
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 120) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `rgba(124, 77, 255, ${0.04 * (1 - dist / 120)})`;
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
+
 </body>
 </html>
