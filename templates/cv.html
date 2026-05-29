@@ -8,87 +8,102 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-  :root {
-    --bg: #f8f9fb; --surface: #ffffff; --border: #e8ecf0; --border-light: #f0f2f5;
-    --text: #1a1d23; --text-secondary: #4a5060; --text-tertiary: #8a92a5;
-    --accent: #0a2540; --blue: #2563eb; --blue-light: rgba(37,99,235,0.06);
-    --green: #059669; --radius: 10px; --radius-lg: 14px;
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f5f6fa; color: #1a1d23; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
   }
-  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; -webkit-font-smoothing: antialiased; }
 
   .top-nav {
     position: sticky; top:0; z-index:100; height: 44px;
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 24px; background: rgba(255,255,255,0.92);
-    backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(12px); border-bottom: 1px solid #e8ecf0;
   }
-  .top-nav a { font-size: 12px; font-weight: 500; color: var(--text-tertiary); text-decoration: none; padding: 4px 10px; border-radius: 6px; transition: all 0.15s; }
-  .top-nav a:hover { color: var(--text); background: var(--border-light); }
-  .top-nav .right { display: flex; align-items: center; gap: 6px; }
-  .pdf-btn { font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 6px; background: var(--accent); color: #fff !important; border: none; cursor: pointer; transition: all 0.15s; }
+  .top-nav a { font-size: 12px; font-weight: 500; color: #8a92a5; text-decoration: none; padding: 4px 10px; border-radius: 6px; transition: all 0.15s; }
+  .top-nav a:hover { color: #1a1d23; background: #f0f2f5; }
+  .top-nav a.active { color: #1a2744; background: #e8eef8; }
+  .lang-toggle { display: inline-flex; gap: 2px; background: #e8ecf0; border-radius: 5px; padding: 2px; margin-left: 6px; }
+  .lang-toggle button { padding: 2px 9px; border: none; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer; font-family: inherit; background: transparent; color: #8a92a5; transition: all 0.15s; }
+  .lang-toggle button.active { background: #1a2744; color: #fff; }
+  .pdf-btn { font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 6px; background: #1a2744; color: #fff !important; border: none; cursor: pointer; }
   .pdf-btn:hover { opacity: 0.9; }
-  .lang-toggle { display: inline-flex; gap: 2px; background: var(--border-light); border-radius: 5px; padding: 2px; margin-left: 6px; }
-  .lang-toggle button { padding: 2px 9px; border: none; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer; font-family: inherit; background: transparent; color: var(--text-tertiary); transition: all 0.15s; }
-  .lang-toggle button.active { background: var(--accent); color: #fff; }
 
-  .cv-page { max-width: 880px; margin: 24px auto 32px; background: var(--surface); border-radius: var(--radius-lg); box-shadow: 0 1px 8px rgba(0,0,0,0.04); overflow: hidden; }
-  .cv-inner { padding: 48px 56px 40px; }
+  .cv-wrap { max-width: 960px; margin: 20px auto; box-shadow: 0 1px 8px rgba(0,0,0,0.04); border-radius: 6px; overflow: hidden; }
+  .cv-grid { display: grid; grid-template-columns: 240px 1fr; background: #fff; }
+
+  /* Sidebar */
+  .side { background: #1a2744; color: #e0e4f0; padding: 32px 22px 24px; display: flex; flex-direction: column; gap: 20px; }
+  .photo { width: 100px; height: 100px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.2); margin: 0 auto 4px; overflow: hidden; }
+  .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .side-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.35); margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .contact-item { display: flex; align-items: center; gap: 8px; font-size: 10.5px; color: #c8cce0; line-height: 1.35; }
+  .contact-item .icon { font-size: 11px; width: 14px; text-align: center; opacity: 0.5; }
+  .lang-s { display: flex; justify-content: space-between; font-size: 10.5px; margin-bottom: 3px; }
+  .lang-s .name { color: #c8cce0; }
+  .lang-s .lvl { color: rgba(255,255,255,0.35); font-size: 9px; }
+  .bul-item { font-size: 10.5px; color: #c8cce0; padding: 2px 0 2px 12px; position: relative; }
+  .bul-item::before { content: '›'; position: absolute; left: 0; color: rgba(255,255,255,0.25); }
+  .tag-cloud { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag-cloud span { font-size: 8px; padding: 2px 7px; border-radius: 3px; background: rgba(255,255,255,0.06); color: #a8ace0; border: 1px solid rgba(255,255,255,0.06); }
+
+  /* Main */
+  .main { padding: 32px 30px 24px; }
   .lang-fr, .lang-en { display: none; }
   .lang-fr.active, .lang-en.active { display: block; }
 
-  .cv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
-  .cv-header-left { flex: 1; }
-  .cv-name { font-size: 30px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; line-height: 1.15; }
-  .cv-title { font-size: 15px; font-weight: 500; color: var(--text-secondary); margin-top: 4px; }
-  .cv-header-right { text-align: right; font-size: 11.5px; color: var(--text-tertiary); line-height: 1.7; flex-shrink: 0; }
-  .cv-header-right a { color: var(--blue); text-decoration: none; display: inline-flex; align-items: center; gap: 3px; }
-  .cv-header-right a:hover { text-decoration: underline; }
+  .hdr { margin-bottom: 18px; }
+  .hdr-name { font-size: 26px; font-weight: 800; color: #1a2744; letter-spacing: -0.3px; }
+  .hdr-title { font-size: 13px; color: #4a5a7a; margin-top: 2px; font-weight: 500; }
+  .hdr-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .chip { font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 4px; background: #e8eef8; color: #1a4a9e; }
+  .chip.green { background: #e8f8ee; color: #1a7a4a; }
+  .chip.amber { background: #fef3c7; color: #92400e; }
 
-  .cv-summary { font-size: 13.5px; line-height: 1.7; color: var(--text-secondary); margin-bottom: 28px; padding: 16px 20px; background: var(--blue-light); border-radius: var(--radius); border-left: 3px solid var(--blue); }
-  .cv-section { margin-bottom: 26px; }
-  .cv-section:last-child { margin-bottom: 0; }
-  .section-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.8px; color: var(--blue); margin-bottom: 10px; }
+  .summary-box { font-size: 12px; line-height: 1.7; color: #4a5a7a; margin-bottom: 18px; padding: 12px 16px; background: #f8f9fc; border-left: 3px solid #1a4a9e; border-radius: 0 4px 4px 0; }
 
-  .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .skill-block { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; transition: border-color 0.15s; }
-  .skill-block:hover { border-color: var(--blue); }
-  .skill-block .sk-label { font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--blue); margin-bottom: 4px; }
-  .skill-block .sk-items { font-size: 11.5px; color: var(--text-secondary); line-height: 1.5; }
-  .skill-block.ai { border-color: rgba(5,150,99,0.2); background: rgba(5,150,99,0.03); }
-  .skill-block.ai .sk-label { color: var(--green); }
+  .sec { margin-bottom: 18px; }
+  .sec-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #1a2744; padding-bottom: 4px; margin-bottom: 8px; border-bottom: 2px solid #1a4a9e; display: inline-block; }
 
-  .exp-item { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--border-light); }
-  .exp-item:last-of-type { border-bottom: none; }
-  .exp-left { flex: 0 0 100px; font-size: 11px; font-weight: 500; color: var(--text-tertiary); padding-top: 2px; }
-  .exp-right { flex: 1; }
-  .exp-company { font-size: 14px; font-weight: 600; color: var(--text); }
-  .exp-role { font-size: 12px; font-weight: 500; color: var(--blue); margin-top: 1px; }
-  .exp-desc { font-size: 12px; line-height: 1.65; color: var(--text-secondary); margin-top: 5px; }
-  .exp-desc ul { list-style: none; padding: 0; }
-  .exp-desc li { position: relative; padding-left: 14px; margin-bottom: 2px; }
-  .exp-desc li::before { content: '—'; position: absolute; left: 0; color: var(--blue); font-weight: 600; }
-  .exp-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
-  .exp-tags span { font-size: 9px; font-weight: 500; color: var(--text-tertiary); padding: 1px 8px; border-radius: 4px; background: var(--border-light); }
+  .skills-g { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .sk-box { background: #f8f9fc; border: 1px solid #e8ecf0; border-radius: 6px; padding: 10px 12px; }
+  .sk-box .lbl { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #1a4a9e; margin-bottom: 3px; }
+  .sk-box .items { font-size: 11px; color: #4a5a7a; line-height: 1.5; }
+  .sk-box.ai { border-color: rgba(5,150,99,0.2); background: rgba(5,150,99,0.03); }
+  .sk-box.ai .lbl { color: #059669; }
 
-  .proj-item { padding: 14px 0; border-bottom: 1px solid var(--border-light); }
-  .proj-item:last-of-type { border-bottom: none; }
-  .proj-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-  .proj-name { font-size: 13px; font-weight: 600; color: var(--text); }
-  .proj-name a { color: var(--blue); text-decoration: none; }
-  .proj-name a:hover { text-decoration: underline; }
-  .proj-stack { font-size: 10px; font-weight: 500; color: var(--text-tertiary); }
-  .proj-desc { font-size: 11.5px; line-height: 1.6; color: var(--text-secondary); margin-top: 4px; }
+  .exp { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid #f0f2f5; }
+  .exp:last-child { border-bottom: none; }
+  .exp-l { flex: 0 0 90px; font-size: 11px; font-weight: 500; color: #8a92a5; padding-top: 2px; }
+  .exp-r { flex: 1; }
+  .exp-co { font-size: 13px; font-weight: 600; color: #1a1d23; }
+  .exp-ro { font-size: 11px; font-weight: 500; color: #1a4a9e; margin-top: 1px; }
+  .exp-de { font-size: 11px; line-height: 1.6; color: #4a5a7a; margin-top: 4px; }
+  .exp-de ul { list-style: none; padding: 0; }
+  .exp-de li { padding-left: 13px; margin-bottom: 1px; position: relative; }
+  .exp-de li::before { content: '—'; position: absolute; left: 0; color: #1a4a9e; font-weight: 600; }
+  .exp-t { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 5px; }
+  .exp-t span { font-size: 8.5px; font-weight: 500; color: #8a92a5; padding: 1px 7px; border-radius: 3px; background: #f0f2f5; }
 
-  .certs-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .cert-item { font-size: 12px; color: var(--text-secondary); padding: 8px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; }
-  .cert-item .year { color: var(--text-tertiary); font-size: 10px; margin-left: 4px; }
+  .proj { padding: 10px 0; border-bottom: 1px solid #f0f2f5; }
+  .proj:last-child { border-bottom: none; }
+  .proj-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .proj-n { font-size: 12px; font-weight: 600; color: #1a1d23; }
+  .proj-n a { color: #1a4a9e; text-decoration: none; }
+  .proj-n a:hover { text-decoration: underline; }
+  .proj-st { font-size: 9px; font-weight: 500; color: #8a92a5; }
+  .proj-d { font-size: 11px; line-height: 1.6; color: #4a5a7a; margin-top: 3px; }
 
-  .lang-row { display: flex; gap: 20px; flex-wrap: wrap; }
-  .lang-item { font-size: 12px; color: var(--text-secondary); }
-  .lang-item .level { color: var(--text-tertiary); margin-left: 4px; }
+  .certs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .cert { font-size: 11px; color: #4a5a7a; padding: 7px 10px; background: #f8f9fc; border: 1px solid #e8ecf0; border-radius: 5px; }
+  .cert .yr { color: #8a92a5; font-size: 9px; }
 
-  @media print { .top-nav { display: none; } .cv-page { box-shadow: none; margin: 0; max-width: 100%; border-radius: 0; } .cv-inner { padding: 32px 40px; } .exp-item, .skill-block { break-inside: avoid; } }
-  @media (max-width: 640px) { .cv-inner { padding: 24px 16px; } .cv-header { flex-direction: column; gap: 8px; } .cv-header-right { text-align: left; } .skills-grid { grid-template-columns: 1fr 1fr; } .exp-left { flex-basis: 70px; } .certs-row { grid-template-columns: 1fr; } }
+  .langs { display: flex; gap: 16px; flex-wrap: wrap; }
+  .langs span { font-size: 11px; color: #4a5a7a; }
+  .langs .lvl { color: #8a92a5; }
+
+  @media print { .top-nav { display: none; } .cv-wrap { box-shadow: none; margin: 0; border-radius: 0; } }
+  @media (max-width: 700px) { .cv-grid { grid-template-columns: 1fr; } .side { padding: 20px 16px; } .main { padding: 20px 16px; } .skills-g { grid-template-columns: 1fr 1fr; } .certs { grid-template-columns: 1fr; } .exp-l { flex-basis: 70px; } }
 </style>
 </head>
 <body>
@@ -96,7 +111,7 @@
 <div class="top-nav">
   <div>
     <a href="{{ url_for('index') }}">Dashboard</a>
-    <a href="#" style="color:var(--text);font-weight:600;">CV</a>
+    <a href="#" class="active">CV</a>
     <a href="{{ url_for('qa_dashboard') }}">QA</a>
     <a href="{{ url_for('stats_page') }}">Stats</a>
     <span class="lang-toggle">
@@ -104,345 +119,395 @@
       <button onclick="switchLang('en')" id="btn-en">EN</button>
     </span>
   </div>
-  <div class="right">
-    <a href="#" onclick="window.print()" class="pdf-btn">📄 PDF</a>
-  </div>
+  <div><a href="#" onclick="window.print()" class="pdf-btn">📄 PDF</a></div>
 </div>
 
-<div class="cv-page">
-  <div class="cv-inner">
+<div class="cv-wrap">
+  <div class="cv-grid">
 
-    <!-- HEADER (same for both) -->
-    <div class="cv-header">
-      <div class="cv-header-left">
-        <div class="cv-name">Thasin Jahangir</div>
-        <div class="cv-title" data-fr="Senior QA Engineer · Test Automation · AI Builder" data-en="Senior QA Engineer · Test Automation · AI Builder">Senior QA Engineer · Test Automation · AI Builder</div>
+    <!-- SIDEBAR -->
+    <div class="side">
+      <div class="photo"><img src="{{ url_for('static', filename='cv_photo.jpg') }}" alt="Photo"></div>
+      <div>
+        <div class="side-title">Contact</div>
+        <div class="contact-item"><span class="icon">✉</span> thasin@live.com</div>
+        <div class="contact-item"><span class="icon">📱</span> 07 69 78 72 13</div>
+        <div class="contact-item"><span class="icon">📍</span> Paris & Remote</div>
+        <div class="contact-item"><span class="icon">🔗</span> /in/thasin-j</div>
+        <div class="contact-item"><span class="icon">⌘</span> github.com/AtmanTest</div>
       </div>
-      <div class="cv-header-right">
-        <span data-fr="Paris & Remote" data-en="Paris & Remote">Paris & Remote</span><br>
-        <a href="mailto:thasin@live.com">thasin@live.com</a><br>
-        <a href="https://linkedin.com/in/thasin-j" target="_blank">linkedin.com/in/thasin-j</a><br>
-        <a href="https://github.com/AtmanTest" target="_blank">github.com/AtmanTest</a>
+      <div>
+        <div class="side-title">Langues</div>
+        <div class="lang-s"><span class="name">Français</span><span class="lvl">Natif</span></div>
+        <div class="lang-s"><span class="name">English</span><span class="lvl">Fluent</span></div>
+        <div class="lang-s"><span class="name">Español</span><span class="lvl">Prof.</span></div>
+        <div class="lang-s"><span class="name">বাংলা</span><span class="lvl">Courant</span></div>
       </div>
-    </div>
-
-    <!-- ===== FRENCH ===== -->
-    <div class="lang-fr active" id="content-fr">
-
-      <div class="cv-summary">
-        <strong>12+ ans</strong> d'expérience en qualité logicielle sur des environnements exigeants (banque, hôtellerie, cloud souverain, santé). Pilotage de bout en bout de la recette fonctionnelle, stratégie de test, coordination multi-acteurs et reporting Go/No-Go. Agile/Scrum au quotidien. Construit des agents IA, des workflows LLM locaux et des pipelines QA autonomes.
+      <div>
+        <div class="side-title">Atouts</div>
+        <div class="bul-item">Compréhension métier</div>
+        <div class="bul-item">Autonomie</div>
+        <div class="bul-item">Fiabilité</div>
+        <div class="bul-item">Diplomatie</div>
+        <div class="bul-item">Pédagogie</div>
       </div>
-
-      <div class="cv-section">
-        <div class="section-label">Compétences techniques</div>
-        <div class="skills-grid">
-          <div class="skill-block">
-            <div class="sk-label">Test & QA</div>
-            <div class="sk-items">Recette fonctionnelle, Stratégie de test, Campagnes d'acceptance, Non-régression, UAT, API testing</div>
-          </div>
-          <div class="skill-block">
-            <div class="sk-label">Automatisation</div>
-            <div class="sk-items">Gherkin, Ranorex, AutoIT, Playwright, Génération de tests assistée par IA</div>
-          </div>
-          <div class="skill-block">
-            <div class="sk-label">Langages</div>
-            <div class="sk-items">Python, SQL, Gherkin, Bash, JavaScript (notions)</div>
-          </div>
-          <div class="skill-block">
-            <div class="sk-label">Cloud & DevOps</div>
-            <div class="sk-items">Render, GitHub Actions, CI/CD, Docker (bases), Orchestration cron</div>
-          </div>
-          <div class="skill-block ai">
-            <div class="sk-label">IA / LLM</div>
-            <div class="sk-items">Hermes Agent, ClawBot, Claude Code, Codex CLI, MCP, Prompt Engineering, LLMs locaux</div>
-          </div>
-          <div class="skill-block">
-            <div class="sk-label">Outils</div>
-            <div class="sk-items">Jira / Xray / Zephyr, TestRail, Redmine, Confluence, ServiceNow</div>
-          </div>
+      <div>
+        <div class="side-title">Environnements</div>
+        <div class="tag-cloud">
+          <span>Jira</span><span>Xray</span><span>TestRail</span><span>Zephyr</span><span>Redmine</span>
+          <span>Gherkin</span><span>Ranorex</span><span>AutoIT</span><span>SQL Oracle</span><span>MainFrame</span>
+          <span>SAP HANA</span><span>ServiceNow</span><span>Confluence</span><span>Android</span><span>iOS</span>
+          <span>Windows</span><span>macOS</span><span>Linux</span><span>Hermes Agent</span><span>ClawBot</span>
+          <span>Claude Code</span><span>Codex CLI</span><span>MCP</span>
         </div>
       </div>
-
-      <div class="cv-section">
-        <div class="section-label">Expériences</div>
-        <div class="exp-item">
-          <div class="exp-left">2023 — 2025</div>
-          <div class="exp-right">
-            <div class="exp-company">BRED Banque Populaire · Programme ARGOS</div>
-            <div class="exp-role">Consultant QA — Freelance (ATMAN)</div>
-            <div class="exp-desc"><ul>
-              <li>Piloté la recette fonctionnelle de bout en bout d'un programme de conformité réglementaire (échéance 2026) — périmètre P2P/O2C, de Corcentric au moteur comptable AIS.</li>
-              <li>Défini la stratégie de test et les plans couvrant toute la chaîne de données : contrôle d'entrée, validation comptable, intégration Mainframe.</li>
-              <li>Coordonné les campagnes multi-équipes dans Jira/Xray : métriques de couverture, cycle de vie des anomalies, reporting Go/No-Go.</li>
-              <li>Animé les rituels Agile/Scrum et géré les cycles de non-régression trimestriels sur SQL Oracle / Mainframe.</li>
-            </ul></div>
-            <div class="exp-tags"><span>Jira</span><span>Xray</span><span>SQL Oracle</span><span>MainFrame</span><span>Corcentric</span><span>ServiceNow</span></div>
-          </div>
-        </div>
-        <div class="exp-item">
-          <div class="exp-left">2019 — 2022</div>
-          <div class="exp-right">
-            <div class="exp-company">Accor · Apps mobiles (100+ pays)</div>
-            <div class="exp-role">Référent QA Mobile — Consultant</div>
-            <div class="exp-desc"><ul>
-              <li>Référent QA pour les apps Android & iOS déployées dans 100+ pays — recette et non-régression en Agile Scrum (sprints de 2 semaines).</li>
-              <li>Co-construit les User Stories avec le PO et l'équipe Dev ; rédigé 100% des cas critiques en Gherkin.</li>
-              <li>Validé les flux critiques : réservation, fidélité, paiement — multi-appareils, multi-langues.</li>
-              <li>Assuré le reporting Go/No-Go à la direction.</li>
-            </ul></div>
-            <div class="exp-tags"><span>Jira</span><span>Xray</span><span>Gherkin</span><span>Charles Proxy</span><span>Crashlytics</span><span>Android</span><span>iOS</span></div>
-          </div>
-        </div>
-        <div class="exp-item">
-          <div class="exp-left">2017 — 2019</div>
-          <div class="exp-right">
-            <div class="exp-company">Oodrive · Cloud souverain</div>
-            <div class="exp-role">Responsable QA — Ingénieur Qualité</div>
-            <div class="exp-desc"><ul>
-              <li>Responsable des plans de tests fonctionnels et non-régression pour les applications critiques B2B/B2C du cloud souverain français.</li>
-              <li>Coordonné les campagnes multi-plateformes (Windows, macOS, Linux) et support technique niveau 3.</li>
-              <li>Structuré les processus QA : templates de plans de test, critères d'entrée/sortie, gestion des anomalies.</li>
-            </ul></div>
-            <div class="exp-tags"><span>Jira</span><span>Zephyr</span><span>Ranorex</span><span>Confluence</span><span>Windows</span><span>macOS</span><span>Linux</span></div>
-          </div>
-        </div>
-        <div class="exp-item">
-          <div class="exp-left">2011 — 2016</div>
-          <div class="exp-right">
-            <div class="exp-company">Profil Technology · Sécurité logicielle</div>
-            <div class="exp-role">Ingénieur Tests & Support N3</div>
-            <div class="exp-desc"><ul>
-              <li>Campagnes multi-plateformes (Windows, macOS, Linux) sur Witigo, Bitdefender, WebFilter.</li>
-              <li>Développé des scripts d'automatisation AutoIT pour accélérer la régression.</li>
-              <li>Géré le laboratoire de tests sécurité et le support N3 grands comptes.</li>
-            </ul></div>
-            <div class="exp-tags"><span>AutoIT</span><span>VMware</span><span>Windows</span><span>macOS</span><span>Linux</span><span>Bitdefender</span></div>
-          </div>
-        </div>
-        <div class="exp-item">
-          <div class="exp-left">2016 — 2017</div>
-          <div class="exp-right">
-            <div class="exp-company">Vinci Construction · SAP BPC</div>
-            <div class="exp-role">Consultant QA</div>
-            <div class="exp-desc"><ul>
-              <li>Recette fonctionnelle sur applications web SAP BPC — validation conformité, intégrité des données, tests UI.</li>
-              <li>Rédaction des cas de tests, suivi des anomalies, reporting à la MOA.</li>
-            </ul></div>
-            <div class="exp-tags"><span>Redmine</span><span>TestRail</span><span>SAP BPC</span><span>SAP HANA</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="cv-section">
-        <div class="section-label">Projets clés</div>
-        <div class="proj-item">
-          <div class="proj-top">
-            <div class="proj-name"><a href="https://github.com/AtmanTest/jobhunt" target="_blank">JobHunt — Dashboard de jobs QA piloté par IA</a></div>
-            <div class="proj-stack">Python · Flask · SQLite · Render · GitHub Actions</div>
-          </div>
-          <div class="proj-desc">Scraper multi-sources (LinkedIn, Indeed, WTTJ, 6+ sources) avec matching automatique, génération de cover letters par IA, widget DeepSeek Balance live, cron de refresh horaire et site CV bilingue. Déployé sur Render avec auto-deploy GitHub.</div>
-        </div>
-        <div class="proj-item">
-          <div class="proj-top">
-            <div class="proj-name">Pipelines QA Agentic — Hermes Agent & ClawBot</div>
-            <div class="proj-stack">Hermes · ClawBot · Claude Code · MCP · DeepSeek</div>
-          </div>
-          <div class="proj-desc">Orchestration multi-agents pour la QA automatisée : délégation de tâches, pipelines d'outils, génération de tests par IA et workflows de non-régression autonomes. Intégration LLMs cloud et locaux.</div>
-        </div>
-        <div class="proj-item">
-          <div class="proj-top">
-            <div class="proj-name">Infrastructure LLM locale</div>
-            <div class="proj-stack">LM Studio · Gemma 4 · OLLama · MLX</div>
-          </div>
-          <div class="proj-desc">Configuration et évaluation de LLMs locaux (Gemma 4, Qwen) sur Apple Silicon. Configuration provider, prompt engineering, benchmark de coûts pour cas d'usage agents autonomes.</div>
-        </div>
-      </div>
-
-      <div class="cv-section">
-        <div class="section-label">Formations & Certifications</div>
-        <div class="certs-row">
-          <div class="cert-item">PSPO — Professional Scrum Product Owner <span class="year">· Scrum.org, 2020</span></div>
-          <div class="cert-item">ISTQB — Fondation <span class="year">· Learning Tree, 2015</span></div>
-          <div class="cert-item">IA Générative & Prompt Engineering <span class="year">· Google / Coursera, 2025</span></div>
-          <div class="cert-item">Digital Product Management <span class="year">· Coursera, 2025</span></div>
-        </div>
-      </div>
-
-      <div class="cv-section">
-        <div class="section-label">Langues</div>
-        <div class="lang-row">
-          <span class="lang-item">Français <span class="level">Natif</span></span>
-          <span class="lang-item">English <span class="level">Courant (C1/C2)</span></span>
-          <span class="lang-item">Español <span class="level">Professionnel</span></span>
-          <span class="lang-item">বাংলা <span class="level">Courant</span></span>
-        </div>
+      <div>
+        <div class="side-title">Centres d'intérêt</div>
+        <div class="bul-item">IA & Automatisation</div>
+        <div class="bul-item">LLMs cloud & locaux</div>
+        <div class="bul-item">Agentic workflows</div>
+        <div class="bul-item">Bots conversationnels</div>
+        <div class="bul-item">41 pays visités</div>
       </div>
     </div>
 
-    <!-- ===== ENGLISH ===== -->
-    <div class="lang-en" id="content-en">
+    <!-- MAIN -->
+    <div class="main">
 
-      <div class="cv-summary">
-        <strong>12+ years</strong> delivering quality at scale across banking, hospitality, sovereign cloud, and healthcare. 
-        Expertise in test strategy, functional acceptance, regulatory compliance, and multi-stakeholder coordination. 
-        Agile/Scrum native, automation-minded. Currently building AI agents, local LLM workflows, and autonomous QA pipelines.
+      <!-- FRENCH -->
+      <div class="lang-fr active" id="content-fr">
+
+        <div class="hdr">
+          <div class="hdr-name">Thasin Jahangir</div>
+          <div class="hdr-title">Consultant QA Senior · Test Manager · Freelance SASU</div>
+          <div class="hdr-chips">
+            <span class="chip">🎯 12+ ans</span>
+            <span class="chip">🏢 Grands comptes</span>
+            <span class="chip green">✅ Disponible</span>
+          </div>
+        </div>
+
+        <div class="summary-box">
+          <strong>12+ ans</strong> d'expérience en qualité logicielle sur des environnements exigeants (banque, hôtellerie, cloud souverain, santé). Pilotage de bout en bout de la recette fonctionnelle, stratégie de test, coordination multi-acteurs et reporting Go/No-Go. Agile/Scrum au quotidien. Construit des agents IA, des workflows LLM locaux et des pipelines QA autonomes.
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Compétences techniques</div>
+          <div class="skills-g">
+            <div class="sk-box">
+              <div class="lbl">Test & QA</div>
+              <div class="items">Recette fonctionnelle, Stratégie de test, Campagnes d'acceptance, Non-régression, UAT, API testing</div>
+            </div>
+            <div class="sk-box">
+              <div class="lbl">Automatisation</div>
+              <div class="items">Gherkin, Ranorex, AutoIT, Playwright, Génération de tests assistée par IA</div>
+            </div>
+            <div class="sk-box">
+              <div class="lbl">Langages</div>
+              <div class="items">Python, SQL, Gherkin, Bash, JavaScript (notions)</div>
+            </div>
+            <div class="sk-box">
+              <div class="lbl">Cloud & DevOps</div>
+              <div class="items">Render, GitHub Actions, CI/CD, Docker (bases), Orchestration cron</div>
+            </div>
+            <div class="sk-box ai">
+              <div class="lbl">IA / LLM</div>
+              <div class="items">Hermes Agent, ClawBot, Claude Code, Codex CLI, MCP, Prompt Engineering, LLMs locaux</div>
+            </div>
+            <div class="sk-box">
+              <div class="lbl">Outils</div>
+              <div class="items">Jira / Xray / Zephyr, TestRail, Redmine, Confluence, ServiceNow</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Expériences</div>
+
+          <div class="exp">
+            <div class="exp-l">2023 — 2025</div>
+            <div class="exp-r">
+              <div class="exp-co">BRED Banque Populaire · Programme ARGOS</div>
+              <div class="exp-ro">Consultant QA — Freelance (ATMAN)</div>
+              <div class="exp-de"><ul>
+                <li>Piloté la recette fonctionnelle de bout en bout d'un programme de conformité réglementaire (échéance 2026) — périmètre P2P/O2C, de Corcentric au moteur comptable AIS.</li>
+                <li>Défini la stratégie de test et les plans couvrant toute la chaîne de données : contrôle d'entrée, validation comptable, intégration Mainframe.</li>
+                <li>Coordonné les campagnes multi-équipes dans Jira/Xray : métriques de couverture, cycle de vie des anomalies, reporting Go/No-Go.</li>
+                <li>Animé les rituels Agile/Scrum et géré les cycles de non-régression trimestriels sur SQL Oracle / Mainframe.</li>
+              </ul></div>
+              <div class="exp-t"><span>Jira</span><span>Xray</span><span>SQL Oracle</span><span>MainFrame</span><span>Corcentric</span><span>ServiceNow</span></div>
+            </div>
+          </div>
+
+          <div class="exp">
+            <div class="exp-l">2019 — 2022</div>
+            <div class="exp-r">
+              <div class="exp-co">Accor · Apps mobiles (100+ pays)</div>
+              <div class="exp-ro">Référent QA Mobile — Consultant</div>
+              <div class="exp-de"><ul>
+                <li>Référent QA pour les apps Android & iOS déployées dans 100+ pays — recette et non-régression en Agile Scrum (sprints de 2 semaines).</li>
+                <li>Co-construit les User Stories avec le PO et l'équipe Dev ; rédigé 100% des cas critiques en Gherkin.</li>
+                <li>Validé les flux critiques : réservation, fidélité, paiement — multi-appareils, multi-langues.</li>
+                <li>Assuré le reporting Go/No-Go à la direction.</li>
+              </ul></div>
+              <div class="exp-t"><span>Jira</span><span>Xray</span><span>Gherkin</span><span>Charles Proxy</span><span>Crashlytics</span><span>Android</span><span>iOS</span></div>
+            </div>
+          </div>
+
+          <div class="exp">
+            <div class="exp-l">2017 — 2019</div>
+            <div class="exp-r">
+              <div class="exp-co">Oodrive · Cloud souverain</div>
+              <div class="exp-ro">Responsable QA — Ingénieur Qualité</div>
+              <div class="exp-de"><ul>
+                <li>Responsable des plans de tests fonctionnels et non-régression pour les applications critiques B2B/B2C du cloud souverain français.</li>
+                <li>Coordonné les campagnes multi-plateformes (Windows, macOS, Linux) et support technique niveau 3.</li>
+                <li>Structuré les processus QA : templates de plans de test, critères d'entrée/sortie, gestion des anomalies.</li>
+              </ul></div>
+              <div class="exp-t"><span>Jira</span><span>Zephyr</span><span>Ranorex</span><span>Confluence</span><span>Windows</span><span>macOS</span><span>Linux</span></div>
+            </div>
+          </div>
+
+          <div class="exp">
+            <div class="exp-l">2011 — 2016</div>
+            <div class="exp-r">
+              <div class="exp-co">Profil Technology · Sécurité logicielle</div>
+              <div class="exp-ro">Ingénieur Tests & Support N3</div>
+              <div class="exp-de"><ul>
+                <li>Campagnes multi-plateformes (Windows, macOS, Linux) sur Witigo, Bitdefender, WebFilter.</li>
+                <li>Développé des scripts d'automatisation AutoIT pour accélérer la régression.</li>
+                <li>Géré le laboratoire de tests sécurité et le support N3 grands comptes.</li>
+              </ul></div>
+              <div class="exp-t"><span>AutoIT</span><span>VMware</span><span>Windows</span><span>macOS</span><span>Linux</span><span>Bitdefender</span></div>
+            </div>
+          </div>
+
+          <div class="exp">
+            <div class="exp-l">2016 — 2017</div>
+            <div class="exp-r">
+              <div class="exp-co">Vinci Construction · SAP BPC</div>
+              <div class="exp-ro">Consultant QA</div>
+              <div class="exp-de"><ul>
+                <li>Recette fonctionnelle sur applications web SAP BPC — validation conformité, intégrité des données, tests UI.</li>
+                <li>Rédaction des cas de tests, suivi des anomalies, reporting à la MOA.</li>
+              </ul></div>
+              <div class="exp-t"><span>Redmine</span><span>TestRail</span><span>SAP BPC</span><span>SAP HANA</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Projets clés</div>
+
+          <div class="proj">
+            <div class="proj-top">
+              <div class="proj-n"><a href="https://github.com/AtmanTest/jobhunt" target="_blank">JobHunt — Dashboard de jobs QA piloté par IA</a></div>
+              <div class="proj-st">Python · Flask · SQLite · Render</div>
+            </div>
+            <div class="proj-d">Scraper multi-sources (LinkedIn, Indeed, WTTJ, 6+ sources) avec matching automatique, génération de cover letters par IA, widget DeepSeek Balance live, cron de refresh horaire. Déployé sur Render avec auto-deploy GitHub.</div>
+          </div>
+
+          <div class="proj">
+            <div class="proj-top">
+              <div class="proj-n">Pipelines QA Agentic — Hermes Agent & ClawBot</div>
+              <div class="proj-st">Hermes · ClawBot · MCP · DeepSeek</div>
+            </div>
+            <div class="proj-d">Orchestration multi-agents pour la QA automatisée : délégation de tâches, pipelines d'outils, génération de tests par IA et workflows de non-régression autonomes. Intégration LLMs cloud et locaux.</div>
+          </div>
+
+          <div class="proj">
+            <div class="proj-top">
+              <div class="proj-n">Infrastructure LLM locale</div>
+              <div class="proj-st">LM Studio · Gemma 4 · OLLama · MLX</div>
+            </div>
+            <div class="proj-d">Configuration et évaluation de LLMs locaux (Gemma 4, Qwen) sur Apple Silicon. Configuration provider, prompt engineering, benchmark de coûts pour cas d'usage agents autonomes.</div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Formations & Certifications</div>
+          <div class="certs">
+            <div class="cert">PSPO — Professional Scrum Product Owner <span class="yr">· Scrum.org, 2020</span></div>
+            <div class="cert">ISTQB — Fondation <span class="yr">· Learning Tree, 2015</span></div>
+            <div class="cert">IA Générative & Prompt Engineering <span class="yr">· Google / Coursera, 2025</span></div>
+            <div class="cert">Digital Product Management <span class="yr">· Coursera, 2025</span></div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Langues</div>
+          <div class="langs">
+            <span>Français <span class="lvl">Natif</span></span>
+            <span>English <span class="lvl">Courant (C1/C2)</span></span>
+            <span>Español <span class="lvl">Professionnel</span></span>
+            <span>বাংলা <span class="lvl">Courant</span></span>
+          </div>
+        </div>
       </div>
 
-      <div class="cv-section">
-        <div class="section-label">Technical Skills</div>
-        <div class="skills-grid">
-          <div class="skill-block">
-            <div class="sk-label">Testing & QA</div>
-            <div class="sk-items">Functional testing, Test strategy, Acceptance campaigns, Regression, UAT, API testing</div>
+      <!-- ENGLISH -->
+      <div class="lang-en" id="content-en">
+
+        <div class="hdr">
+          <div class="hdr-name">Thasin Jahangir</div>
+          <div class="hdr-title">Senior QA Consultant · Test Manager · Freelance SASU</div>
+          <div class="hdr-chips">
+            <span class="chip">🎯 12+ years</span>
+            <span class="chip">🏢 Enterprise</span>
+            <span class="chip green">✅ Available</span>
           </div>
-          <div class="skill-block">
-            <div class="sk-label">Automation</div>
-            <div class="sk-items">Gherkin, Ranorex, AutoIT, Playwright, AI-assisted test generation</div>
+        </div>
+
+        <div class="summary-box">
+          <strong>12+ years</strong> of software quality experience across banking, hospitality, sovereign cloud, and healthcare. End-to-end functional acceptance — test strategy, planning, multi-stakeholder coordination, Go/No-Go reporting. Daily Agile/Scrum. Building AI agents, local LLM workflows, and autonomous QA pipelines.
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Technical Skills</div>
+          <div class="skills-g">
+            <div class="sk-box"><div class="lbl">Testing & QA</div><div class="items">Functional testing, Test strategy, Acceptance, Regression, UAT, API testing</div></div>
+            <div class="sk-box"><div class="lbl">Automation</div><div class="items">Gherkin, Ranorex, AutoIT, Playwright, AI-assisted test gen.</div></div>
+            <div class="sk-box"><div class="lbl">Languages</div><div class="items">Python, SQL, Gherkin, Bash, JavaScript</div></div>
+            <div class="sk-box"><div class="lbl">Cloud & DevOps</div><div class="items">Render, GitHub Actions, CI/CD, Docker basics, cron</div></div>
+            <div class="sk-box ai"><div class="lbl">AI / LLM</div><div class="items">Hermes Agent, ClawBot, Claude Code, Codex CLI, MCP, Prompt Eng., Local LLMs</div></div>
+            <div class="sk-box"><div class="lbl">Tools</div><div class="items">Jira / Xray / Zephyr, TestRail, Redmine, Confluence, ServiceNow</div></div>
           </div>
-          <div class="skill-block">
-            <div class="sk-label">Languages</div>
-            <div class="sk-items">Python, SQL, Gherkin, Bash, JavaScript (basic)</div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Experience</div>
+
+          <div class="exp">
+            <div class="exp-l">2023 — 2025</div>
+            <div class="exp-r">
+              <div class="exp-co">BRED Banque Populaire · ARGOS Program</div>
+              <div class="exp-ro">QA Consultant Engineer — Freelance (ATMAN)</div>
+              <div class="exp-de"><ul>
+                <li>Led end-to-end functional acceptance for a regulatory compliance program (2026 deadline) — P2P/O2C scope, Corcentric to AIS.</li>
+                <li>Defined test strategy covering full data chain: input control, accounting validation, mainframe integration.</li>
+                <li>Coordinated multi-team campaigns in Jira/Xray: coverage metrics, defect lifecycle, Go/No-Go reporting.</li>
+                <li>Facilitated Agile/Scrum; managed quarterly regression on SQL Oracle / Mainframe.</li>
+              </ul></div>
+              <div class="exp-t"><span>Jira</span><span>Xray</span><span>SQL Oracle</span><span>MainFrame</span><span>Corcentric</span><span>ServiceNow</span></div>
+            </div>
           </div>
-          <div class="skill-block">
-            <div class="sk-label">Cloud & DevOps</div>
-            <div class="sk-items">Render, GitHub Actions, CI/CD, Docker basics, cron orchestration</div>
+
+          <div class="exp">
+            <div class="exp-l">2019 — 2022</div>
+            <div class="exp-r">
+              <div class="exp-co">Accor · Global Mobile Apps</div>
+              <div class="exp-ro">Mobile QA Lead — Consultant</div>
+              <div class="exp-de"><ul>
+                <li>QA reference for Android & iOS apps in 100+ countries — acceptance & regression in Agile Scrum (2-week sprints).</li>
+                <li>Co-created User Stories with PO & Dev; authored 100% of critical Gherkin test cases.</li>
+                <li>Validated core flows: booking, loyalty, payment — cross-device, multilingual.</li>
+                <li>Delivered Go/No-Go reporting to product leadership.</li>
+              </ul></div>
+              <div class="exp-t"><span>Jira</span><span>Xray</span><span>Gherkin</span><span>Charles Proxy</span><span>Crashlytics</span><span>Android</span><span>iOS</span></div>
+            </div>
           </div>
-          <div class="skill-block ai">
-            <div class="sk-label">AI / LLM</div>
-            <div class="sk-items">Hermes Agent, ClawBot, Claude Code, Codex CLI, MCP, Prompt Engineering, Local LLMs</div>
+
+          <div class="exp">
+            <div class="exp-l">2017 — 2019</div>
+            <div class="exp-r">
+              <div class="exp-co">Oodrive · Sovereign Cloud</div>
+              <div class="exp-ro">QA Lead — Software Quality Engineer</div>
+              <div class="exp-de"><ul>
+                <li>Owned functional & regression test plans for B2B/B2C critical apps on French sovereign cloud.</li>
+                <li>Coordinated cross-platform campaigns (Windows, macOS, Linux) and L3 enterprise support.</li>
+                <li>Structured QA processes: test plan templates, entry/exit criteria, defect management.</li>
+              </ul></div>
+              <div class="exp-t"><span>Jira</span><span>Zephyr</span><span>Ranorex</span><span>Confluence</span><span>Windows</span><span>macOS</span><span>Linux</span></div>
+            </div>
           </div>
-          <div class="skill-block">
-            <div class="sk-label">Tools</div>
-            <div class="sk-items">Jira / Xray / Zephyr, TestRail, Redmine, Confluence, ServiceNow</div>
+
+          <div class="exp">
+            <div class="exp-l">2011 — 2016</div>
+            <div class="exp-r">
+              <div class="exp-co">Profil Technology · Security Software</div>
+              <div class="exp-ro">Test Engineer & L3 Support</div>
+              <div class="exp-de"><ul>
+                <li>Multi-platform campaigns (Windows, macOS, Linux) on Witigo, Bitdefender, WebFilter.</li>
+                <li>Developed AutoIT automation scripts to accelerate regression.</li>
+                <li>Managed security test lab and enterprise L3 support.</li>
+              </ul></div>
+              <div class="exp-t"><span>AutoIT</span><span>VMware</span><span>Windows</span><span>macOS</span><span>Linux</span><span>Bitdefender</span></div>
+            </div>
+          </div>
+
+          <div class="exp">
+            <div class="exp-l">2016 — 2017</div>
+            <div class="exp-r">
+              <div class="exp-co">Vinci Construction · SAP BPC</div>
+              <div class="exp-ro">QA Consultant Engineer</div>
+              <div class="exp-de"><ul>
+                <li>Functional acceptance on SAP BPC web apps — compliance, data integrity, UI testing.</li>
+                <li>Authored test cases, managed defects, stakeholder reporting.</li>
+              </ul></div>
+              <div class="exp-t"><span>Redmine</span><span>TestRail</span><span>SAP BPC</span><span>SAP HANA</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Key Projects</div>
+
+          <div class="proj">
+            <div class="proj-top">
+              <div class="proj-n"><a href="https://github.com/AtmanTest/jobhunt" target="_blank">JobHunt — AI-Powered QA Job Dashboard</a></div>
+              <div class="proj-st">Python · Flask · SQLite · Render</div>
+            </div>
+            <div class="proj-d">Multi-source scraper (LinkedIn, Indeed, WTTJ, 6+ sources) with auto-matching, AI cover letters, live DeepSeek balance, hourly refresh cron. Deployed on Render with GitHub auto-deploy.</div>
+          </div>
+
+          <div class="proj">
+            <div class="proj-top">
+              <div class="proj-n">Agentic QA Pipelines — Hermes Agent & ClawBot</div>
+              <div class="proj-st">Hermes · ClawBot · MCP · DeepSeek</div>
+            </div>
+            <div class="proj-d">Multi-agent orchestration for automated QA: task delegation, tool-use pipelines, AI-driven test generation, autonomous regression workflows. Local & cloud LLM integration.</div>
+          </div>
+
+          <div class="proj">
+            <div class="proj-top">
+              <div class="proj-n">Local LLM Infrastructure</div>
+              <div class="proj-st">LM Studio · Gemma 4 · OLLama · MLX</div>
+            </div>
+            <div class="proj-d">Local LLM setup (Gemma 4, Qwen) on Apple Silicon. Provider config, prompt engineering, cost benchmarking for autonomous agent use cases.</div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Education & Certifications</div>
+          <div class="certs">
+            <div class="cert">PSPO — Professional Scrum Product Owner <span class="yr">· Scrum.org, 2020</span></div>
+            <div class="cert">ISTQB — Foundation Level <span class="yr">· Learning Tree, 2015</span></div>
+            <div class="cert">Generative AI & Prompt Engineering <span class="yr">· Google / Coursera, 2025</span></div>
+            <div class="cert">Digital Product Management <span class="yr">· Coursera, 2025</span></div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Languages</div>
+          <div class="langs">
+            <span>Français <span class="lvl">Native</span></span>
+            <span>English <span class="lvl">Fluent (C1/C2)</span></span>
+            <span>Español <span class="lvl">Professional</span></span>
+            <span>বাংলা <span class="lvl">Fluent</span></span>
           </div>
         </div>
       </div>
 
-      <div class="cv-section">
-        <div class="section-label">Experience</div>
-        <div class="exp-item">
-          <div class="exp-left">2023 — 2025</div>
-          <div class="exp-right">
-            <div class="exp-company">BRED Banque Populaire · ARGOS Program</div>
-            <div class="exp-role">QA Consultant Engineer — Freelance (ATMAN)</div>
-            <div class="exp-desc"><ul>
-              <li>Led end-to-end functional acceptance for a regulatory compliance program (2026 deadline) — P2P/O2C scope, Corcentric to AIS accounting engine.</li>
-              <li>Defined test strategy and plans covering full data chain: input control, accounting validation, mainframe integration.</li>
-              <li>Coordinated multi-team acceptance campaigns in Jira/Xray: coverage metrics, defect lifecycle, Go/No-Go reporting.</li>
-              <li>Facilitated Agile/Scrum ceremonies and managed quarterly regression cycles on SQL Oracle / Mainframe.</li>
-            </ul></div>
-            <div class="exp-tags"><span>Jira</span><span>Xray</span><span>SQL Oracle</span><span>MainFrame</span><span>Corcentric</span><span>ServiceNow</span></div>
-          </div>
-        </div>
-        <div class="exp-item">
-          <div class="exp-left">2019 — 2022</div>
-          <div class="exp-right">
-            <div class="exp-company">Accor · Global Mobile Apps</div>
-            <div class="exp-role">Mobile QA Lead — Consultant</div>
-            <div class="exp-desc"><ul>
-              <li>QA reference for Android & iOS apps deployed in 100+ countries — led acceptance and regression in Agile Scrum (2-week sprints).</li>
-              <li>Co-created User Stories with PO and dev team; authored 100% of critical test cases in Gherkin.</li>
-              <li>Validated core flows: booking, loyalty, payment — cross-device, multi-language.</li>
-              <li>Delivered Go/No-Go reporting to product leadership per release.</li>
-            </ul></div>
-            <div class="exp-tags"><span>Jira</span><span>Xray</span><span>Gherkin</span><span>Charles Proxy</span><span>Crashlytics</span><span>Android</span><span>iOS</span></div>
-          </div>
-        </div>
-        <div class="exp-item">
-          <div class="exp-left">2017 — 2019</div>
-          <div class="exp-right">
-            <div class="exp-company">Oodrive · Sovereign Cloud</div>
-            <div class="exp-role">QA Lead — Software Quality Engineer</div>
-            <div class="exp-desc"><ul>
-              <li>Owned functional and regression test plans for B2B/B2C critical applications on French sovereign cloud.</li>
-              <li>Coordinated cross-platform campaigns (Windows, macOS, Linux) and Level 3 enterprise support.</li>
-              <li>Structured QA processes: test plan templates, entry/exit criteria, defect management.</li>
-            </ul></div>
-            <div class="exp-tags"><span>Jira</span><span>Zephyr</span><span>Ranorex</span><span>Confluence</span><span>Windows</span><span>macOS</span><span>Linux</span></div>
-          </div>
-        </div>
-        <div class="exp-item">
-          <div class="exp-left">2011 — 2016</div>
-          <div class="exp-right">
-            <div class="exp-company">Profil Technology · Security Software</div>
-            <div class="exp-role">Test Engineer & L3 Support</div>
-            <div class="exp-desc"><ul>
-              <li>Multi-platform test campaigns (Windows, macOS, Linux) on Witigo, Bitdefender, WebFilter.</li>
-              <li>Developed AutoIT automation scripts to accelerate regression cycles.</li>
-              <li>Managed security test lab and enterprise L3 support.</li>
-            </ul></div>
-            <div class="exp-tags"><span>AutoIT</span><span>VMware</span><span>Windows</span><span>macOS</span><span>Linux</span><span>Bitdefender</span></div>
-          </div>
-        </div>
-        <div class="exp-item">
-          <div class="exp-left">2016 — 2017</div>
-          <div class="exp-right">
-            <div class="exp-company">Vinci Construction · SAP BPC</div>
-            <div class="exp-role">QA Consultant Engineer</div>
-            <div class="exp-desc"><ul>
-              <li>Functional acceptance on SAP BPC web apps — compliance validation, data integrity, UI testing.</li>
-              <li>Authored test cases, managed defects, reported to MOA.</li>
-            </ul></div>
-            <div class="exp-tags"><span>Redmine</span><span>TestRail</span><span>SAP BPC</span><span>SAP HANA</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="cv-section">
-        <div class="section-label">Key Projects</div>
-        <div class="proj-item">
-          <div class="proj-top">
-            <div class="proj-name"><a href="https://github.com/AtmanTest/jobhunt" target="_blank">JobHunt — AI-Powered QA Job Dashboard</a></div>
-            <div class="proj-stack">Python · Flask · SQLite · Render · GitHub Actions</div>
-          </div>
-          <div class="proj-desc">Multi-source job scraper (LinkedIn, Indeed, WTTJ, 6+ sources) with automated matching, AI cover letter generation, live DeepSeek balance widget, hourly refresh cron, bilingual CV site. Deployed on Render with auto-deploy from GitHub.</div>
-        </div>
-        <div class="proj-item">
-          <div class="proj-top">
-            <div class="proj-name">Agentic QA Pipelines — Hermes Agent & ClawBot</div>
-            <div class="proj-stack">Hermes · ClawBot · Claude Code · MCP · DeepSeek API</div>
-          </div>
-          <div class="proj-desc">Multi-agent orchestration for automated QA: task delegation, tool-use pipelines, AI-driven test generation, autonomous regression workflows. Integration with local and cloud LLMs.</div>
-        </div>
-        <div class="proj-item">
-          <div class="proj-top">
-            <div class="proj-name">Local LLM Infrastructure</div>
-            <div class="proj-stack">LM Studio · Gemma 4 · OLLama · MLX</div>
-          </div>
-          <div class="proj-desc">Setup and evaluation of local LLMs (Gemma 4, Qwen) on Apple Silicon. Provider configuration, prompt engineering, cost benchmarking for autonomous agent use cases.</div>
-        </div>
-      </div>
-
-      <div class="cv-section">
-        <div class="section-label">Education & Certifications</div>
-        <div class="certs-row">
-          <div class="cert-item">PSPO — Professional Scrum Product Owner <span class="year">· Scrum.org, 2020</span></div>
-          <div class="cert-item">ISTQB — Foundation Level <span class="year">· Learning Tree, 2015</span></div>
-          <div class="cert-item">Generative AI & Prompt Engineering <span class="year">· Google / Coursera, 2025</span></div>
-          <div class="cert-item">Digital Product Management <span class="year">· Coursera, 2025</span></div>
-        </div>
-      </div>
-
-      <div class="cv-section">
-        <div class="section-label">Languages</div>
-        <div class="lang-row">
-          <span class="lang-item">Français <span class="level">Native</span></span>
-          <span class="lang-item">English <span class="level">Fluent (C1/C2)</span></span>
-          <span class="lang-item">Español <span class="level">Professional</span></span>
-          <span class="lang-item">বাংলা <span class="level">Fluent</span></span>
-        </div>
-      </div>
     </div>
-
   </div>
 </div>
 
 <script>
 function switchLang(lang) {
-  document.querySelectorAll('.lang-fr, .lang-en').forEach(el => el.classList.remove('active'));
-  document.getElementById('content-' + lang).classList.add('active');
-  document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
-  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.querySelectorAll('.lang-fr,.lang-en').forEach(e => e.classList.remove('active'));
+  document.getElementById('content-'+lang).classList.add('active');
+  document.getElementById('btn-fr').classList.toggle('active', lang==='fr');
+  document.getElementById('btn-en').classList.toggle('active', lang==='en');
 }
 </script>
 </body>
