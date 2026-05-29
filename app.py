@@ -174,9 +174,43 @@ app = Flask(__name__)
 app.secret_key = "jobhunt-secret-2026"
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "jobs.db")
+GITHUB_JOBS_URL = "https://raw.githubusercontent.com/AtmanTest/jobhunt/main/docs/jobs.json"
+ON_RENDER = os.environ.get("RENDER", False) or not os.path.exists(DB_PATH)
+
+
+def _populate_from_github():
+    """Fetch jobs from GitHub raw JSON and populate local SQLite."""
+    try:
+        resp = requests.get(GITHUB_JOBS_URL, timeout=30)
+        if resp.status_code != 200:
+            print(f"[Render] GitHub fetch failed: HTTP {resp.status_code}")
+            return
+        data = resp.json()
+        jobs = data.get("jobs", [])
+        conn = sqlite3.connect(DB_PATH)
+        for job in jobs:
+            conn.execute("""INSERT OR IGNORE INTO jobs
+                (title, company, source, url, location, salary, tags,
+                 description, date, raw_date, is_qa, freelance_status, freelance_score)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (job.get("title",""), job.get("company",""), job.get("source",""),
+                 job.get("url",""), job.get("location",""), job.get("salary",""),
+                 job.get("tags",""), "", job.get("date",""), job.get("raw_date",0),
+                 job.get("is_qa",1), job.get("freelance_status","VALIDÉE"),
+                 job.get("freelance_score",30)))
+        conn.commit()
+        conn.close()
+        print(f"[Render] Loaded {len(jobs)} jobs from GitHub")
+    except Exception as e:
+        print(f"[Render] Error populating DB: {e}")
+
 
 # Initialize DB on import (needed for gunicorn on Render)
 init_db()
+
+# On Render: populate DB from GitHub if empty
+if ON_RENDER:
+    _populate_from_github()
 
 
 def get_db():
@@ -314,8 +348,13 @@ def filter_jobs_by_country(country_id):
 
     query = f"""
         SELECT * FROM jobs 
-        WHERE ({placeholders})
-        AND (freelance_status IS NULL OR freelance_status IN ('VALIDÉE', 'AMBIGUË'))
+        WHERE id IN (
+            SELECT MAX(id)
+            FROM jobs 
+            WHERE ({placeholders})
+            AND (freelance_status IS NULL OR freelance_status IN ('VALIDÉE', 'AMBIGUË'))
+            GROUP BY LOWER(TRIM(title)), LOWER(TRIM(company))
+        )
         ORDER BY 
             viewed ASC,
             CASE freelance_status WHEN 'VALIDÉE' THEN 0 ELSE 1 END,
@@ -1012,13 +1051,14 @@ def qa_github_runs():
 
 
 if __name__ == "__main__":
-    print("""
+    port = int(os.environ.get("PORT", 5050))
+    print(f"""
 ╔══════════════════════════════════════════════╗
 ║          JobHunt Dashboard v1.0              ║
 ║                                              ║
-║  🌐 http://localhost:5050                     ║
+║  🌐 http://localhost:{port}                     ║
 ║                                              ║
 ║  Ctrl+C pour arrêter                         ║
 ╚══════════════════════════════════════════════╝
     """)
-    app.run(host="127.0.0.1", port=5050, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=True)

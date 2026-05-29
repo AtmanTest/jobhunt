@@ -1,13 +1,11 @@
 services:
   - type: web
-    name: jobhunt
-    runtime: python
-    repo: https://github.com/AtmanTest/jobhunt
-    branch: main
+    name: jobhunt-dashboard
+    env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120 --workers 2
     envVars:
       - key: PYTHON_VERSION
-        value: 3.12.0
-      - key: DEEPSEEK_API_KEY
-        sync: false
+        value: 3.12
+      - key: RENDER
+        value: "true"
