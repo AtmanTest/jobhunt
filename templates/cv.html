@@ -3,12 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CV — {{ cv.name }} | JobHunt</title>
+<title>CV — Thasin Jahangir | JobHunt</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: #f5f6fa;
@@ -17,7 +16,6 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ── Nav Header ── */
   .site-header {
     position: sticky; top:0; z-index:100;
     height: 50px; padding: 0 24px;
@@ -25,6 +23,7 @@
     background: #fff;
     border-bottom: 1px solid #e8e8f0;
   }
+  .site-header .left { display:flex; gap:4px; align-items:center; }
   .site-header a {
     padding: 5px 12px; border-radius: 6px; text-decoration: none;
     font-size: 12px; font-weight: 600; color: #666;
@@ -40,7 +39,23 @@
   }
   .pdf-btn:hover { background: #153d84 !important; }
 
-  /* ── CV Container ── */
+  /* Lang toggle */
+  .lang-toggle {
+    display: inline-flex; gap: 2px;
+    background: #e8e8f0; border-radius: 6px; padding: 2px;
+    margin-left: 8px;
+  }
+  .lang-toggle button {
+    padding: 3px 10px; border: none; border-radius: 4px;
+    font-size: 10px; font-weight: 700; cursor: pointer;
+    font-family: inherit;
+    background: transparent; color: #888;
+    transition: all 0.2s;
+  }
+  .lang-toggle button.active {
+    background: #1a4a9e; color: #fff;
+  }
+
   .cv-container {
     max-width: 960px;
     margin: 20px auto;
@@ -52,7 +67,6 @@
     overflow: hidden;
   }
 
-  /* ── SIDEBAR ── */
   .sidebar {
     background: #1a2744;
     color: #e0e4f0;
@@ -61,8 +75,6 @@
     flex-direction: column;
     gap: 22px;
   }
-
-  /* Photo placeholder */
   .photo {
     width: 100px; height: 100px;
     border-radius: 50%;
@@ -74,9 +86,7 @@
     justify-content: center;
     font-size: 36px;
     color: rgba(255,255,255,0.3);
-    overflow: hidden;
   }
-
   .sidebar-section-title {
     font-size: 9px;
     font-weight: 700;
@@ -87,94 +97,60 @@
     padding-bottom: 4px;
     border-bottom: 1px solid rgba(255,255,255,0.06);
   }
-
   .contact-list { display: flex; flex-direction: column; gap: 5px; }
   .contact-item {
     display: flex; align-items: center; gap: 8px;
-    font-size: 10.5px; color: #c8cce0;
-    line-height: 1.3;
+    font-size: 10.5px; color: #c8cce0; line-height: 1.3;
   }
   .contact-item .icon { font-size: 11px; width: 14px; text-align: center; opacity: 0.5; }
-
   .lang-item {
     display: flex; justify-content: space-between; align-items: center;
     font-size: 10.5px; margin-bottom: 3px;
   }
   .lang-item .name { color: #c8cce0; }
   .lang-item .level { color: rgba(255,255,255,0.35); font-size: 9px; }
-
-  .atout-item {
+  .atout-item, .interest-item {
     font-size: 10.5px; color: #c8cce0;
-    padding: 3px 0;
+    padding: 3px 0; padding-left: 12px;
     position: relative;
-    padding-left: 12px;
   }
-  .atout-item::before {
+  .atout-item::before, .interest-item::before {
     content: '›'; position: absolute; left: 0;
     color: rgba(255,255,255,0.25);
   }
-
-  .interest-item {
-    font-size: 10.5px; color: #c8cce0;
-    padding: 3px 0;
-    padding-left: 12px;
-    position: relative;
-  }
-  .interest-item::before {
-    content: '›'; position: absolute; left: 0;
-    color: rgba(255,255,255,0.25);
-  }
-
   .sidebar-tags {
     display: flex; flex-wrap: wrap; gap: 4px;
   }
   .sidebar-tag {
     font-size: 8.5px;
-    padding: 2px 8px;
-    border-radius: 3px;
+    padding: 2px 8px; border-radius: 3px;
     background: rgba(255,255,255,0.06);
     color: #a8ace0;
     border: 1px solid rgba(255,255,255,0.06);
   }
 
-  /* ── MAIN CONTENT ── */
-  .main-content {
-    padding: 36px 32px 28px;
-  }
+  .main-content { padding: 36px 32px 28px; }
 
   .header-block { margin-bottom: 22px; }
   .name {
-    font-size: 26px;
-    font-weight: 800;
-    color: #1a2744;
-    letter-spacing: -0.5px;
+    font-size: 26px; font-weight: 800;
+    color: #1a2744; letter-spacing: -0.5px;
   }
   .subtitle {
-    font-size: 13px;
-    color: #4a5a7a;
-    margin-top: 2px;
-    font-weight: 500;
+    font-size: 13px; color: #4a5a7a; margin-top: 2px; font-weight: 500;
   }
   .status-bar {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 8px;
+    display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;
   }
   .status-chip {
-    font-size: 10px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 4px;
-    background: #e8eef8;
-    color: #1a4a9e;
+    font-size: 10px; font-weight: 600;
+    padding: 3px 10px; border-radius: 4px;
+    background: #e8eef8; color: #1a4a9e;
   }
   .status-chip.green { background: #e8f8ee; color: #1a7a4a; }
 
   .summary-text {
-    font-size: 11.5px;
-    line-height: 1.7;
-    color: #4a5a7a;
+    font-size: 11.5px; line-height: 1.7; color: #4a5a7a;
     margin-bottom: 18px;
     padding: 12px 14px;
     background: #f8f9fc;
@@ -182,113 +158,59 @@
     border-radius: 0 4px 4px 0;
   }
 
-  /* Experience */
   .exp-entry { margin-bottom: 16px; }
   .exp-head {
     display: flex; justify-content: space-between; align-items: baseline;
     margin-bottom: 2px;
   }
-  .exp-company {
-    font-size: 13px;
-    font-weight: 700;
-    color: #1a2744;
-  }
-  .exp-period {
-    font-size: 10px;
-    color: #7a8aaa;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-  .exp-role {
-    font-size: 11px;
-    color: #1a4a9e;
-    font-weight: 600;
-    margin-bottom: 3px;
-  }
-  .exp-loc {
-    font-size: 10px;
-    color: #8a9aaa;
-    margin-bottom: 4px;
-  }
-  .exp-desc {
-    font-size: 11px;
-    line-height: 1.6;
-    color: #4a5a7a;
-  }
+  .exp-company { font-size: 13px; font-weight: 700; color: #1a2744; }
+  .exp-period { font-size: 10px; color: #7a8aaa; font-weight: 500; white-space: nowrap; }
+  .exp-role { font-size: 11px; color: #1a4a9e; font-weight: 600; margin-bottom: 3px; }
+  .exp-loc { font-size: 10px; color: #8a9aaa; margin-bottom: 4px; }
+  .exp-desc { font-size: 11px; line-height: 1.6; color: #4a5a7a; }
   .exp-desc ul { list-style: none; padding: 0; }
   .exp-desc li {
-    position: relative;
-    padding-left: 14px;
-    margin-bottom: 2px;
+    position: relative; padding-left: 14px; margin-bottom: 2px;
   }
   .exp-desc li::before {
     content: '•'; position: absolute; left: 2px;
     color: #1a4a9e; font-weight: 700;
   }
-
   .exp-tags {
-    display: flex; gap: 4px; flex-wrap: wrap;
-    margin-top: 5px;
+    display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px;
   }
   .exp-tags span {
-    font-size: 8.5px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 3px;
-    background: #e8eef8;
-    color: #1a4a9e;
+    font-size: 8.5px; font-weight: 600;
+    padding: 2px 8px; border-radius: 3px;
+    background: #e8eef8; color: #1a4a9e;
   }
 
-  /* Section title with left accent */
   .section-block { margin-bottom: 18px; }
   .section-title-main {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: #1a2744;
-    padding-bottom: 5px;
-    margin-bottom: 10px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: #1a2744;
+    padding-bottom: 5px; margin-bottom: 10px;
     border-bottom: 2px solid #1a4a9e;
     display: inline-block;
   }
 
-  /* Certifications */
-  .cert-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-  }
+  .cert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   .cert-card {
-    background: #f8f9fc;
-    border: 1px solid #e8e8f0;
-    border-radius: 5px;
-    padding: 10px 12px;
+    background: #f8f9fc; border: 1px solid #e8e8f0;
+    border-radius: 5px; padding: 10px 12px;
   }
-  .cert-name {
-    font-size: 11px;
-    font-weight: 600;
-    color: #1a2744;
-  }
-  .cert-org {
-    font-size: 10px;
-    color: #7a8aaa;
-    margin-top: 1px;
-  }
-  .cert-year {
-    font-size: 9px;
-    color: #aab0c0;
-    margin-top: 1px;
-  }
+  .cert-name { font-size: 11px; font-weight: 600; color: #1a2744; }
+  .cert-org { font-size: 10px; color: #7a8aaa; margin-top: 1px; }
+  .cert-year { font-size: 9px; color: #aab0c0; margin-top: 1px; }
 
-  /* ── Footer ── */
+  /* Lang content show/hide */
+  .lang-fr, .lang-en { display: none; }
+  .lang-fr.active, .lang-en.active { display: block; }
+
   .site-footer {
-    text-align: center;
-    padding: 14px 24px;
-    font-size: 11px;
-    color: #aaa;
-    background: #fff;
-    border-top: 1px solid #e8e8f0;
+    text-align: center; padding: 14px 24px;
+    font-size: 11px; color: #aaa;
+    background: #fff; border-top: 1px solid #e8e8f0;
   }
   .site-footer a { color: #1a4a9e; text-decoration: none; }
 
@@ -306,271 +228,290 @@
 </head>
 <body>
 
-<!-- Nav -->
 <div class="site-header">
-  <div style="display:flex;gap:4px;align-items:center;">
+  <div class="left">
     <a href="{{ url_for('index') }}">← Dashboard</a>
     <a href="#" class="active">CV</a>
     <a href="{{ url_for('qa_dashboard') }}">QA</a>
     <a href="{{ url_for('marche_qa') }}">Marché</a>
     <a href="{{ url_for('stats_page') }}">Stats</a>
+    <div class="lang-toggle">
+      <button class="active" onclick="switchLang('fr')" id="btn-fr">FR</button>
+      <button onclick="switchLang('en')" id="btn-en">EN</button>
+    </div>
   </div>
   <a href="#" onclick="window.print()" class="pdf-btn">📄 Exporter PDF</a>
 </div>
 
-<!-- CV -->
 <div class="cv-container">
 
-  <!-- SIDEBAR -->
+  <!-- SIDEBAR (same for both langs) -->
   <div class="sidebar">
-
-    <!-- Photo -->
     <div class="photo">👤</div>
 
-    <!-- Contact -->
     <div>
-      <div class="sidebar-section-title">Contact</div>
+      <div class="sidebar-section-title" data-fr="Contact" data-en="Contact">Contact</div>
       <div class="contact-list">
         <div class="contact-item"><span class="icon">✉</span> thasin@live.com</div>
         <div class="contact-item"><span class="icon">📱</span> 07 56 92 01 03</div>
-        <div class="contact-item"><span class="icon">📍</span> Paris & Remote</div>
+        <div class="contact-item"><span class="icon">📍</span> <span data-fr="Paris & Remote" data-en="Paris & Remote">Paris & Remote</span></div>
         <div class="contact-item"><span class="icon">🔗</span> /in/thasin-j</div>
       </div>
     </div>
 
-    <!-- Langues -->
     <div>
-      <div class="sidebar-section-title">Langues</div>
-      <div class="lang-item"><span class="name">Français</span> <span class="level">Natif</span></div>
-      <div class="lang-item"><span class="name">Anglais</span> <span class="level">Courant</span></div>
-      <div class="lang-item"><span class="name">Espagnol</span> <span class="level">Professionnel</span></div>
-      <div class="lang-item"><span class="name">Bengali</span> <span class="level">Courant</span></div>
+      <div class="sidebar-section-title" data-fr="Langues" data-en="Languages">Langues</div>
+      <div class="lang-item"><span class="name">Français</span> <span class="level" data-fr="Natif" data-en="Native">Natif</span></div>
+      <div class="lang-item"><span class="name">English</span> <span class="level" data-fr="Courant" data-en="Fluent">Courant</span></div>
+      <div class="lang-item"><span class="name">Español</span> <span class="level" data-fr="Professionnel" data-en="Professional">Professionnel</span></div>
+      <div class="lang-item"><span class="name">বাংলা</span> <span class="level" data-fr="Courant" data-en="Fluent">Courant</span></div>
     </div>
 
-    <!-- Atouts -->
     <div>
-      <div class="sidebar-section-title">Atouts</div>
-      <div class="atout-item">Compréhension métier</div>
-      <div class="atout-item">Autonomie</div>
-      <div class="atout-item">Fiabilité</div>
-      <div class="atout-item">Diplomatie</div>
-      <div class="atout-item">Pédagogie</div>
+      <div class="sidebar-section-title" data-fr="Atouts" data-en="Strengths">Atouts</div>
+      <div class="atout-item" data-fr="Compréhension métier" data-en="Business understanding">Compréhension métier</div>
+      <div class="atout-item" data-fr="Autonomie" data-en="Autonomy">Autonomie</div>
+      <div class="atout-item" data-fr="Fiabilité" data-en="Reliability">Fiabilité</div>
+      <div class="atout-item" data-fr="Diplomatie" data-en="Diplomacy">Diplomatie</div>
+      <div class="atout-item" data-fr="Pédagogie" data-en="Teaching skills">Pédagogie</div>
     </div>
 
-    <!-- Outils & Environnements -->
     <div>
-      <div class="sidebar-section-title">Outils & Environnements</div>
+      <div class="sidebar-section-title" data-fr="Outils & Environnements" data-en="Tools & Environments">Outils & Environnements</div>
       <div class="sidebar-tags">
-        <span class="sidebar-tag">Jira</span>
-        <span class="sidebar-tag">Xray</span>
-        <span class="sidebar-tag">TestRail</span>
-        <span class="sidebar-tag">Zephyr</span>
-        <span class="sidebar-tag">Redmine</span>
-        <span class="sidebar-tag">Gherkin</span>
-        <span class="sidebar-tag">Ranorex</span>
-        <span class="sidebar-tag">AutoIT</span>
-        <span class="sidebar-tag">Charles Proxy</span>
-        <span class="sidebar-tag">SQL Oracle</span>
-        <span class="sidebar-tag">MainFrame</span>
-        <span class="sidebar-tag">SAP HANA</span>
-        <span class="sidebar-tag">SAP BPC</span>
-        <span class="sidebar-tag">ServiceNow</span>
-        <span class="sidebar-tag">Confluence</span>
-        <span class="sidebar-tag">Android</span>
-        <span class="sidebar-tag">iOS</span>
-        <span class="sidebar-tag">Windows</span>
-        <span class="sidebar-tag">macOS</span>
-        <span class="sidebar-tag">Linux</span>
-        <span class="sidebar-tag">VMware</span>
-        <span class="sidebar-tag">Hermes Agent</span>
-        <span class="sidebar-tag">ClawBot</span>
-        <span class="sidebar-tag">Claude Code</span>
+        <span class="sidebar-tag">Jira</span><span class="sidebar-tag">Xray</span><span class="sidebar-tag">TestRail</span>
+        <span class="sidebar-tag">Zephyr</span><span class="sidebar-tag">Redmine</span><span class="sidebar-tag">Gherkin</span>
+        <span class="sidebar-tag">Ranorex</span><span class="sidebar-tag">AutoIT</span><span class="sidebar-tag">Charles Proxy</span>
+        <span class="sidebar-tag">SQL Oracle</span><span class="sidebar-tag">MainFrame</span><span class="sidebar-tag">SAP HANA</span>
+        <span class="sidebar-tag">SAP BPC</span><span class="sidebar-tag">ServiceNow</span><span class="sidebar-tag">Confluence</span>
+        <span class="sidebar-tag">Android</span><span class="sidebar-tag">iOS</span><span class="sidebar-tag">Windows</span>
+        <span class="sidebar-tag">macOS</span><span class="sidebar-tag">Linux</span><span class="sidebar-tag">VMware</span>
+        <span class="sidebar-tag">Hermes Agent</span><span class="sidebar-tag">ClawBot</span><span class="sidebar-tag">Claude Code</span>
         <span class="sidebar-tag">Codex CLI</span>
       </div>
     </div>
 
-    <!-- Intérêts -->
     <div>
-      <div class="sidebar-section-title">Centres d'intérêt</div>
-      <div class="interest-item">IA & Automatisation</div>
-      <div class="interest-item">LLMs (cloud & locaux)</div>
-      <div class="interest-item">Bots conversationnels</div>
-      <div class="interest-item">Agentic workflows</div>
-      <div class="interest-item">41 pays visités</div>
+      <div class="sidebar-section-title" data-fr="Centres d'intérêt" data-en="Interests">Centres d'intérêt</div>
+      <div class="interest-item" data-fr="IA & Automatisation" data-en="AI & Automation">IA & Automatisation</div>
+      <div class="interest-item" data-fr="LLMs (cloud & locaux)" data-en="LLMs (cloud & local)">LLMs (cloud & locaux)</div>
+      <div class="interest-item" data-fr="Bots conversationnels" data-en="Conversational bots">Bots conversationnels</div>
+      <div class="interest-item" data-fr="Agentic workflows" data-en="Agentic workflows">Agentic workflows</div>
+      <div class="interest-item" data-fr="41 pays visités" data-en="41 countries visited">41 pays visités</div>
     </div>
-
   </div>
 
   <!-- MAIN CONTENT -->
   <div class="main-content">
 
-    <!-- Header -->
-    <div class="header-block">
-      <div class="name">THASIN JAHANGIR</div>
-      <div class="subtitle">Consultant QA Senior · Test Manager · Freelance SASU</div>
-      <div class="status-bar">
-        <span class="status-chip">🎯 12+ ans d'expérience</span>
-        <span class="status-chip">🏢 Grands comptes</span>
-        <span class="status-chip green">✅ Disponible</span>
-      </div>
-    </div>
+    <!-- ===== FRENCH VERSION ===== -->
+    <div class="lang-fr active" id="content-fr">
 
-    <!-- Resume -->
-    <div class="summary-text">
-      12 ans d'expérience en qualité logicielle sur des environnements exigeants (banque, hôtellerie, cloud souverain, santé). Pilotage de bout en bout de la recette fonctionnelle, stratégie et plans de test, coordination multi-acteurs et reporting Go/No-Go pour sécuriser les mises en production. Agile/Scrum au quotidien, avec une ouverture crédible vers l'automation et l'IA appliquée à la QA.
-    </div>
-
-    <!-- Experience -->
-    <div class="section-block">
-      <div class="section-title-main">Expériences professionnelles</div>
-
-      <!-- BRED -->
-      <div class="exp-entry">
-        <div class="exp-head">
-          <span class="exp-company">BRED Banque Populaire — Programme ARGOS</span>
-          <span class="exp-period">Avr. 2023 – Avr. 2025</span>
+      <div class="header-block">
+        <div class="name">THASIN JAHANGIR</div>
+        <div class="subtitle">Consultant QA Senior · Test Manager · Freelance SASU</div>
+        <div class="status-bar">
+          <span class="status-chip">🎯 12+ ans d'expérience</span>
+          <span class="status-chip">🏢 Grands comptes</span>
+          <span class="status-chip green">✅ Disponible</span>
         </div>
-        <div class="exp-role">Consultant Ingénieur Qualité, Freelance · ATMAN</div>
-        <div class="exp-loc">Paris</div>
-        <div class="exp-desc">
-          <ul>
+      </div>
+
+      <div class="summary-text">
+        12 ans d'expérience en qualité logicielle sur des environnements exigeants (banque, hôtellerie, cloud souverain, santé). Pilotage de bout en bout de la recette fonctionnelle, stratégie et plans de test, coordination multi-acteurs et reporting Go/No-Go pour sécuriser les mises en production. Agile/Scrum au quotidien, avec une ouverture crédible vers l'automation et l'IA appliquée à la QA.
+      </div>
+
+      <div class="section-block">
+        <div class="section-title-main">Expériences professionnelles</div>
+
+        <div class="exp-entry">
+          <div class="exp-head"><span class="exp-company">BRED Banque Populaire — Programme ARGOS</span><span class="exp-period">Avr. 2023 – Avr. 2025</span></div>
+          <div class="exp-role">Consultant Ingénieur Qualité, Freelance · ATMAN</div>
+          <div class="exp-loc">Paris</div>
+          <div class="exp-desc"><ul>
             <li>Piloté la recette fonctionnelle de bout en bout du programme ARGOS (dématérialisation des factures, conformité réglementaire 2026) sur le périmètre P2P/O2C, de la solution Corcentric au moteur comptable AIS.</li>
             <li>Défini la stratégie de test et élaboré les plans de test couvrant la chaîne CRE → AIS → ME, incluant le contrôle des fichiers d'entrée et validation des mouvements d'écriture.</li>
             <li>Coordonné les campagnes de recette dans Jira/Xray : conception des cas, exécution, suivi des anomalies, indicateurs de couverture et reporting d'avancement.</li>
             <li>Animé les rituels Agile/Scrum en tant que référent QA auprès des équipes métier, préparé les synthèses de recette et les recommandations Go/No-Go.</li>
             <li>Assuré la non-régression sur des cycles trimestriels en environnement MainFrame et base SQL Oracle.</li>
-          </ul>
+          </ul></div>
+          <div class="exp-tags"><span>Jira</span><span>Xray</span><span>SQL Oracle</span><span>MainFrame</span><span>Corcentric</span><span>AIS</span><span>ServiceNow</span></div>
         </div>
-        <div class="exp-tags">
-          <span>Jira</span><span>Xray</span><span>SQL Oracle</span><span>MainFrame</span><span>Corcentric</span><span>AIS</span><span>ServiceNow</span>
-        </div>
-      </div>
 
-      <!-- Accor -->
-      <div class="exp-entry">
-        <div class="exp-head">
-          <span class="exp-company">Accor — Apps mobiles Android / iOS</span>
-          <span class="exp-period">Sept. 2019 – Déc. 2022</span>
-        </div>
-        <div class="exp-role">Référent QA Mobile — Consultant Ingénieur Qualité</div>
-        <div class="exp-loc">Paris (Remote)</div>
-        <div class="exp-desc">
-          <ul>
+        <div class="exp-entry">
+          <div class="exp-head"><span class="exp-company">Accor — Apps mobiles Android / iOS</span><span class="exp-period">Sept. 2019 – Déc. 2022</span></div>
+          <div class="exp-role">Référent QA Mobile — Consultant Ingénieur Qualité</div>
+          <div class="exp-loc">Paris (Remote)</div>
+          <div class="exp-desc"><ul>
             <li>Référent QA pour les applications clients Android et iOS diffusées dans plus de 100 pays — coordination des campagnes de recette et de non-régression en Agile Scrum (sprints de 2 semaines).</li>
             <li>Co-construit les User Stories avec le Product Owner et les développeurs, rédigé 100 % des cas de tests critiques en Gherkin.</li>
             <li>Piloté les cycles de recette mobile : tests fonctionnels, régression multi-appareils, validation des flux critiques (réservation, fidélité, paiement).</li>
             <li>Assuré le reporting Go/No-Go à la direction produit et qualité sur chaque release.</li>
-          </ul>
+          </ul></div>
+          <div class="exp-tags"><span>Jira</span><span>Xray</span><span>Confluence</span><span>Gherkin</span><span>Charles Proxy</span><span>Crashlytics</span><span>Android</span><span>iOS</span></div>
         </div>
-        <div class="exp-tags">
-          <span>Jira</span><span>Xray</span><span>Confluence</span><span>Gherkin</span><span>Charles Proxy</span><span>Crashlytics</span><span>Android</span><span>iOS</span>
-        </div>
-      </div>
 
-      <!-- Oodrive -->
-      <div class="exp-entry">
-        <div class="exp-head">
-          <span class="exp-company">Oodrive — Cloud souverain B2B</span>
-          <span class="exp-period">Janv. 2017 – Avr. 2019</span>
-        </div>
-        <div class="exp-role">Ingénieur Qualité Logiciel — Responsable QA</div>
-        <div class="exp-loc">Paris</div>
-        <div class="exp-desc">
-          <ul>
+        <div class="exp-entry">
+          <div class="exp-head"><span class="exp-company">Oodrive — Cloud souverain B2B</span><span class="exp-period">Janv. 2017 – Avr. 2019</span></div>
+          <div class="exp-role">Ingénieur Qualité Logiciel — Responsable QA</div>
+          <div class="exp-loc">Paris</div>
+          <div class="exp-desc"><ul>
             <li>Responsable des plans de tests fonctionnels et de non-régression sur les applications critiques B2B et B2C du cloud souverain français.</li>
             <li>Coordonné les campagnes de tests multi-plateformes (Windows, macOS, Linux) et gestion des anomalies.</li>
             <li>Assuré le support technique niveau 3 pour les grands comptes.</li>
-            <li>Contribué à la structuration des processus Qualité : procédures de recette, templates de cahier de recette, critères d'entrée et de sortie.</li>
-          </ul>
+            <li>Contribué à la structuration des processus Qualité.</li>
+          </ul></div>
+          <div class="exp-tags"><span>Jira</span><span>Zephyr</span><span>Confluence</span><span>Ranorex</span><span>Windows</span><span>macOS</span><span>Linux</span></div>
         </div>
-        <div class="exp-tags">
-          <span>Jira</span><span>Zephyr</span><span>Confluence</span><span>Ranorex</span><span>Windows</span><span>macOS</span><span>Linux</span>
-        </div>
-      </div>
 
-      <!-- Visiodent -->
-      <div class="exp-entry">
-        <div class="exp-head">
-          <span class="exp-company">Visiodent — Logiciels santé</span>
-          <span class="exp-period">Juin – Août 2019</span>
-        </div>
-        <div class="exp-role">Responsable Qualité Logiciel</div>
-        <div class="exp-loc">Paris</div>
-        <div class="exp-desc">
-          <ul>
+        <div class="exp-entry">
+          <div class="exp-head"><span class="exp-company">Visiodent — Logiciels santé</span><span class="exp-period">Juin – Août 2019</span></div>
+          <div class="exp-role">Responsable Qualité Logiciel</div>
+          <div class="exp-loc">Paris</div>
+          <div class="exp-desc"><ul>
             <li>Management d'une équipe de testeurs internes et pilotage d'un prestataire externe pour l'automatisation des tests sur le logiciel santé Veasy.</li>
             <li>Structuré le planning de recette, le suivi des anomalies et le reporting qualité.</li>
-          </ul>
+          </ul></div>
+          <div class="exp-tags"><span>Jira</span><span>Xray</span><span>Dynatrace</span><span>CloudNetCare</span></div>
         </div>
-        <div class="exp-tags">
-          <span>Jira</span><span>Xray</span><span>Dynatrace</span><span>CloudNetCare</span>
-        </div>
-      </div>
 
-      <!-- Vinci -->
-      <div class="exp-entry">
-        <div class="exp-head">
-          <span class="exp-company">Vinci Construction — SAP BPC</span>
-          <span class="exp-period">Oct. 2016 – Janv. 2017</span>
-        </div>
-        <div class="exp-role">Consultant Ingénieur Qualité</div>
-        <div class="exp-loc">Paris</div>
-        <div class="exp-desc">
-          <ul>
+        <div class="exp-entry">
+          <div class="exp-head"><span class="exp-company">Vinci Construction — SAP BPC</span><span class="exp-period">Oct. 2016 – Janv. 2017</span></div>
+          <div class="exp-role">Consultant Ingénieur Qualité</div>
+          <div class="exp-loc">Paris</div>
+          <div class="exp-desc"><ul>
             <li>Recette fonctionnelle sur applications web SAP BPC — validation conformité et intégrité des données.</li>
             <li>Rédaction et exécution des cas de tests, suivi des anomalies et reporting MOA.</li>
-          </ul>
+          </ul></div>
+          <div class="exp-tags"><span>Redmine</span><span>TestRail</span><span>SAP BPC</span><span>SAP HANA</span></div>
         </div>
-        <div class="exp-tags">
-          <span>Redmine</span><span>TestRail</span><span>SAP BPC</span><span>SAP HANA</span>
-        </div>
-      </div>
 
-      <!-- Profil Technology -->
-      <div class="exp-entry">
-        <div class="exp-head">
-          <span class="exp-company">Profil Technology — Sécurité & Filtrage Web</span>
-          <span class="exp-period">Janv. 2011 – Sept. 2016</span>
-        </div>
-        <div class="exp-role">Ingénieur Tests & Support Niveau 3</div>
-        <div class="exp-loc">Paris</div>
-        <div class="exp-desc">
-          <ul>
+        <div class="exp-entry">
+          <div class="exp-head"><span class="exp-company">Profil Technology — Sécurité & Filtrage Web</span><span class="exp-period">Janv. 2011 – Sept. 2016</span></div>
+          <div class="exp-role">Ingénieur Tests & Support Niveau 3</div>
+          <div class="exp-loc">Paris</div>
+          <div class="exp-desc"><ul>
             <li>Campagnes de tests fonctionnels et non-régression multi-plateformes (Windows, macOS, Linux) sur solutions Witigo, Bitdefender, WebFilter.</li>
             <li>Développement de scripts d'automatisation AutoIT pour la validation des cycles de régression.</li>
             <li>Gestion du laboratoire de tests sécurité et support N3 grands comptes.</li>
-          </ul>
-        </div>
-        <div class="exp-tags">
-          <span>AutoIT</span><span>VMware</span><span>Windows</span><span>macOS</span><span>Linux</span><span>Bitdefender</span>
+          </ul></div>
+          <div class="exp-tags"><span>AutoIT</span><span>VMware</span><span>Windows</span><span>macOS</span><span>Linux</span><span>Bitdefender</span></div>
         </div>
       </div>
 
+      <div class="section-block">
+        <div class="section-title-main">Formations & Certifications</div>
+        <div class="cert-grid">
+          <div class="cert-card"><div class="cert-name">PSPO — Professional Scrum Product Owner</div><div class="cert-org">Scrum.org · Paris</div><div class="cert-year">2020</div></div>
+          <div class="cert-card"><div class="cert-name">ISTQB — Fondation</div><div class="cert-org">Learning Tree International · Paris</div><div class="cert-year">2015</div></div>
+          <div class="cert-card"><div class="cert-name">IA Générative & Prompt Engineering</div><div class="cert-org">Google · Coursera</div><div class="cert-year">2025</div></div>
+          <div class="cert-card"><div class="cert-name">Digital Product Management</div><div class="cert-org">Coursera</div><div class="cert-year">2025</div></div>
+        </div>
+      </div>
     </div>
 
-    <!-- Certifications -->
-    <div class="section-block">
-      <div class="section-title-main">Formations & Certifications</div>
-      <div class="cert-grid">
-        <div class="cert-card">
-          <div class="cert-name">PSPO — Professional Scrum Product Owner</div>
-          <div class="cert-org">Scrum.org · Paris</div>
-          <div class="cert-year">2020</div>
+    <!-- ===== ENGLISH VERSION ===== -->
+    <div class="lang-en" id="content-en">
+
+      <div class="header-block">
+        <div class="name">THASIN JAHANGIR</div>
+        <div class="subtitle">Senior QA Consultant · Test Manager · Freelance SASU</div>
+        <div class="status-bar">
+          <span class="status-chip">🎯 12+ years experience</span>
+          <span class="status-chip">🏢 Enterprise accounts</span>
+          <span class="status-chip green">✅ Available</span>
         </div>
-        <div class="cert-card">
-          <div class="cert-name">ISTQB — Fondation</div>
-          <div class="cert-org">Learning Tree International · Paris</div>
-          <div class="cert-year">2015</div>
+      </div>
+
+      <div class="summary-text">
+        12+ years of software quality experience across demanding environments (banking, hospitality, sovereign cloud, healthcare). End-to-end functional acceptance testing — test strategy, planning, multi-stakeholder coordination, and Go/No-Go reporting to secure production releases. Daily Agile/Scrum, with credible exposure to automation and AI applied to QA.
+      </div>
+
+      <div class="section-block">
+        <div class="section-title-main">Professional Experience</div>
+
+        <div class="exp-entry">
+          <div class="exp-head"><span class="exp-company">BRED Banque Populaire — ARGOS Program</span><span class="exp-period">Apr 2023 – Apr 2025</span></div>
+          <div class="exp-role">QA Consultant Engineer, Freelance · ATMAN</div>
+          <div class="exp-loc">Paris</div>
+          <div class="exp-desc"><ul>
+            <li>Led end-to-end functional acceptance for the ARGOS program (invoice digitization, 2026 regulatory compliance) across P2P/O2C scope, from Corcentric solution to AIS accounting engine.</li>
+            <li>Defined test strategy and test plans covering the full CRE → AIS → ME chain, including input file control and accounting movement validation.</li>
+            <li>Coordinated acceptance campaigns in Jira/Xray: test case design, execution, defect tracking, coverage metrics, and progress reporting.</li>
+            <li>Facilitated Agile/Scrum ceremonies as QA reference for business teams; prepared test summaries and Go/No-Go recommendations.</li>
+            <li>Managed quarterly regression cycles in Mainframe and SQL Oracle environments.</li>
+          </ul></div>
+          <div class="exp-tags"><span>Jira</span><span>Xray</span><span>SQL Oracle</span><span>MainFrame</span><span>Corcentric</span><span>AIS</span><span>ServiceNow</span></div>
         </div>
-        <div class="cert-card">
-          <div class="cert-name">IA Générative & Prompt Engineering</div>
-          <div class="cert-org">Google · Coursera</div>
-          <div class="cert-year">2025</div>
+
+        <div class="exp-entry">
+          <div class="exp-head"><span class="exp-company">Accor — Mobile Apps Android / iOS</span><span class="exp-period">Sep 2019 – Dec 2022</span></div>
+          <div class="exp-role">Mobile QA Lead — QA Consultant Engineer</div>
+          <div class="exp-loc">Paris (Remote)</div>
+          <div class="exp-desc"><ul>
+            <li>Mobile QA reference for Android & iOS consumer apps deployed in 100+ countries — coordinated acceptance and regression campaigns in Agile Scrum (2-week sprints).</li>
+            <li>Co-created User Stories with Product Owner and developers; authored 100% of critical test cases in Gherkin.</li>
+            <li>Led mobile test cycles: functional testing, cross-device regression, critical flow validation (booking, loyalty, payment).</li>
+            <li>Delivered Go/No-Go reporting to product and quality leadership per release.</li>
+          </ul></div>
+          <div class="exp-tags"><span>Jira</span><span>Xray</span><span>Confluence</span><span>Gherkin</span><span>Charles Proxy</span><span>Crashlytics</span><span>Android</span><span>iOS</span></div>
         </div>
-        <div class="cert-card">
-          <div class="cert-name">Digital Product Management</div>
-          <div class="cert-org">Coursera</div>
-          <div class="cert-year">2025</div>
+
+        <div class="exp-entry">
+          <div class="exp-head"><span class="exp-company">Oodrive — Sovereign B2B Cloud</span><span class="exp-period">Jan 2017 – Apr 2019</span></div>
+          <div class="exp-role">Software Quality Engineer — QA Lead</div>
+          <div class="exp-loc">Paris</div>
+          <div class="exp-desc"><ul>
+            <li>Owned functional and regression test plans for critical B2B/B2C applications on the French sovereign cloud platform.</li>
+            <li>Coordinated cross-platform test campaigns (Windows, macOS, Linux) and defect management.</li>
+            <li>Provided Level 3 technical support for enterprise clients.</li>
+            <li>Contributed to QA process structuring: test procedures, test plan templates, entry/exit criteria.</li>
+          </ul></div>
+          <div class="exp-tags"><span>Jira</span><span>Zephyr</span><span>Confluence</span><span>Ranorex</span><span>Windows</span><span>macOS</span><span>Linux</span></div>
+        </div>
+
+        <div class="exp-entry">
+          <div class="exp-head"><span class="exp-company">Visiodent — Healthcare Software</span><span class="exp-period">Jun – Aug 2019</span></div>
+          <div class="exp-role">Software Quality Manager</div>
+          <div class="exp-loc">Paris</div>
+          <div class="exp-desc"><ul>
+            <li>Managed an internal testing team and coordinated an external vendor for test automation on Veasy healthcare software.</li>
+            <li>Structured test planning, defect tracking, and quality reporting.</li>
+          </ul></div>
+          <div class="exp-tags"><span>Jira</span><span>Xray</span><span>Dynatrace</span><span>CloudNetCare</span></div>
+        </div>
+
+        <div class="exp-entry">
+          <div class="exp-head"><span class="exp-company">Vinci Construction — SAP BPC</span><span class="exp-period">Oct 2016 – Jan 2017</span></div>
+          <div class="exp-role">QA Consultant Engineer</div>
+          <div class="exp-loc">Paris</div>
+          <div class="exp-desc"><ul>
+            <li>Functional acceptance testing on SAP BPC web applications — compliance and data integrity validation.</li>
+            <li>Authored and executed test cases, defect tracking, and stakeholder reporting.</li>
+          </ul></div>
+          <div class="exp-tags"><span>Redmine</span><span>TestRail</span><span>SAP BPC</span><span>SAP HANA</span></div>
+        </div>
+
+        <div class="exp-entry">
+          <div class="exp-head"><span class="exp-company">Profil Technology — Security & Web Filtering</span><span class="exp-period">Jan 2011 – Sep 2016</span></div>
+          <div class="exp-role">Test Engineer & Level 3 Support</div>
+          <div class="exp-loc">Paris</div>
+          <div class="exp-desc"><ul>
+            <li>Multi-platform functional and regression test campaigns (Windows, macOS, Linux) on Witigo, Bitdefender, WebFilter solutions.</li>
+            <li>Developed AutoIT automation scripts to accelerate regression cycles.</li>
+            <li>Managed security test lab and Level 3 enterprise support.</li>
+          </ul></div>
+          <div class="exp-tags"><span>AutoIT</span><span>VMware</span><span>Windows</span><span>macOS</span><span>Linux</span><span>Bitdefender</span></div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <div class="section-title-main">Education & Certifications</div>
+        <div class="cert-grid">
+          <div class="cert-card"><div class="cert-name">PSPO — Professional Scrum Product Owner</div><div class="cert-org">Scrum.org · Paris</div><div class="cert-year">2020</div></div>
+          <div class="cert-card"><div class="cert-name">ISTQB — Foundation Level</div><div class="cert-org">Learning Tree International · Paris</div><div class="cert-year">2015</div></div>
+          <div class="cert-card"><div class="cert-name">Generative AI & Prompt Engineering</div><div class="cert-org">Google · Coursera</div><div class="cert-year">2025</div></div>
+          <div class="cert-card"><div class="cert-name">Digital Product Management</div><div class="cert-org">Coursera</div><div class="cert-year">2025</div></div>
         </div>
       </div>
     </div>
@@ -582,5 +523,13 @@
   CV Thasin Jahangir · <a href="{{ url_for('index') }}">← Retour au Dashboard</a>
 </div>
 
+<script>
+function switchLang(lang) {
+  document.querySelectorAll('.lang-fr, .lang-en').forEach(el => el.classList.remove('active'));
+  document.getElementById('content-' + lang).classList.add('active');
+  document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+}
+</script>
 </body>
 </html>
