@@ -47,9 +47,9 @@
   .test-item .tresult { font-size:12px; width:20px; text-align:center; }
 
   /* Runs history */
-  .runs-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:16px 18px; }
-  .runs-section .rs-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:var(--accent); margin-bottom:10px; }
-  .run-entry { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--border-l); font-size:11px; }
+  .runs-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:16px 18px; margin-bottom:16px; }
+  .runs-section .rs-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:var(--accent); margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; }
+  .run-entry { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--border-l); font-size:11px; cursor:pointer; }
   .run-entry:last-child { border-bottom:none; }
   .run-entry .re-icon { font-size:16px; }
   .run-entry .re-info { flex:1; }
@@ -60,11 +60,33 @@
   .run-entry .re-bar .fail { background:var(--red); }
   .run-entry .re-stats { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--t2); }
 
+  /* Expandable per-test details */
+  .run-detail { display:none; padding:6px 0 8px 32px; }
+  .run-detail.open { display:block; }
+  .rd-test { display:flex; align-items:center; gap:8px; padding:3px 0; font-size:11px; }
+  .rd-test .rd-id { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--t3); width:50px; }
+  .rd-test .rd-name { flex:1; }
+  .rd-test .rd-dur { font-size:9px; color:var(--t3); width:50px; text-align:right; }
+  .rd-test .rd-err { font-size:10px; color:var(--red); margin-left:58px; padding:2px 8px; background:var(--red-bg); border-radius:4px; }
+
+  /* GitHub CI section */
+  .gh-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .gh-btn { padding:6px 16px; border-radius:6px; border:none; background:#1b1f23; color:#fff; font-size:11px; font-weight:600; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; }
+  .gh-btn:hover { opacity:0.9; }
+  .gh-btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .gh-badge { font-size:10px; padding:2px 8px; border-radius:4px; font-weight:600; }
+  .gh-badge.completed { background:var(--green-bg); color:var(--green); }
+  .gh-badge.failure { background:var(--red-bg); color:var(--red); }
+  .gh-badge.in_progress { background:var(--orange-bg); color:var(--orange); }
+  .gh-badge.pending { background:var(--blue-bg); color:var(--blue); }
+
   .empty-state { text-align:center; padding:30px; color:var(--t3); font-size:12px; }
   .toast { position:fixed; bottom:20px; right:20px; padding:8px 16px; border-radius:8px; font-size:11px; font-weight:600; opacity:0; transform:translateY(20px); transition:all 0.3s; z-index:2000; }
   .toast.show { opacity:1; transform:translateY(0); }
   .toast.ok { background:var(--green); color:#fff; }
   .toast.err { background:var(--red); color:#fff; }
+  .loading-dots::after { content:''; animation:dots 1.5s infinite; }
+  @keyframes dots { 0%{content:''} 33%{content:'.'} 66%{content:'..'} 100%{content:'...'} }
 
   @media(max-width:640px) { .suite-grid { grid-template-columns:1fr; } .main { padding:0 8px; } }
 </style>
@@ -91,10 +113,22 @@
   <!-- Suites grid -->
   <div id="suites-container"><div class="empty-state">Chargement…</div></div>
 
-  <!-- Runs History -->
-  <div class="runs-section" style="margin-top:16px;">
-    <div class="rs-title">📊 Historique des runs</div>
+  <!-- Local runs history -->
+  <div class="runs-section">
+    <div class="rs-title">📊 Historique des runs (local)</div>
     <div id="runs-history"><div class="empty-state">Chargement…</div></div>
+  </div>
+
+  <!-- GitHub CI section -->
+  <div class="runs-section" style="margin-bottom:16px;">
+    <div class="rs-title">
+      <span>🐙 CI GitHub (Playwright sur GitHub Actions)</span>
+      <button class="gh-btn" id="gh-trigger-btn" onclick="triggerGitHubRun()">▶ Lancer sur GitHub</button>
+    </div>
+    <div class="gh-header">
+      <span style="font-size:10px;color:var(--t3);">Les tests Playwright + API s'exécutent sur GitHub (Chrome natif) et les résultats remontent ici test par test</span>
+    </div>
+    <div id="gh-runs-list"><div class="empty-state">Aucun run GitHub — lance un test !</div></div>
   </div>
 
 </div>
@@ -130,6 +164,7 @@ fetch('/qa/api/suites')
 
     renderSuites();
     loadRuns();
+    loadGitHubRuns();
   })
   .catch(() => document.getElementById('suites-container').innerHTML = '<div class="empty-state">❌ Erreur</div>');
 
@@ -142,7 +177,7 @@ function renderSuites() {
     html += `<div class="sc-icon">${s.icon || '📦'}</div>`;
     html += `<div class="sc-name">${s.name} <span class="sc-count">(${s.test_count} tests)</span></div>`;
     html += `<div class="sc-desc">${s.description}</div>`;
-    html += `<button class="sc-btn" onclick="runSuite('${id}')">▶ Lancer</button>`;
+    html += `<button class="sc-btn" onclick="runSuite('${id}')">▶ Lancer (local)</button>`;
     // Test list
     html += '<div class="test-list">';
     (s.tests || []).forEach(t => {
@@ -167,7 +202,7 @@ function loadRuns() {
       const el = document.getElementById('runs-history');
       const runs = data.runs || [];
       if (runs.length === 0) {
-        el.innerHTML = '<div class="empty-state">Aucun run — lance un test !</div>';
+        el.innerHTML = '<div class="empty-state">Aucun run local — lance un test !</div>';
         return;
       }
       let html = '';
@@ -178,7 +213,7 @@ function loadRuns() {
         const pct = total > 0 ? (passed / total * 100) : 0;
         const icon = failed === 0 ? '✅' : '❌';
         const name = r.plan ? (plansData[r.plan]?.icon + ' ' + plansData[r.plan]?.name) : (suitesData[r.suite]?.icon + ' ' + suitesData[r.suite]?.name) || r.suite_name || r.id;
-        html += '<div class="run-entry">';
+        html += '<div class="run-entry" onclick="toggleDetail(\''+r.id+'-local\')">';
         html += `<span class="re-icon">${icon}</span>`;
         html += '<div class="re-info">';
         html += `<div class="re-name">${name}</div>`;
@@ -190,26 +225,162 @@ function loadRuns() {
         html += '</div>';
         html += `<span class="re-stats">${passed}/${total}</span>`;
         html += '</div>';
+
+        // Per-test detail (expandable)
+        html += `<div class="run-detail" id="rd-${r.id}-local">`;
+        (r.results || []).forEach(res => {
+          const ric = res.passed ? '✅' : '❌';
+          html += `<div class="rd-test"><span class="rd-id">${res.id}</span><span class="rd-name">${res.name}</span><span class="rd-dur">${res.duration}s</span>${ric}</div>`;
+          if (!res.passed && res.error) {
+            html += `<div class="rd-err">${res.error}</div>`;
+          }
+        });
+        html += '</div>';
       });
       el.innerHTML = html;
     });
 }
 
+// ─── GitHub CI ─────────────────────────────────────────────────
+
+function triggerGitHubRun() {
+  const btn = document.getElementById('gh-trigger-btn');
+  btn.textContent = '⏳ Déclenchement...';
+  btn.disabled = true;
+
+  fetch('/qa/api/github/trigger', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      target_url: window.location.origin,
+      suites: 'playwright,api'
+    })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.status === 'triggered') {
+      toast('✅ Workflow lancé sur GitHub ! Résultats dans ~2-3 min');
+      // Poll for the new run
+      setTimeout(loadGitHubRuns, 5000);
+    } else {
+      toast('❌ ' + (d.error || 'Erreur inconnue'), true);
+    }
+  })
+  .catch(e => toast('❌ Erreur réseau: ' + e, true))
+  .finally(() => { btn.textContent = '▶ Lancer sur GitHub'; btn.disabled = false; });
+}
+
+function loadGitHubRuns() {
+  fetch('/qa/api/github/qa-runs')
+    .then(r => r.json())
+    .then(data => {
+      const el = document.getElementById('gh-runs-list');
+      const runs = data.runs || [];
+      if (runs.length === 0) {
+        el.innerHTML = '<div class="empty-state">Aucun run GitHub — lance un test !</div>';
+        return;
+      }
+
+      let html = '';
+      runs.slice(0, 5).forEach(r => {
+        const status = r.status;
+        const conclusion = r.conclusion || 'pending';
+        const isComplete = status === 'completed';
+        const isFailed = conclusion === 'failure' || conclusion === 'cancelled';
+        const isSuccess = conclusion === 'success';
+        const icon = isSuccess ? '✅' : (isFailed ? '❌' : (status === 'in_progress' ? '⏳' : '⏸'));
+        const badgeClass = isSuccess ? 'completed' : (isFailed ? 'failure' : (status === 'in_progress' ? 'in_progress' : 'pending'));
+
+        html += `<div class="run-entry" onclick="fetchGHRunDetail(${r.id}, this)">`;
+        html += `<span class="re-icon">${icon}</span>`;
+        html += '<div class="re-info">';
+        html += `<div class="re-name">Run #${r.id} <span class="gh-badge ${badgeClass}">${status}${isComplete ? ' · ' + conclusion : ''}</span></div>`;
+        html += `<div class="re-meta">${(r.created_at || '').substring(0,16).replace('T',' ')} · <a href="${r.html_url}" target="_blank" style="color:var(--blue)">voir sur GitHub</a></div>`;
+        html += '</div>';
+        if (isComplete) {
+          html += `<span style="font-size:10px;color:var(--t3)">cliquer pour détails →</span>`;
+        }
+        html += '</div>';
+
+        // Detail container (populated on click)
+        html += `<div class="run-detail" id="gh-detail-${r.id}"><div class="empty-state" style="padding:10px">⬆️ Clique sur le run pour charger les résultats</div></div>`;
+      });
+      el.innerHTML = html;
+
+      // Auto-poll for in_progress runs
+      const inProgress = runs.some(r => r.status === 'in_progress' || r.status === 'queued' || r.status === 'pending');
+      if (inProgress) {
+        setTimeout(loadGitHubRuns, 10000); // poll again in 10s
+      }
+    })
+    .catch(e => {
+      document.getElementById('gh-runs-list').innerHTML = '<div class="empty-state">⚠️ Erreur chargement GitHub</div>';
+    });
+}
+
+function fetchGHRunDetail(runId, entryEl) {
+  const detailEl = document.getElementById('gh-detail-' + runId);
+  if (!detailEl) return;
+
+  // If already loaded, just toggle
+  if (detailEl.dataset.loaded === 'true') {
+    detailEl.classList.toggle('open');
+    return;
+  }
+
+  detailEl.innerHTML = '<div class="empty-state" style="padding:10px">⏳ Chargement des résultats détaillés...</div>';
+  detailEl.classList.add('open');
+
+  fetch('/qa/api/github/download-artifact/' + runId)
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) {
+        detailEl.innerHTML = `<div class="empty-state" style="padding:10px;color:var(--red)">⚠️ ${data.error}</div>`;
+        return;
+      }
+
+      const perTest = data.per_test || [];
+      const summary = data.summary || {};
+
+      let html = `<div style="padding:6px 0 4px;font-size:10px;color:var(--t3);border-bottom:1px solid var(--border-l);margin-bottom:4px;">`;
+      html += `<strong>Résumé :</strong> ${summary.passed || 0} ✅ / ${summary.failed || 0} ❌ / ${summary.total || 0} total</div>`;
+
+      perTest.forEach(t => {
+        const ric = t.passed ? '✅' : '❌';
+        html += `<div class="rd-test"><span class="rd-id">${t.id}</span>`;
+        html += `<span class="rd-name">${t.name} <span style="font-size:9px;color:var(--t3)">(${t.suite})</span></span>`;
+        html += `<span class="rd-dur">${t.duration}s</span>${ric}</div>`;
+        if (!t.passed && t.error) {
+          html += `<div class="rd-err">${t.error}</div>`;
+        }
+      });
+
+      if (perTest.length === 0) {
+        html += '<div class="empty-state" style="padding:10px">Aucun résultat test par test disponible. Les artefacts ne sont peut-être pas encore accessibles.</div>';
+      }
+
+      detailEl.innerHTML = html;
+      detailEl.dataset.loaded = 'true';
+    })
+    .catch(err => {
+      detailEl.innerHTML = `<div class="empty-state" style="padding:10px;color:var(--red)">⚠️ Erreur: ${err}</div>`;
+    });
+}
+
+// ─── Suite / Plan local runs ────────────────────────────────────
+
 function runSuite(suiteId) {
-  const btn = event.target;
-  btn.textContent = '⏳...'; btn.disabled = true;
   fetch(`/qa/api/run-suite/${suiteId}`, {method:'POST'})
     .then(r => r.json())
     .then(d => {
       toast(`Suite "${suiteId}" lancée`);
       pollResults();
     })
-    .catch(e => toast('Erreur: '+e, true))
-    .finally(() => { btn.textContent = '▶ Lancer'; btn.disabled = false; });
+    .catch(e => toast('Erreur: '+e, true));
 }
 
 function runPlan(planId) {
-  if (!confirm(`Lancer le plan "${plansData[planId]?.name}" ?`)) return;
+  if (!confirm(`Lancer le plan "${plansData[planId]?.name}" sur Render ? (sans Playwright — API seulement)`)) return;
   fetch(`/qa/api/run-plan/${planId}`, {method:'POST'})
     .then(r => r.json())
     .then(d => toast(`Plan "${planId}" lancé`))
@@ -227,7 +398,6 @@ function pollResults() {
         const runs = data.runs || [];
         if (runs.length > 0 && attempts > 2) {
           const last = runs[0];
-          // Update test result icons
           (last.results || []).forEach(r => {
             const el = document.getElementById('r-' + r.id);
             if (el) el.textContent = r.passed ? '✅' : '❌';
@@ -238,6 +408,15 @@ function pollResults() {
       });
   }, 3000);
   setTimeout(() => clearInterval(iv), 35000);
+}
+
+function toggleDetail(id) {
+  const el = document.getElementById('rd-' + id);
+  if (el) el.classList.toggle('open');
+}
+
+function showPlan(id) {
+  // Simple filter toggle
 }
 </script>
 </body>

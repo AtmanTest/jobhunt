@@ -1079,17 +1079,27 @@ def qa_api_run_detail(run_id):
 
 @app.route("/qa/api/github/trigger", methods=["POST"])
 def qa_github_trigger():
+    """Trigger the qa-tests.yml workflow (Playwright + API contre Render)."""
     if not GITHUB_TOKEN:
         return jsonify({"error": "GITHUB_TOKEN not configured"}), 400
+    data = request.get_json() or {}
+    target_url = data.get("target_url", request.host_url.rstrip("/"))
+    suites = data.get("suites", "playwright,api")
     try:
         resp = requests.post(
-            "https://api.github.com/repos/AtmanTest/jobhunt/actions/workflows/ci.yml/dispatches",
-            headers={"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"},
-            json={"ref": "main"},
+            "https://api.github.com/repos/AtmanTest/jobhunt/actions/workflows/qa-tests.yml/dispatches",
+            headers={"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"},
+            json={
+                "ref": "main",
+                "inputs": {
+                    "target_url": target_url,
+                    "suites": suites,
+                },
+            },
             timeout=10,
         )
         if resp.status_code in (204, 201):
-            return jsonify({"status": "triggered"})
+            return jsonify({"status": "triggered", "target_url": target_url, "suites": suites})
         return jsonify({"error": f"GitHub API error: {resp.status_code}", "detail": resp.text}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -1097,12 +1107,14 @@ def qa_github_trigger():
 
 @app.route("/qa/api/github/runs")
 def qa_github_runs():
+    """List recent QA workflow runs with per-test-case results."""
     if not GITHUB_TOKEN:
         return jsonify({"runs": [], "error": "no token"})
     try:
+        # Get all runs
         resp = requests.get(
             "https://api.github.com/repos/AtmanTest/jobhunt/actions/runs?per_page=10",
-            headers={"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"},
+            headers={"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"},
             timeout=10,
         )
         if resp.status_code != 200:
@@ -1110,9 +1122,12 @@ def qa_github_runs():
         data = resp.json()
         runs = []
         for run in data.get("workflow_runs", []):
+            # Cache the workflow name to filter
+            wf_name = run.get("name", "") or run.get("display_title", "")
             runs.append({
                 "id": run["id"],
-                "display_title": run.get("display_title") or "CI",
+                "display_title": run.get("display_title") or "QA",
+                "workflow": run.get("name", ""),
                 "event": run.get("event"),
                 "branch": run.get("head_branch"),
                 "status": run.get("status"),
@@ -1123,6 +1138,145 @@ def qa_github_runs():
         return jsonify({"runs": runs})
     except Exception as e:
         return jsonify({"runs": [], "error": str(e)}), 500
+
+
+@app.route("/qa/api/github/qa-runs")
+def qa_github_qa_runs():
+    """List only QA-tests.yml runs with per-test-case results."""
+    if not GITHUB_TOKEN:
+        return jsonify({"runs": [], "error": "no token"})
+    try:
+        # Get QA workflow runs specifically
+        resp = requests.get(
+            "https://api.github.com/repos/AtmanTest/jobhunt/actions/workflows/qa-tests.yml/runs?per_page=10",
+            headers={"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"},
+            timeout=10,
+        )
+        if resp.status_code != 200:
+            return jsonify({"runs": [], "error": f"API: {resp.status_code}"})
+        data = resp.json()
+        runs = []
+        for run in data.get("workflow_runs", []):
+            runs.append({
+                "id": run["id"],
+                "display_title": run.get("display_title") or "QA Tests",
+                "event": run.get("event"),
+                "branch": run.get("head_branch"),
+                "status": run.get("status"),
+                "conclusion": run.get("conclusion"),
+                "created_at": run.get("created_at"),
+                "updated_at": run.get("updated_at"),
+                "html_url": run.get("html_url"),
+            })
+        return jsonify({"runs": runs})
+    except Exception as e:
+        return jsonify({"runs": [], "error": str(e)}), 500
+
+
+@app.route("/qa/api/github/download-artifact/<int:run_id>")
+def qa_download_artifact(run_id):
+    """
+    Download per-test-case results from a completed GitHub Actions run artifact.
+    Returns per-test-case JSON: [{id, name, passed, error, duration}, ...]
+    """
+    if not GITHUB_TOKEN:
+        return jsonify({"error": "no token", "results": []})
+
+    headers = {"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"}
+    cache_dir = os.path.join(os.path.dirname(__file__), ".qa_runs", "github")
+    os.makedirs(cache_dir, exist_ok=True)
+    cache_path = os.path.join(cache_dir, f"run_{run_id}.json")
+
+    # Return cached results if available
+    if os.path.exists(cache_path):
+        with open(cache_path) as f:
+            return jsonify(json.load(f))
+
+    try:
+        # 1. List artifacts for this run
+        art_resp = requests.get(
+            f"https://api.github.com/repos/AtmanTest/jobhunt/actions/runs/{run_id}/artifacts",
+            headers=headers, timeout=10,
+        )
+        if art_resp.status_code != 200:
+            return jsonify({"error": f"Artifact list: {art_resp.status_code}", "results": []})
+
+        artifacts = art_resp.json().get("artifacts", [])
+        qa_artifact = None
+        for art in artifacts:
+            if art["name"].startswith("qa-results-"):
+                qa_artifact = art
+                break
+
+        if not qa_artifact:
+            return jsonify({"error": "No QA results artifact found", "results": []})
+
+        # 2. Download the artifact zip
+        dl_resp = requests.get(
+            qa_artifact["archive_download_url"],
+            headers=headers, timeout=30,
+        )
+        if dl_resp.status_code not in (200, 302):
+            return jsonify({"error": f"Download failed: {dl_resp.status_code}", "results": []})
+
+        # Save and extract
+        import zipfile, io
+        archive = zipfile.ZipFile(io.BytesIO(dl_resp.content))
+
+        # Read all run_*.json files from the archive
+        all_results = []
+        for name in archive.namelist():
+            if name.endswith(".json") and "run_" in name:
+                with archive.open(name) as f:
+                    try:
+                        run_data = json.loads(f.read().decode("utf-8"))
+                        all_results.append(run_data)
+                    except:
+                        pass
+
+        # Also read github_latest.json for the combined summary
+        combined = None
+        for name in archive.namelist():
+            if name.endswith("github_latest.json"):
+                with archive.open(name) as f:
+                    try:
+                        combined = json.loads(f.read().decode("utf-8"))
+                    except:
+                        pass
+
+        # Build per-test-case result list
+        per_test = []
+        for run_data in all_results:
+            for r in run_data.get("results", []):
+                per_test.append({
+                    "id": r.get("id", "?"),
+                    "name": r.get("name", "?"),
+                    "suite": run_data.get("suite_name", "?"),
+                    "passed": r.get("passed", False),
+                    "error": r.get("error", ""),
+                    "duration": r.get("duration", 0),
+                })
+
+        result = {
+            "run_id": run_id,
+            "status": "completed",
+            "per_test": per_test,
+            "summary": {
+                "passed": sum(1 for t in per_test if t["passed"]),
+                "failed": sum(1 for t in per_test if not t["passed"]),
+                "total": len(per_test),
+            },
+            "combined": combined,
+        }
+
+        # Cache
+        with open(cache_path, "w") as f:
+            json.dump(result, f, indent=2)
+
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({"error": str(e), "results": []}), 500
 
 
 # ─── Playwright Tests ─────────────────────────────────────────────

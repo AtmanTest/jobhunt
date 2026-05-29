@@ -13,7 +13,7 @@ os.makedirs(RUNS_DIR, exist_ok=True)
 sys.path.insert(0, BASE_DIR)
 from tests.test_suites import get_suites, PLANS as plans
 
-PW_PYTHON = "/tmp/pw_venv/bin/python3"
+PW_PYTHON = os.environ.get("PW_PYTHON", sys.executable)
 
 
 def _run_id():
