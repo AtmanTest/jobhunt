@@ -1152,6 +1152,50 @@ def qa_playwright_results():
     return jsonify({"results": [], "passed": 0, "failed": 0, "total": 0})
 
 
+# ─── TestRail-style Test Runner ─────────────────────────────────
+
+sys.path.insert(0, os.path.dirname(__file__))
+from tests.test_suites import get_suites, PLANS as test_plans
+from tests.test_runner import run_suite as tr_run_suite, run_plan as tr_run_plan, get_runs as tr_get_runs
+
+
+@app.route("/qa/api/suites")
+def qa_api_suites():
+    base = request.host_url.rstrip("/")
+    suites = get_suites(base)
+    result = {}
+    for sid, s in suites.items():
+        result[sid] = {
+            "name": s["name"],
+            "icon": s["icon"],
+            "description": s["description"],
+            "test_count": len(s["tests"]),
+            "tests": s["tests"],
+        }
+    return jsonify({"suites": result, "plans": test_plans})
+
+
+@app.route("/qa/api/run-suite/<suite_id>", methods=["POST"])
+def qa_api_run_suite(suite_id):
+    base = request.host_url.rstrip("/")
+    thread = threading.Thread(target=tr_run_suite, args=(suite_id, base), daemon=True)
+    thread.start()
+    return jsonify({"status": "started", "suite": suite_id})
+
+
+@app.route("/qa/api/run-plan/<plan_id>", methods=["POST"])
+def qa_api_run_plan(plan_id):
+    base = request.host_url.rstrip("/")
+    thread = threading.Thread(target=tr_run_plan, args=(plan_id, base), daemon=True)
+    thread.start()
+    return jsonify({"status": "started", "plan": plan_id})
+
+
+@app.route("/qa/api/test-runs")
+def qa_api_test_runs():
+    return jsonify({"runs": tr_get_runs(10)})
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5050))
     print(f"""

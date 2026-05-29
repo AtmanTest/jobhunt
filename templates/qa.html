@@ -3,73 +3,70 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QA — JobHunt</title>
+<title>QA — JobHunt TestRail</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-  :root { --bg:#f8f9fb; --surface:#fff; --border:#e8ecf0; --border-light:#f0f2f5; --text:#1a1d23; --text2:#4a5060; --text3:#8a92a5; --accent:#0a2540; --blue:#2563eb; --blue-bg:rgba(37,99,235,0.06); --green:#059669; --green-bg:rgba(5,150,105,0.08); --orange:#d97706; --orange-bg:rgba(217,119,6,0.08); --red:#dc2626; --radius:10px; }
-  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  :root { --bg:#f5f6fa; --surface:#fff; --border:#e6e9ef; --border-l:#f0f2f5; --text:#1a1d23; --t2:#4a5060; --t3:#8a92a5; --accent:#0a2540; --blue:#2563eb; --blue-bg:rgba(37,99,235,0.06); --green:#059669; --green-bg:rgba(5,150,105,0.08); --orange:#d97706; --orange-bg:rgba(217,119,6,0.08); --red:#dc2626; --red-bg:rgba(220,38,38,0.06); --r:10px; }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
+  ::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
 
   .top-nav { position:sticky; top:0; z-index:100; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; background:rgba(255,255,255,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); }
-  .top-nav a { font-size:12px; font-weight:500; color:var(--text3); text-decoration:none; padding:4px 10px; border-radius:6px; transition:all 0.15s; }
-  .top-nav a:hover { color:var(--text); background:var(--border-light); }
+  .top-nav a { font-size:12px; font-weight:500; color:var(--t3); text-decoration:none; padding:4px 10px; border-radius:6px; }
+  .top-nav a:hover { color:var(--text); background:var(--border-l); }
   .top-nav a.active { color:var(--accent); background:var(--blue-bg); font-weight:600; }
 
-  .main { max-width: 960px; margin: 24px auto; padding: 0 16px; }
-  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px 24px; margin-bottom:14px; }
+  .main { max-width:1060px; margin:20px auto; padding:0 16px; }
 
-  .section-title { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1.8px; color:var(--blue); margin-bottom:10px; }
-  .section-title .bar { display:flex; gap:4px; align-items:center; }
-  .section-title .bar::after { content:''; flex:1; height:1px; background:linear-gradient(90deg, var(--border), transparent); margin-left:8px; }
+  /* Plans bar */
+  .plans-bar { display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
+  .plan-btn { padding:7px 16px; border-radius:8px; border:1px solid var(--border); background:var(--surface); font-size:11px; font-weight:600; cursor:pointer; color:var(--t2); font-family:inherit; transition:all 0.15s; display:flex; align-items:center; gap:5px; }
+  .plan-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .plan-btn.active { border-color:var(--blue); background:var(--blue-bg); color:var(--blue); }
+  .plan-btn .count { font-size:9px; color:var(--t3); font-weight:500; }
 
-  .btn-row { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
-  .btn { padding:6px 14px; border-radius:7px; font-size:11px; font-weight:600; cursor:pointer; border:none; font-family:inherit; display:inline-flex; align-items:center; gap:5px; transition:all 0.15s; }
-  .btn-primary { background:var(--accent); color:#fff; }
-  .btn-primary:hover { opacity:0.9; }
-  .btn-outline { background:var(--surface); color:var(--text2); border:1px solid var(--border); }
-  .btn-outline:hover { border-color:var(--blue); color:var(--blue); }
-  .btn-sm { padding:4px 10px; font-size:10px; }
+  /* Suite cards */
+  .suite-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:10px; margin-bottom:16px; }
+  .suite-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:16px 18px; transition:all 0.15s; }
+  .suite-card:hover { border-color:var(--blue); }
+  .suite-card .sc-icon { font-size:18px; margin-bottom:4px; }
+  .suite-card .sc-name { font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; }
+  .suite-card .sc-desc { font-size:10px; color:var(--t3); margin:2px 0 8px; }
+  .suite-card .sc-count { font-size:10px; color:var(--t2); font-weight:500; }
+  .suite-card .sc-btn { padding:4px 12px; border-radius:6px; border:none; background:var(--accent); color:#fff; font-size:10px; font-weight:600; cursor:pointer; font-family:inherit; margin-top:8px; }
+  .suite-card .sc-btn:hover { opacity:0.9; }
 
-  .status-dot { display:inline-block; width:6px; height:6px; border-radius:50%; margin-right:4px; }
-  .status-dot.green { background:var(--green); }
-  .status-dot.orange { background:var(--orange); }
-  .status-dot.red { background:var(--red); }
+  /* Test list */
+  .test-list { margin-top:8px; }
+  .test-item { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid var(--border-l); font-size:11px; }
+  .test-item:last-child { border-bottom:none; }
+  .test-item .tid { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--t3); width:50px; flex-shrink:0; }
+  .test-item .tname { flex:1; color:var(--text); }
+  .test-item .tdesc { font-size:9px; color:var(--t3); }
+  .test-item .tresult { font-size:12px; width:20px; text-align:center; }
 
-  .feature-file { margin-bottom:12px; }
-  .feature-file .fname { font-size:12px; font-weight:600; color:var(--accent); margin-bottom:4px; display:flex; align-items:center; gap:6px; }
-  .feature-file .fname .count { font-size:10px; font-weight:500; color:var(--text3); }
-  .scenario { padding:6px 0 6px 14px; border-left:2px solid var(--border); margin-bottom:4px; }
-  .scenario .sname { font-size:11px; font-weight:500; color:var(--text); }
-  .scenario .steps { font-size:10px; color:var(--text3); font-family:'JetBrains Mono', monospace; margin-top:2px; }
-  .scenario .tags { display:flex; gap:3px; flex-wrap:wrap; margin-top:2px; }
-  .scenario .tags span { font-size:8px; padding:1px 5px; border-radius:3px; background:var(--blue-bg); color:var(--blue); }
+  /* Runs history */
+  .runs-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:16px 18px; }
+  .runs-section .rs-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:var(--accent); margin-bottom:10px; }
+  .run-entry { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--border-l); font-size:11px; }
+  .run-entry:last-child { border-bottom:none; }
+  .run-entry .re-icon { font-size:16px; }
+  .run-entry .re-info { flex:1; }
+  .run-entry .re-name { font-weight:600; }
+  .run-entry .re-meta { font-size:9px; color:var(--t3); }
+  .run-entry .re-bar { display:flex; gap:2px; height:6px; border-radius:3px; overflow:hidden; width:80px; background:var(--border-l); }
+  .run-entry .re-bar .pass { background:var(--green); }
+  .run-entry .re-bar .fail { background:var(--red); }
+  .run-entry .re-stats { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--t2); }
 
-  .run-item { padding:10px 0; border-bottom:1px solid var(--border-light); display:flex; align-items:center; gap:12px; }
-  .run-item:last-child { border-bottom:none; }
-  .run-item .run-id { font-size:10px; font-family:'JetBrains Mono', monospace; color:var(--text3); }
-  .run-item .run-status { font-size:11px; font-weight:600; }
-  .run-item .run-meta { font-size:10px; color:var(--text3); margin-left:auto; }
-
-  .gh-run { padding:8px 0; border-bottom:1px solid var(--border-light); display:flex; align-items:center; gap:10px; font-size:11px; }
-  .gh-run:last-child { border-bottom:none; }
-  .gh-run .gh-status { font-size:10px; font-weight:600; padding:2px 8px; border-radius:4px; }
-  .gh-run .gh-completed { background:var(--green-bg); color:var(--green); }
-  .gh-run .gh-failure { background:var(--orange-bg); color:var(--orange); }
-  .gh-run .gh-in_progress { background:var(--blue-bg); color:var(--blue); }
-  .gh-run a { color:var(--accent); text-decoration:none; }
-  .gh-run a:hover { text-decoration:underline; }
-
-  .empty { text-align:center; padding:40px 20px; color:var(--text3); font-size:13px; }
-  .empty .icon { font-size:28px; margin-bottom:6px; }
-
-  .toast { position:fixed; bottom:20px; right:20px; background:var(--green); color:#fff; padding:8px 16px; border-radius:8px; font-size:11px; font-weight:600; opacity:0; transform:translateY(20px); transition:all 0.3s; z-index:2000; }
+  .empty-state { text-align:center; padding:30px; color:var(--t3); font-size:12px; }
+  .toast { position:fixed; bottom:20px; right:20px; padding:8px 16px; border-radius:8px; font-size:11px; font-weight:600; opacity:0; transform:translateY(20px); transition:all 0.3s; z-index:2000; }
   .toast.show { opacity:1; transform:translateY(0); }
-  .toast.error { background:var(--red); }
+  .toast.ok { background:var(--green); color:#fff; }
+  .toast.err { background:var(--red); color:#fff; }
 
-  @media(max-width:640px) { .main { padding:0 8px; } .card { padding:14px 16px; } }
+  @media(max-width:640px) { .suite-grid { grid-template-columns:1fr; } .main { padding:0 8px; } }
 </style>
 </head>
 <body>
@@ -81,38 +78,23 @@
     <a href="#" class="active">QA</a>
     <a href="{{ url_for('stats_page') }}">Stats</a>
   </div>
-  <div>
-    <a href="{{ url_for('about') }}">À propos</a>
-  </div>
+  <div><a href="{{ url_for('about') }}">À propos</a></div>
 </div>
 
 <div class="main">
 
-  <!-- Actions -->
-  <div class="card">
-    <div class="section-title"><span class="bar">Tests</span></div>
-    <div class="btn-row">
-      <button class="btn btn-primary btn-sm" onclick="runTests()">▶ Run Tests</button>
-      <button class="btn btn-outline btn-sm" onclick="location.reload()">↻ Refresh</button>
-    </div>
-    <div id="latest-run" style="font-size:11px;color:var(--text3);"></div>
+  <!-- Plans -->
+  <div class="plans-bar" id="plans-bar">
+    <button class="plan-btn active" onclick="showPlan('all')">📋 Tous les tests</button>
   </div>
 
-  <!-- Test Cases -->
-  <div class="card">
-    <div class="section-title"><span class="bar">🧪 Cas de test</span></div>
-    <div id="test-cases"><div class="empty">Chargement…</div></div>
-  </div>
+  <!-- Suites grid -->
+  <div id="suites-container"><div class="empty-state">Chargement…</div></div>
 
-  <!-- Playwright Tests -->
-  <div class="card">
-    <div class="section-title"><span class="bar">🎭 Tests Playwright — Démo QA</span></div>
-    <div class="btn-row">
-      <button class="btn btn-primary btn-sm" onclick="runPlaywright()">▶ Lancer les tests</button>
-      <button class="btn btn-outline btn-sm" onclick="loadPlaywrightResults()">↻ Résultats</button>
-    </div>
-    <div id="pw-status" style="font-size:11px;color:var(--text3);margin-bottom:8px;"></div>
-    <div id="pw-results"></div>
+  <!-- Runs History -->
+  <div class="runs-section" style="margin-top:16px;">
+    <div class="rs-title">📊 Historique des runs</div>
+    <div id="runs-history"><div class="empty-state">Chargement…</div></div>
   </div>
 
 </div>
@@ -120,124 +102,143 @@
 <div class="toast" id="toast"></div>
 
 <script>
+let suitesData = {};
+let plansData = {};
+
 function toast(msg, err) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast show' + (err ? ' error' : '');
+  t.textContent = msg; t.className = 'toast show ' + (err ? 'err' : 'ok');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// Load test cases
-fetch('/qa/api/test-cases')
+// Load suite definitions
+fetch('/qa/api/suites')
   .then(r => r.json())
   .then(data => {
-    const el = document.getElementById('test-cases');
-    if (!data.categories || data.categories.length === 0) {
-      el.innerHTML = '<div class="empty"><div class="icon">📂</div>Aucun fichier .feature trouvé</div>';
-      return;
-    }
-    let html = '';
-    data.categories.forEach(cat => {
-      html += '<div class="feature-file">';
-      html += `<div class="fname">📄 ${cat.file} <span class="count">(${cat.scenarios.length} scénarios)</span></div>`;
-      cat.scenarios.forEach(sc => {
-        html += '<div class="scenario">';
-        html += `<div class="sname">${sc.name}</div>`;
-        if (sc.tags && sc.tags.length) {
-          html += '<div class="tags">' + sc.tags.map(t => `<span>@${t}</span>`).join('') + '</div>';
-        }
-        if (sc.steps) {
-          html += '<div class="steps">' + sc.steps.join(' │ ') + '</div>';
-        }
-        html += '</div>';
-      });
-      html += '</div>';
+    suitesData = data.suites || {};
+    plansData = data.plans || {};
+
+    // Build plan buttons
+    const bar = document.getElementById('plans-bar');
+    Object.entries(plansData).forEach(([id, p]) => {
+      const btn = document.createElement('button');
+      btn.className = 'plan-btn';
+      btn.innerHTML = `${p.icon || '📋'} ${p.name} <span class="count">(${p.suites.length} suites)</span>`;
+      btn.onclick = () => runPlan(id);
+      bar.appendChild(btn);
     });
-    el.innerHTML = html;
-  })
-  .catch(() => document.getElementById('test-cases').innerHTML = '<div class="empty"><div class="icon">❌</div>Erreur de chargement</div>');
 
-// Load latest runs
-fetch('/qa/api/runs')
-  .then(r => r.json())
-  .then(data => {
-    const el = document.getElementById('latest-run');
-    const runs = data.runs || [];
-    if (runs.length === 0) { el.innerHTML = '<span style="color:var(--text3)">Aucun run de tests</span>'; return; }
-    const last = runs[0];
-    const status = last.status === 'completed' ? (last.failed === 0 ? '✅' : '❌') : '⏳';
-    el.innerHTML = `${status} Dernier run: ${last.passed||0} passed, ${last.failed||0} failed, ${last.skipped||0} skipped — ${last.duration}s`;
+    renderSuites();
+    loadRuns();
   })
-  .catch(() => {});
+  .catch(() => document.getElementById('suites-container').innerHTML = '<div class="empty-state">❌ Erreur</div>');
 
-function runTests() {
-  const btn = event.target; btn.textContent = '⏳ Running...'; btn.disabled = true;
-  fetch('/qa/api/runs', {method:'POST'})
-    .then(r => r.json())
-    .then(d => { toast('Tests lancés (run: ' + d.run_id + ')'); setTimeout(() => location.reload(), 3000); })
-    .catch(e => toast('Erreur: ' + e, true))
-    .finally(() => { btn.textContent = '▶ Run Tests'; btn.disabled = false; });
+function renderSuites() {
+  const container = document.getElementById('suites-container');
+  let html = '<div class="suite-grid">';
+
+  Object.entries(suitesData).forEach(([id, s]) => {
+    html += '<div class="suite-card">';
+    html += `<div class="sc-icon">${s.icon || '📦'}</div>`;
+    html += `<div class="sc-name">${s.name} <span class="sc-count">(${s.test_count} tests)</span></div>`;
+    html += `<div class="sc-desc">${s.description}</div>`;
+    html += `<button class="sc-btn" onclick="runSuite('${id}')">▶ Lancer</button>`;
+    // Test list
+    html += '<div class="test-list">';
+    (s.tests || []).forEach(t => {
+      html += `<div class="test-item">`;
+      html += `<span class="tid">${t.id}</span>`;
+      html += `<span class="tname">${t.name}</span>`;
+      html += `<span class="tdesc">${t.description || ''}</span>`;
+      html += `<span class="tresult" id="r-${t.id}"></span>`;
+      html += `</div>`;
+    });
+    html += '</div></div>';
+  });
+
+  html += '</div>';
+  container.innerHTML = html;
 }
 
-// ─── Playwright ───
-function loadPlaywrightResults() {
-  const el = document.getElementById('pw-results');
-  const st = document.getElementById('pw-status');
-  fetch('/qa/api/playwright/results')
+function loadRuns() {
+  fetch('/qa/api/test-runs')
     .then(r => r.json())
     .then(data => {
-      const r = data.results || [];
-      if (r.length === 0) {
-        el.innerHTML = '<div class="empty"><div class="icon">🎭</div>Aucun run Playwright — clique "Lancer les tests"</div>';
-        st.textContent = '';
+      const el = document.getElementById('runs-history');
+      const runs = data.runs || [];
+      if (runs.length === 0) {
+        el.innerHTML = '<div class="empty-state">Aucun run — lance un test !</div>';
         return;
       }
-      st.textContent = `${data.passed||0} ✅ / ${data.failed||0} ❌ / ${data.total||r.length} total`;
       let html = '';
-      r.forEach(t => {
-        const ok = t.passed;
-        html += '<div class="run-item" style="' + (ok ? '' : 'background:rgba(220,38,38,0.03);border-radius:4px;padding:8px;') + '">';
-        html += `<span style="font-size:16px;">${ok ? '✅' : '❌'}</span>`;
-        html += '<div style="flex:1;">';
-        html += `<div style="font-size:12px;font-weight:600;">${t.name || t.scenario}</div>`;
-        html += t.description ? `<div style="font-size:10px;color:var(--text3);">${t.description}</div>` : '';
-        if (!ok && t.error) html += `<div style="font-size:10px;color:var(--red);margin-top:2px;">${t.error}</div>`;
+      runs.forEach(r => {
+        const total = r.summary?.total || 0;
+        const passed = r.summary?.passed || 0;
+        const failed = r.summary?.failed || 0;
+        const pct = total > 0 ? (passed / total * 100) : 0;
+        const icon = failed === 0 ? '✅' : '❌';
+        const name = r.plan ? (plansData[r.plan]?.icon + ' ' + plansData[r.plan]?.name) : (suitesData[r.suite]?.icon + ' ' + suitesData[r.suite]?.name) || r.suite_name || r.id;
+        html += '<div class="run-entry">';
+        html += `<span class="re-icon">${icon}</span>`;
+        html += '<div class="re-info">';
+        html += `<div class="re-name">${name}</div>`;
+        html += `<div class="re-meta">${(r.timestamp || '').substring(0,16).replace('T',' ')} · ${r.duration}s</div>`;
         html += '</div>';
-        html += `<span style="font-size:10px;color:var(--text3);margin-left:auto;">${t.duration || '?'}s</span>`;
+        html += '<div class="re-bar">';
+        if (passed > 0) html += `<div class="pass" style="flex:${passed}"></div>`;
+        if (failed > 0) html += `<div class="fail" style="flex:${failed}"></div>`;
+        html += '</div>';
+        html += `<span class="re-stats">${passed}/${total}</span>`;
         html += '</div>';
       });
       el.innerHTML = html;
-    })
-    .catch(() => el.innerHTML = '<div class="empty">❌ Erreur de chargement</div>');
+    });
 }
 
-function runPlaywright() {
-  const btn = document.querySelector('[onclick="runPlaywright()"]');
-  btn.textContent = '⏳ Running...'; btn.disabled = true;
-  document.getElementById('pw-status').textContent = '⏳ Tests en cours...';
-  fetch('/qa/api/playwright/run', {method:'POST'})
+function runSuite(suiteId) {
+  const btn = event.target;
+  btn.textContent = '⏳...'; btn.disabled = true;
+  fetch(`/qa/api/run-suite/${suiteId}`, {method:'POST'})
     .then(r => r.json())
     .then(d => {
-      toast('Tests Playwright lancés');
-      // Poll for results
-      let attempts = 0;
-      const iv = setInterval(() => {
-        attempts++;
-        fetch('/qa/api/playwright/results')
-          .then(r => r.json())
-          .then(data => {
-            if (data.results && data.results.length > 0 || attempts > 20) {
-              clearInterval(iv);
-              loadPlaywrightResults();
-              btn.textContent = '▶ Lancer les tests'; btn.disabled = false;
-              document.getElementById('pw-status').textContent = attempts > 20 ? '⏰ Timeout' : '✅ Terminé';
-            }
-          });
-      }, 3000);
+      toast(`Suite "${suiteId}" lancée`);
+      pollResults();
     })
-    .catch(e => { toast('Erreur: ' + e, true); btn.textContent = '▶ Lancer les tests'; btn.disabled = false; });
+    .catch(e => toast('Erreur: '+e, true))
+    .finally(() => { btn.textContent = '▶ Lancer'; btn.disabled = false; });
 }
 
-loadPlaywrightResults();
+function runPlan(planId) {
+  if (!confirm(`Lancer le plan "${plansData[planId]?.name}" ?`)) return;
+  fetch(`/qa/api/run-plan/${planId}`, {method:'POST'})
+    .then(r => r.json())
+    .then(d => toast(`Plan "${planId}" lancé`))
+    .catch(e => toast('Erreur: '+e, true));
+  pollResults();
+}
+
+function pollResults() {
+  let attempts = 0;
+  const iv = setInterval(() => {
+    attempts++;
+    fetch('/qa/api/test-runs')
+      .then(r => r.json())
+      .then(data => {
+        const runs = data.runs || [];
+        if (runs.length > 0 && attempts > 2) {
+          const last = runs[0];
+          // Update test result icons
+          (last.results || []).forEach(r => {
+            const el = document.getElementById('r-' + r.id);
+            if (el) el.textContent = r.passed ? '✅' : '❌';
+          });
+        }
+        loadRuns();
+        if (attempts > 10) { clearInterval(iv); }
+      });
+  }, 3000);
+  setTimeout(() => clearInterval(iv), 35000);
+}
 </script>
 </body>
 </html>
