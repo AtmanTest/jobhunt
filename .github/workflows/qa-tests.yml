@@ -46,6 +46,7 @@ jobs:
         with:
           name: qa-results-${{ github.run_id }}
           path: .qa_runs/
+          include-hidden-files: true
           retention-days: 7
 
       - name: Upload Playwright screenshots

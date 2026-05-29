@@ -134,7 +134,7 @@ def _run_playwright_test(tid: str, base_url: str) -> dict:
 
     test_file = os.path.join(BASE_DIR, "tests", "playwright", "test_dashboard.py")
     script = f"""
-import sys, json
+import sys, json, os
 sys.path.insert(0, '{os.path.dirname(test_file)}')
 os.environ['JOBHUNT_URL'] = '{base_url}'
 from test_dashboard import run_scenario
