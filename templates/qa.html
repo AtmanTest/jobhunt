@@ -3,132 +3,178 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QA — JobHunt TestRail</title>
+<title>QA Test — JobHunt</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-  :root { --bg:#f5f6fa; --surface:#fff; --border:#e6e9ef; --border-l:#f0f2f5; --text:#1a1d23; --t2:#4a5060; --t3:#8a92a5; --accent:#0a2540; --blue:#2563eb; --blue-bg:rgba(37,99,235,0.06); --green:#059669; --green-bg:rgba(5,150,105,0.08); --orange:#d97706; --orange-bg:rgba(217,119,6,0.08); --red:#dc2626; --red-bg:rgba(220,38,38,0.06); --r:10px; }
-  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
-  ::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+  :root {
+    --bg:#f4f5f7; --surface:#fff; --border:#e4e7ec; --border-l:#f1f2f5;
+    --text:#101214; --t2:#444a56; --t3:#8a92a5;
+    --accent:#0a2540; --accent2:#1a3a5c;
+    --blue:#2463eb; --blue-bg:#eef4ff;
+    --green:#059669; --green-bg:#ecfdf5; --green-bar:#22c55e;
+    --red:#dc2626; --red-bg:#fef2f2; --red-bar:#ef4444;
+    --orange:#d97706; --orange-bg:#fffbeb;
+    --purple:#7c3aed; --purple-bg:#f5f3ff;
+    --teal:#0d9488; --teal-bg:#f0fdfa;
+    --r:12px; --rs:8px;
+  }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; font-size:14px; }
+  ::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
 
-  .top-nav { position:sticky; top:0; z-index:100; height:44px; display:flex; align-items:center; justify-content:space-between; padding:0 24px; background:rgba(255,255,255,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); }
-  .top-nav a { font-size:12px; font-weight:500; color:var(--t3); text-decoration:none; padding:4px 10px; border-radius:6px; }
-  .top-nav a:hover { color:var(--text); background:var(--border-l); }
-  .top-nav a.active { color:var(--accent); background:var(--blue-bg); font-weight:600; }
+  /* Header */
+  .top-bar { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.88); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); }
+  .top-bar-in { max-width:1100px; margin:0 auto; height:48px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; }
+  .top-bar nav { display:flex; gap:2px; }
+  .top-bar nav a { font-size:13px; font-weight:500; color:var(--t3); text-decoration:none; padding:6px 14px; border-radius:var(--rs); transition:all .15s; }
+  .top-bar nav a:hover { color:var(--text); background:var(--border-l); }
+  .top-bar nav a.active { color:var(--blue); background:var(--blue-bg); font-weight:600; }
 
-  .main { max-width:1060px; margin:20px auto; padding:0 16px; }
+  .page-title { max-width:1100px; margin:24px auto 16px; padding:0 20px; display:flex; align-items:center; justify-content:space-between; }
+  .page-title h1 { font-size:20px; font-weight:700; letter-spacing:-.3px; display:flex; align-items:center; gap:8px; }
+  .page-title h1 span { font-size:11px; font-weight:500; color:var(--t3); background:var(--border-l); padding:2px 10px; border-radius:20px; }
 
-  /* Plans bar */
-  .plans-bar { display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
-  .plan-btn { padding:7px 16px; border-radius:8px; border:1px solid var(--border); background:var(--surface); font-size:11px; font-weight:600; cursor:pointer; color:var(--t2); font-family:inherit; transition:all 0.15s; display:flex; align-items:center; gap:5px; }
-  .plan-btn:hover { border-color:var(--blue); color:var(--blue); }
-  .plan-btn.active { border-color:var(--blue); background:var(--blue-bg); color:var(--blue); }
-  .plan-btn .count { font-size:9px; color:var(--t3); font-weight:500; }
+  .main { max-width:1100px; margin:0 auto 40px; padding:0 20px; }
 
-  /* Suite cards */
-  .suite-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:10px; margin-bottom:16px; }
-  .suite-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:16px 18px; transition:all 0.15s; }
-  .suite-card:hover { border-color:var(--blue); }
-  .suite-card .sc-icon { font-size:18px; margin-bottom:4px; }
-  .suite-card .sc-name { font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; }
-  .suite-card .sc-desc { font-size:10px; color:var(--t3); margin:2px 0 8px; }
-  .suite-card .sc-count { font-size:10px; color:var(--t2); font-weight:500; }
-  .suite-card .sc-btn { padding:4px 12px; border-radius:6px; border:none; background:var(--accent); color:#fff; font-size:10px; font-weight:600; cursor:pointer; font-family:inherit; margin-top:8px; }
-  .suite-card .sc-btn:hover { opacity:0.9; }
+  /* Plans row */
+  .plans-row { display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; }
+  .plan-pill { padding:8px 18px; border-radius:20px; border:1px solid var(--border); background:var(--surface); font-size:12px; font-weight:600; cursor:pointer; color:var(--t2); font-family:inherit; transition:all .15s; display:flex; align-items:center; gap:5px; }
+  .plan-pill:hover { border-color:var(--blue); color:var(--blue); background:var(--blue-bg); }
+  .plan-pill .cnt { font-size:10px; color:var(--t3); font-weight:500; }
+  .plan-pill .icn { font-size:14px; }
 
-  /* Test list */
-  .test-list { margin-top:8px; }
-  .test-item { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid var(--border-l); font-size:11px; }
-  .test-item:last-child { border-bottom:none; }
-  .test-item .tid { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--t3); width:50px; flex-shrink:0; }
-  .test-item .tname { flex:1; color:var(--text); }
-  .test-item .tdesc { font-size:9px; color:var(--t3); }
-  .test-item .tresult { font-size:12px; width:20px; text-align:center; }
+  /* Suite grid */
+  .suite-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:12px; margin-bottom:24px; }
+  .suite-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; transition:all .15s; }
+  .suite-card:hover { border-color:#c8ccd6; }
+  .sc-head { padding:14px 18px 10px; display:flex; align-items:flex-start; justify-content:space-between; }
+  .sc-head-l { display:flex; align-items:center; gap:10px; }
+  .sc-icon { width:34px; height:34px; border-radius:var(--rs); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+  .sc-icon.pw { background:#f0fdf4; } .sc-icon.bdd { background:#f5f3ff; } .sc-icon.api { background:#eef4ff; }
+  .sc-name { font-size:14px; font-weight:600; }
+  .sc-count { font-size:11px; color:var(--t3); font-weight:400; margin-left:6px; }
+  .sc-desc { font-size:11px; color:var(--t3); margin:2px 0 0; }
+  .sc-run { padding:5px 14px; border-radius:var(--rs); border:none; font-size:11px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .15s; flex-shrink:0; }
+  .sc-run.pw { background:#05966920; color:var(--green); } .sc-run.pw:hover { background:#05966930; }
+  .sc-run.bdd { background:#7c3aed20; color:var(--purple); } .sc-run.bdd:hover { background:#7c3aed30; }
+  .sc-run.api { background:#2463eb20; color:var(--blue); } .sc-run.api:hover { background:#2463eb30; }
 
-  /* Runs history */
-  .runs-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:16px 18px; margin-bottom:16px; }
-  .runs-section .rs-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:var(--accent); margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; }
-  .run-entry { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--border-l); font-size:11px; cursor:pointer; }
-  .run-entry:last-child { border-bottom:none; }
-  .run-entry .re-icon { font-size:16px; }
-  .run-entry .re-info { flex:1; }
-  .run-entry .re-name { font-weight:600; }
-  .run-entry .re-meta { font-size:9px; color:var(--t3); }
-  .run-entry .re-bar { display:flex; gap:2px; height:6px; border-radius:3px; overflow:hidden; width:80px; background:var(--border-l); }
-  .run-entry .re-bar .pass { background:var(--green); }
-  .run-entry .re-bar .fail { background:var(--red); }
-  .run-entry .re-stats { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--t2); }
+  .sc-body { padding:0 18px 2px; }
+  .stest { display:flex; align-items:center; gap:8px; padding:6px 0; border-top:1px solid var(--border-l); font-size:12px; }
+  .stest:first-child { border-top:none; }
+  .stest-id { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--t3); width:48px; flex-shrink:0; }
+  .stest-name { flex:1; color:var(--text); }
+  .stest-dur { font-size:10px; color:var(--t3); width:40px; text-align:right; }
+  .stest-res { font-size:13px; width:18px; text-align:center; }
 
-  /* Expandable per-test details */
-  .run-detail { display:none; padding:6px 0 8px 32px; }
-  .run-detail.open { display:block; }
-  .rd-test { display:flex; align-items:center; gap:8px; padding:3px 0; font-size:11px; }
-  .rd-test .rd-id { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--t3); width:50px; }
-  .rd-test .rd-name { flex:1; }
-  .rd-test .rd-dur { font-size:9px; color:var(--t3); width:50px; text-align:right; }
-  .rd-test .rd-err { font-size:10px; color:var(--red); margin-left:58px; padding:2px 8px; background:var(--red-bg); border-radius:4px; }
+  /* Section block */
+  .section { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; margin-bottom:16px; }
+  .section-head { padding:14px 18px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border-l); }
+  .section-head h2 { font-size:13px; font-weight:700; letter-spacing:.2px; display:flex; align-items:center; gap:6px; }
+  .section-head .sh-right { display:flex; align-items:center; gap:8px; }
+  .section-body { padding:4px 18px 8px; }
 
-  /* GitHub CI section */
-  .gh-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-  .gh-btn { padding:6px 16px; border-radius:6px; border:none; background:#1b1f23; color:#fff; font-size:11px; font-weight:600; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; }
-  .gh-btn:hover { opacity:0.9; }
-  .gh-btn:disabled { opacity:0.5; cursor:not-allowed; }
-  .gh-badge { font-size:10px; padding:2px 8px; border-radius:4px; font-weight:600; }
-  .gh-badge.completed { background:var(--green-bg); color:var(--green); }
-  .gh-badge.failure { background:var(--red-bg); color:var(--red); }
-  .gh-badge.in_progress { background:var(--orange-bg); color:var(--orange); }
-  .gh-badge.pending { background:var(--blue-bg); color:var(--blue); }
+  /* Run entry */
+  .r-entry { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border-l); cursor:pointer; transition:background .1s; margin:0 -18px; padding:10px 18px; }
+  .r-entry:hover { background:var(--border-l); }
+  .r-entry:last-child { border-bottom:none; }
+  .re-icon { font-size:18px; width:28px; text-align:center; }
+  .re-info { flex:1; min-width:0; }
+  .re-title { font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; }
+  .re-meta { font-size:11px; color:var(--t3); margin-top:2px; }
+  .re-bar { display:flex; gap:2px; height:8px; border-radius:4px; overflow:hidden; width:90px; background:#e8eaef; flex-shrink:0; }
+  .re-bar .pass { background:var(--green-bar); transition:flex .3s; }
+  .re-bar .fail { background:var(--red-bar); transition:flex .3s; }
+  .re-stats { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--t2); width:70px; text-align:right; flex-shrink:0; }
+  .re-arrow { font-size:10px; color:var(--t3); flex-shrink:0; transition:transform .2s; }
 
-  .empty-state { text-align:center; padding:30px; color:var(--t3); font-size:12px; }
-  .toast { position:fixed; bottom:20px; right:20px; padding:8px 16px; border-radius:8px; font-size:11px; font-weight:600; opacity:0; transform:translateY(20px); transition:all 0.3s; z-index:2000; }
+  /* Per-test details */
+  .r-detail { display:none; margin:0 -18px; padding:2px 18px 8px 54px; background:#fafbfc; }
+  .r-detail.open { display:block; }
+  .rd-item { display:flex; align-items:center; gap:8px; padding:5px 0; font-size:12px; border-bottom:1px solid #f0f1f4; }
+  .rd-item:last-child { border-bottom:none; }
+  .rd-id { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--t3); width:48px; }
+  .rd-name { flex:1; }
+  .rd-suite { font-size:10px; color:var(--t3); background:var(--border-l); padding:1px 8px; border-radius:10px; }
+  .rd-dur { font-size:10px; color:var(--t3); width:40px; text-align:right; }
+  .rd-err { font-size:11px; color:var(--red); margin:4px 0 0 56px; padding:4px 10px; background:var(--red-bg); border-radius:var(--rs); font-family:'JetBrains Mono',monospace; }
+
+  /* GitHub btn */
+  .gh-btn { padding:7px 18px; border-radius:var(--rs); border:none; background:#1b1f23; color:#fff; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; display:flex; align-items:center; gap:6px; transition:opacity .15s; }
+  .gh-btn:hover { opacity:.85; }
+  .gh-btn:disabled { opacity:.5; cursor:not-allowed; }
+
+  .badge { font-size:10px; padding:2px 10px; border-radius:20px; font-weight:600; }
+  .badge.success { background:var(--green-bg); color:var(--green); }
+  .badge.fail { background:var(--red-bg); color:var(--red); }
+  .badge.progress { background:var(--orange-bg); color:var(--orange); }
+  .badge.pending { background:var(--blue-bg); color:var(--blue); }
+
+  .empty-state { text-align:center; padding:24px; color:var(--t3); font-size:12px; }
+  .toast { position:fixed; bottom:24px; right:24px; padding:10px 20px; border-radius:var(--rs); font-size:12px; font-weight:600; opacity:0; transform:translateY(24px); transition:all .3s cubic-bezier(.4,0,.2,1); z-index:2000; box-shadow:0 4px 20px rgba(0,0,0,.12); }
   .toast.show { opacity:1; transform:translateY(0); }
-  .toast.ok { background:var(--green); color:#fff; }
-  .toast.err { background:var(--red); color:#fff; }
-  .loading-dots::after { content:''; animation:dots 1.5s infinite; }
-  @keyframes dots { 0%{content:''} 33%{content:'.'} 66%{content:'..'} 100%{content:'...'} }
+  .toast.ok { background:#065f46; color:#fff; }
+  .toast.err { background:#991b1b; color:#fff; }
 
-  @media(max-width:640px) { .suite-grid { grid-template-columns:1fr; } .main { padding:0 8px; } }
+  @media(max-width:640px) {
+    .suite-grid { grid-template-columns:1fr; }
+    .main { padding:0 12px; }
+    .page-title { flex-direction:column; align-items:flex-start; gap:8px; }
+  }
 </style>
 </head>
 <body>
 
-<div class="top-nav">
-  <div>
-    <a href="{{ url_for('index') }}">Dashboard</a>
-    <a href="{{ url_for('cv_page') }}">CV</a>
-    <a href="#" class="active">QA</a>
-    <a href="{{ url_for('stats_page') }}">Stats</a>
+<div class="top-bar">
+  <div class="top-bar-in">
+    <nav>
+      <a href="{{ url_for('index') }}">Dashboard</a>
+      <a href="{{ url_for('cv_page') }}">CV</a>
+      <a href="#" class="active">QA Test</a>
+      <a href="{{ url_for('stats_page') }}">Stats</a>
+    </nav>
+    <div><a href="{{ url_for('about') }}" style="font-size:13px;font-weight:500;color:var(--t3);text-decoration:none;padding:6px 14px;border-radius:var(--rs)">À propos</a></div>
   </div>
-  <div><a href="{{ url_for('about') }}">À propos</a></div>
+</div>
+
+<div class="page-title">
+  <h1>🧪 QA Test <span>v2 · 16 tests</span></h1>
 </div>
 
 <div class="main">
 
   <!-- Plans -->
-  <div class="plans-bar" id="plans-bar">
-    <button class="plan-btn active" onclick="showPlan('all')">📋 Tous les tests</button>
+  <div class="plans-row" id="plans-bar">
+    <button class="plan-pill active" onclick="showPlan('all')"><span class="icn">📋</span> Tous</button>
   </div>
 
-  <!-- Suites grid -->
+  <!-- Suite grid -->
   <div id="suites-container"><div class="empty-state">Chargement…</div></div>
 
-  <!-- GitHub CI section (en haut — démo recruteur) -->
-  <div class="runs-section" style="margin-bottom:16px;">
-    <div class="rs-title">
-      <span>🐙 CI GitHub (Playwright sur GitHub Actions)</span>
-      <button class="gh-btn" id="gh-trigger-btn" onclick="triggerGitHubRun()">▶ Lancer sur GitHub</button>
+  <!-- GitHub CI -->
+  <div class="section">
+    <div class="section-head">
+      <h2>🐙 CI GitHub</h2>
+      <div class="sh-right">
+        <span style="font-size:11px;color:var(--t3)">Playwright sur GitHub Actions</span>
+        <button class="gh-btn" id="gh-trigger-btn" onclick="triggerGitHubRun()">▶ Lancer</button>
+      </div>
     </div>
-    <div class="gh-header">
-      <span style="font-size:10px;color:var(--t3);">Les tests Playwright + API s'exécutent sur GitHub (Chrome natif) et les résultats remontent ici test par test</span>
+    <div class="section-body" id="gh-runs-list">
+      <div class="empty-state">Aucun run GitHub</div>
     </div>
-    <div id="gh-runs-list"><div class="empty-state">Aucun run GitHub — lance un test !</div></div>
   </div>
 
-  <!-- Local runs history -->
-  <div class="runs-section">
-    <div class="rs-title">📊 Historique des runs (local)</div>
-    <div id="runs-history"><div class="empty-state">Chargement…</div></div>
+  <!-- Local runs -->
+  <div class="section">
+    <div class="section-head">
+      <h2>📊 Local</h2>
+      <span style="font-size:11px;color:var(--t3)">Exécution sur ta machine</span>
+    </div>
+    <div class="section-body" id="runs-history">
+      <div class="empty-state">Chargement…</div>
+    </div>
   </div>
 
 </div>
@@ -138,6 +184,7 @@
 <script>
 let suitesData = {};
 let plansData = {};
+let ghPollTimer = null;
 
 function toast(msg, err) {
   const t = document.getElementById('toast');
@@ -145,19 +192,17 @@ function toast(msg, err) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// Load suite definitions
 fetch('/qa/api/suites')
   .then(r => r.json())
   .then(data => {
     suitesData = data.suites || {};
     plansData = data.plans || {};
 
-    // Build plan buttons
     const bar = document.getElementById('plans-bar');
     Object.entries(plansData).forEach(([id, p]) => {
       const btn = document.createElement('button');
-      btn.className = 'plan-btn';
-      btn.innerHTML = `${p.icon || '📋'} ${p.name} <span class="count">(${p.suites.length} suites)</span>`;
+      btn.className = 'plan-pill';
+      btn.innerHTML = `<span class="icn">${p.icon||'📋'}</span> ${p.name} <span class="cnt">${p.suites.length}s</span>`;
       btn.onclick = () => runPlan(id);
       bar.appendChild(btn);
     });
@@ -166,27 +211,32 @@ fetch('/qa/api/suites')
     loadRuns();
     loadGitHubRuns();
   })
-  .catch(() => document.getElementById('suites-container').innerHTML = '<div class="empty-state">❌ Erreur</div>');
+  .catch(() => document.getElementById('suites-container').innerHTML = '<div class=\"empty-state\">❌ Erreur de chargement</div>');
 
 function renderSuites() {
   const container = document.getElementById('suites-container');
   let html = '<div class="suite-grid">';
 
   Object.entries(suitesData).forEach(([id, s]) => {
+    const iconCls = id === 'playwright' ? 'pw' : (id === 'bdd' ? 'bdd' : 'api');
     html += '<div class="suite-card">';
-    html += `<div class="sc-icon">${s.icon || '📦'}</div>`;
-    html += `<div class="sc-name">${s.name} <span class="sc-count">(${s.test_count} tests)</span></div>`;
+    html += '<div class="sc-head">';
+    html += '<div class="sc-head-l">';
+    html += `<div class="sc-icon ${iconCls}">${s.icon||'📦'}</div>`;
+    html += '<div>';
+    html += `<div class="sc-name">${s.name} <span class="sc-count">${s.test_count} tests</span></div>`;
     html += `<div class="sc-desc">${s.description}</div>`;
-    html += `<button class="sc-btn" onclick="runSuite('${id}')">▶ Lancer (local)</button>`;
-    // Test list
-    html += '<div class="test-list">';
+    html += '</div></div>';
+    html += `<button class="sc-run ${iconCls}" onclick="runSuite('${id}')">▶ Lancer</button>`;
+    html += '</div>';
+    html += '<div class="sc-body">';
     (s.tests || []).forEach(t => {
-      html += `<div class="test-item">`;
-      html += `<span class="tid">${t.id}</span>`;
-      html += `<span class="tname">${t.name}</span>`;
-      html += `<span class="tdesc">${t.description || ''}</span>`;
-      html += `<span class="tresult" id="r-${t.id}"></span>`;
-      html += `</div>`;
+      html += '<div class="stest">';
+      html += `<span class="stest-id">${t.id}</span>`;
+      html += `<span class="stest-name">${t.name}</span>`;
+      html += `<span class="stest-dur" id="dur-${t.id}"></span>`;
+      html += `<span class="stest-res" id="r-${t.id}"></span>`;
+      html += '</div>';
     });
     html += '</div></div>';
   });
@@ -201,73 +251,60 @@ function loadRuns() {
     .then(data => {
       const el = document.getElementById('runs-history');
       const runs = data.runs || [];
-      if (runs.length === 0) {
-        el.innerHTML = '<div class="empty-state">Aucun run local — lance un test !</div>';
-        return;
-      }
-      let html = '';
-      runs.forEach(r => {
-        const total = r.summary?.total || 0;
-        const passed = r.summary?.passed || 0;
-        const failed = r.summary?.failed || 0;
-        const pct = total > 0 ? (passed / total * 100) : 0;
-        const icon = failed === 0 ? '✅' : '❌';
-        const name = r.plan ? (plansData[r.plan]?.icon + ' ' + plansData[r.plan]?.name) : (suitesData[r.suite]?.icon + ' ' + suitesData[r.suite]?.name) || r.suite_name || r.id;
-        html += '<div class="run-entry" onclick="toggleDetail(\''+r.id+'-local\')">';
-        html += `<span class="re-icon">${icon}</span>`;
-        html += '<div class="re-info">';
-        html += `<div class="re-name">${name}</div>`;
-        html += `<div class="re-meta">${(r.timestamp || '').substring(0,16).replace('T',' ')} · ${r.duration}s</div>`;
-        html += '</div>';
-        html += '<div class="re-bar">';
-        if (passed > 0) html += `<div class="pass" style="flex:${passed}"></div>`;
-        if (failed > 0) html += `<div class="fail" style="flex:${failed}"></div>`;
-        html += '</div>';
-        html += `<span class="re-stats">${passed}/${total}</span>`;
-        html += '</div>';
-
-        // Per-test detail (expandable)
-        html += `<div class="run-detail" id="rd-${r.id}-local">`;
-        (r.results || []).forEach(res => {
-          const ric = res.passed ? '✅' : '❌';
-          html += `<div class="rd-test"><span class="rd-id">${res.id}</span><span class="rd-name">${res.name}</span><span class="rd-dur">${res.duration}s</span>${ric}</div>`;
-          if (!res.passed && res.error) {
-            html += `<div class="rd-err">${res.error}</div>`;
-          }
-        });
-        html += '</div>';
-      });
-      el.innerHTML = html;
+      if (!runs.length) { el.innerHTML = '<div class="empty-state">Aucun run local</div>'; return; }
+      el.innerHTML = runs.map(r => renderRunEntry(r, 'local')).join('');
     });
 }
 
-// ─── GitHub CI ─────────────────────────────────────────────────
+function renderRunEntry(r, prefix) {
+  const total = r.summary?.total || 0;
+  const passed = r.summary?.passed || 0;
+  const failed = r.summary?.failed || 0;
+  const icon = failed === 0 ? '✅' : '❌';
+  const name = r.suite_name || r.id;
+  const uid = (r.id || 'r' + Date.now()) + '-' + prefix;
+
+  let html = '<div class="r-entry" onclick="toggleDetail(\''+uid+'\', this)">';
+  html += `<span class="re-icon">${icon}</span>`;
+  html += '<div class="re-info">';
+  html += `<div class="re-title">${name}</div>`;
+  html += `<div class="re-meta">${(r.timestamp||'').substring(0,16).replace('T',' ')} · ${r.duration || 0}s</div>`;
+  html += '</div>';
+  html += '<div class="re-bar">';
+  if (passed > 0) html += `<div class="pass" style="flex:${passed}"></div>`;
+  if (failed > 0) html += `<div class="fail" style="flex:${failed}"></div>`;
+  html += '</div>';
+  html += `<span class="re-stats">${passed}/${total}</span>`;
+  html += '<span class="re-arrow">▶</span>';
+  html += '</div>';
+
+  // Detail
+  html += `<div class="r-detail" id="rd-${uid}">`;
+  (r.results || []).forEach(res => {
+    const ric = res.passed ? '✅' : '❌';
+    html += `<div class="rd-item"><span class="rd-id">${res.id}</span><span class="rd-name">${res.name}</span><span class="rd-dur">${res.duration}s</span>${ric}</div>`;
+    if (!res.passed && res.error) html += `<div class="rd-err">${res.error.replace(/</g,'&lt;')}</div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+// ─── GitHub ──────────────────────────────────────────────────
 
 function triggerGitHubRun() {
   const btn = document.getElementById('gh-trigger-btn');
-  btn.textContent = '⏳ Déclenchement...';
-  btn.disabled = true;
-
+  btn.textContent = '⏳'; btn.disabled = true;
   fetch('/qa/api/github/trigger', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({
-      target_url: window.location.origin,
-      suites: 'playwright,api'
-    })
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({target_url: window.location.origin, suites: 'playwright,api'})
   })
   .then(r => r.json())
   .then(d => {
-    if (d.status === 'triggered') {
-      toast('✅ Workflow lancé sur GitHub ! Résultats dans ~2-3 min');
-      // Poll for the new run
-      setTimeout(loadGitHubRuns, 5000);
-    } else {
-      toast('❌ ' + (d.error || 'Erreur inconnue'), true);
-    }
+    if (d.status === 'triggered') { toast('✅ Workflow lancé sur GitHub'); setTimeout(loadGitHubRuns, 5000); }
+    else toast('❌ '+(d.error||'Erreur'), true);
   })
-  .catch(e => toast('❌ Erreur réseau: ' + e, true))
-  .finally(() => { btn.textContent = '▶ Lancer sur GitHub'; btn.disabled = false; });
+  .catch(e => toast('❌ '+e, true))
+  .finally(() => { btn.textContent = '▶ Lancer'; btn.disabled = false; });
 }
 
 function loadGitHubRuns() {
@@ -276,111 +313,81 @@ function loadGitHubRuns() {
     .then(data => {
       const el = document.getElementById('gh-runs-list');
       const runs = data.runs || [];
-      if (runs.length === 0) {
-        el.innerHTML = '<div class="empty-state">Aucun run GitHub — lance un test !</div>';
-        return;
-      }
+      if (!runs.length) { el.innerHTML = '<div class="empty-state">Aucun run GitHub</div>'; return; }
 
-      let html = '';
-      runs.slice(0, 5).forEach(r => {
+      el.innerHTML = runs.slice(0,5).map(r => {
         const status = r.status;
         const conclusion = r.conclusion || 'pending';
-        const isComplete = status === 'completed';
-        const isFailed = conclusion === 'failure' || conclusion === 'cancelled';
-        const isSuccess = conclusion === 'success';
-        const icon = isSuccess ? '✅' : (isFailed ? '❌' : (status === 'in_progress' ? '⏳' : '⏸'));
-        const badgeClass = isSuccess ? 'completed' : (isFailed ? 'failure' : (status === 'in_progress' ? 'in_progress' : 'pending'));
+        const isDone = status === 'completed';
+        const isFail = conclusion === 'failure' || conclusion === 'cancelled';
+        const isOk = conclusion === 'success';
+        const icon = isOk ? '✅' : (isFail ? '❌' : (status === 'in_progress' ? '⏳' : '⏸'));
+        const badge = isOk ? 'success' : (isFail ? 'fail' : (status === 'in_progress' ? 'progress' : 'pending'));
 
-        html += `<div class="run-entry" onclick="fetchGHRunDetail(${r.id}, this)">`;
+        let html = '<div class="r-entry" onclick="fetchGHRunDetail('+r.id+', this)">';
         html += `<span class="re-icon">${icon}</span>`;
         html += '<div class="re-info">';
-        html += `<div class="re-name">Run #${r.id} <span class="gh-badge ${badgeClass}">${status}${isComplete ? ' · ' + conclusion : ''}</span></div>`;
-        html += `<div class="re-meta">${(r.created_at || '').substring(0,16).replace('T',' ')} · <a href="${r.html_url}" target="_blank" style="color:var(--blue)">voir sur GitHub</a></div>`;
+        html += `<div class="re-title">Run #${r.id} <span class="badge ${badge}">${status}${isDone ? ' · '+conclusion : ''}</span></div>`;
+        html += `<div class="re-meta">${(r.created_at||'').substring(0,16).replace('T',' ')} · <a href="${r.html_url}" target="_blank" style="color:var(--blue);text-decoration:none" onclick="event.stopPropagation()">détails ↗</a></div>`;
         html += '</div>';
-        if (isComplete) {
-          html += `<span style="font-size:10px;color:var(--t3)">cliquer pour détails →</span>`;
-        }
+        if (isDone) html += '<span class="re-arrow">▶</span>';
         html += '</div>';
+        html += `<div class="r-detail" id="gh-detail-${r.id}"><div class="empty-state" style="padding:12px">Clique pour charger</div></div>`;
+        return html;
+      }).join('');
 
-        // Detail container (populated on click)
-        html += `<div class="run-detail" id="gh-detail-${r.id}"><div class="empty-state" style="padding:10px">⬆️ Clique sur le run pour charger les résultats</div></div>`;
-      });
-      el.innerHTML = html;
-
-      // Auto-poll for in_progress runs
-      const inProgress = runs.some(r => r.status === 'in_progress' || r.status === 'queued' || r.status === 'pending');
-      if (inProgress) {
-        setTimeout(loadGitHubRuns, 10000); // poll again in 10s
+      // Auto-poll in progress
+      const busy = runs.some(r => r.status === 'in_progress' || r.status === 'queued');
+      if (busy && !ghPollTimer) {
+        ghPollTimer = setTimeout(() => { ghPollTimer = null; loadGitHubRuns(); }, 10000);
+      } else if (!busy && ghPollTimer) {
+        clearTimeout(ghPollTimer); ghPollTimer = null;
       }
-    })
-    .catch(e => {
-      document.getElementById('gh-runs-list').innerHTML = '<div class="empty-state">⚠️ Erreur chargement GitHub</div>';
     });
 }
 
 function fetchGHRunDetail(runId, entryEl) {
   const detailEl = document.getElementById('gh-detail-' + runId);
   if (!detailEl) return;
+  if (detailEl.dataset.loaded === 'true') { detailEl.classList.toggle('open'); return; }
 
-  // If already loaded, just toggle
-  if (detailEl.dataset.loaded === 'true') {
-    detailEl.classList.toggle('open');
-    return;
-  }
-
-  detailEl.innerHTML = '<div class="empty-state" style="padding:10px">⏳ Chargement des résultats détaillés...</div>';
+  detailEl.innerHTML = '<div class="empty-state" style="padding:12px">⏳</div>';
   detailEl.classList.add('open');
 
   fetch('/qa/api/github/download-artifact/' + runId)
     .then(r => r.json())
     .then(data => {
       if (data.error) {
-        detailEl.innerHTML = `<div class="empty-state" style="padding:10px;color:var(--red)">⚠️ ${data.error}</div>`;
+        detailEl.innerHTML = `<div class="empty-state" style="padding:12px;color:var(--red)">⚠ ${data.error}</div>`;
         return;
       }
-
       const perTest = data.per_test || [];
       const summary = data.summary || {};
 
-      let html = `<div style="padding:6px 0 4px;font-size:10px;color:var(--t3);border-bottom:1px solid var(--border-l);margin-bottom:4px;">`;
-      html += `<strong>Résumé :</strong> ${summary.passed || 0} ✅ / ${summary.failed || 0} ❌ / ${summary.total || 0} total</div>`;
-
+      let html = `<div style="padding:6px 0 8px;font-size:12px;color:var(--t2)"><strong>${summary.passed||0} ✅</strong> / <strong>${summary.failed||0} ❌</strong> / ${summary.total||0} total</div>`;
       perTest.forEach(t => {
-        const ric = t.passed ? '✅' : '❌';
-        html += `<div class="rd-test"><span class="rd-id">${t.id}</span>`;
-        html += `<span class="rd-name">${t.name} <span style="font-size:9px;color:var(--t3)">(${t.suite})</span></span>`;
-        html += `<span class="rd-dur">${t.duration}s</span>${ric}</div>`;
-        if (!t.passed && t.error) {
-          html += `<div class="rd-err">${t.error}</div>`;
-        }
+        html += `<div class="rd-item"><span class="rd-id">${t.id}</span><span class="rd-name">${t.name} <span class="rd-suite">${t.suite}</span></span><span class="rd-dur">${t.duration}s</span>${t.passed?'✅':'❌'}</div>`;
+        if (!t.passed && t.error) html += `<div class="rd-err">${t.error.replace(/</g,'&lt;')}</div>`;
       });
-
-      if (perTest.length === 0) {
-        html += '<div class="empty-state" style="padding:10px">Aucun résultat test par test disponible. Les artefacts ne sont peut-être pas encore accessibles.</div>';
-      }
+      if (!perTest.length) html += '<div class="empty-state" style="padding:12px">Résultats non disponibles</div>';
 
       detailEl.innerHTML = html;
       detailEl.dataset.loaded = 'true';
     })
-    .catch(err => {
-      detailEl.innerHTML = `<div class="empty-state" style="padding:10px;color:var(--red)">⚠️ Erreur: ${err}</div>`;
-    });
+    .catch(err => { detailEl.innerHTML = `<div class="empty-state" style="padding:12px;color:var(--red)">⚠ ${err}</div>`; });
 }
 
-// ─── Suite / Plan local runs ────────────────────────────────────
+// ─── Actions ──────────────────────────────────────────────────
 
 function runSuite(suiteId) {
   fetch(`/qa/api/run-suite/${suiteId}`, {method:'POST'})
     .then(r => r.json())
-    .then(d => {
-      toast(`Suite "${suiteId}" lancée`);
-      pollResults();
-    })
+    .then(d => { toast(`Suite "${suiteId}" lancée`); pollResults(); })
     .catch(e => toast('Erreur: '+e, true));
 }
 
 function runPlan(planId) {
-  if (!confirm(`Lancer le plan "${plansData[planId]?.name}" sur Render ? (sans Playwright — API seulement)`)) return;
+  if (!confirm(`Lancer "${plansData[planId]?.name}" sur Render ?`)) return;
   fetch(`/qa/api/run-plan/${planId}`, {method:'POST'})
     .then(r => r.json())
     .then(d => toast(`Plan "${planId}" lancé`))
@@ -389,35 +396,37 @@ function runPlan(planId) {
 }
 
 function pollResults() {
-  let attempts = 0;
+  let a = 0;
   const iv = setInterval(() => {
-    attempts++;
-    fetch('/qa/api/test-runs')
-      .then(r => r.json())
-      .then(data => {
-        const runs = data.runs || [];
-        if (runs.length > 0 && attempts > 2) {
-          const last = runs[0];
-          (last.results || []).forEach(r => {
-            const el = document.getElementById('r-' + r.id);
-            if (el) el.textContent = r.passed ? '✅' : '❌';
-          });
-        }
-        loadRuns();
-        if (attempts > 10) { clearInterval(iv); }
-      });
+    a++;
+    fetch('/qa/api/test-runs').then(r=>r.json()).then(d => {
+      const runs = d.runs || [];
+      if (runs.length && a > 2) {
+        const last = runs[0];
+        (last.results||[]).forEach(res => {
+          const el = document.getElementById('r-'+res.id);
+          const dur = document.getElementById('dur-'+res.id);
+          if (el) el.textContent = res.passed ? '✅' : '❌';
+          if (dur) dur.textContent = (res.duration||0).toFixed(1)+'s';
+        });
+      }
+      loadRuns();
+      if (a > 10) clearInterval(iv);
+    });
   }, 3000);
   setTimeout(() => clearInterval(iv), 35000);
 }
 
-function toggleDetail(id) {
-  const el = document.getElementById('rd-' + id);
-  if (el) el.classList.toggle('open');
+function toggleDetail(id, btn) {
+  const el = document.getElementById('rd-'+id);
+  if (el) {
+    el.classList.toggle('open');
+    const arrow = btn?.querySelector('.re-arrow');
+    if (arrow) arrow.style.transform = el.classList.contains('open') ? 'rotate(90deg)' : '';
+  }
 }
 
-function showPlan(id) {
-  // Simple filter toggle
-}
+function showPlan(id) {}
 </script>
 </body>
 </html>
