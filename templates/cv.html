@@ -9,9 +9,10 @@
 <style>
   *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #f5f6fa; color: #1a1d23; line-height: 1.5;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #f5f6fa; color: #1a1d23; line-height: 1.55;
     -webkit-font-smoothing: antialiased;
+    font-size: 14px;
   }
 
   .top-nav {
@@ -33,7 +34,7 @@
   .cv-grid { display: grid; grid-template-columns: 240px 1fr; background: #fff; }
 
   /* Sidebar */
-  .side { background: #1a2744; color: #e0e4f0; padding: 32px 22px 24px; display: flex; flex-direction: column; gap: 20px; }
+  .side { background: #1a2744; color: #e0e4f0; padding: 32px 22px 24px; display: flex; flex-direction: column; gap: 20px; font-family: 'Inter', -apple-system, sans-serif; font-size: 13px; }
   .photo { width: 100px; height: 100px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.2); margin: 0 auto 4px; overflow: hidden; }
   .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .side-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.35); margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.06); }
@@ -48,7 +49,9 @@
   .tag-cloud span { font-size: 8px; padding: 2px 7px; border-radius: 3px; background: rgba(255,255,255,0.06); color: #a8ace0; border: 1px solid rgba(255,255,255,0.06); }
 
   /* Main */
-  .main { padding: 32px 30px 24px; }
+  .main { padding: 32px 30px 24px; font-size: 14px; }
+  .main, .exp-de, .summary-box { font-family: 'Georgia', 'Times New Roman', serif; }
+  .hdr-name, .hdr-title, .sec-title, .exp-ro, .exp-co, .proj-n, .chip, .sk-box { font-family: 'Inter', -apple-system, sans-serif; }
   .lang-fr, .lang-en { display: none; }
   .lang-fr.active, .lang-en.active { display: block; }
 
@@ -188,7 +191,7 @@
         </div>
 
         <div class="summary-box">
-          <strong>12+ ans</strong> d'expérience en qualité logicielle sur des environnements exigeants (banque, hôtellerie, cloud souverain, santé). Pilotage de bout en bout de la recette fonctionnelle, stratégie de test, coordination multi-acteurs et reporting Go/No-Go. Agile/Scrum au quotidien. Construit des agents IA, des workflows LLM locaux et des pipelines QA autonomes.
+          <strong>12+ ans</strong> d'expérience en <strong>qualité logicielle</strong> sur des environnements exigeants (banque, hôtellerie, cloud souverain, santé). <strong>Pilotage de bout en bout</strong> de la <strong>recette fonctionnelle</strong>, <strong>stratégie de test</strong>, coordination multi-acteurs et <strong>reporting Go/No-Go</strong>. <strong>Agile/Scrum</strong> au quotidien. Construit des <strong>agents IA</strong>, des <strong>workflows LLM</strong> locaux et des <strong>pipelines QA autonomes</strong>.
         </div>
 
         <div class="sec">
@@ -196,27 +199,27 @@
           <div class="skills-g">
             <div class="sk-box">
               <div class="lbl">Test & QA</div>
-              <div class="items">Recette fonctionnelle, Stratégie de test, Campagnes d'acceptance, Non-régression, UAT, API testing</div>
+              <div class="items"><strong>Recette fonctionnelle</strong>, <strong>Stratégie de test</strong>, <strong>Campagnes d'acceptance</strong>, <strong>Non-régression</strong>, <strong>UAT</strong>, <strong>API testing</strong></div>
             </div>
             <div class="sk-box">
               <div class="lbl">Automatisation</div>
-              <div class="items">Gherkin, Ranorex, AutoIT, Playwright, Génération de tests assistée par IA</div>
+              <div class="items"><strong>Gherkin</strong>, <strong>Ranorex</strong>, <strong>AutoIT</strong>, <strong>Playwright</strong>, <strong>Génération de tests assistée par IA</strong></div>
             </div>
             <div class="sk-box">
               <div class="lbl">Langages</div>
-              <div class="items">Python, SQL, Gherkin, Bash, JavaScript (notions)</div>
+              <div class="items"><strong>Python</strong>, <strong>SQL</strong>, Gherkin, Bash, JavaScript (notions)</div>
             </div>
             <div class="sk-box">
               <div class="lbl">Cloud & DevOps</div>
-              <div class="items">Render, GitHub Actions, CI/CD, Docker (bases), Orchestration cron</div>
+              <div class="items"><strong>Render</strong>, <strong>GitHub Actions</strong>, <strong>CI/CD</strong>, Docker (bases), Orchestration cron</div>
             </div>
             <div class="sk-box ai">
               <div class="lbl">IA / LLM</div>
-              <div class="items">Hermes Agent, ClawBot, Claude Code, Codex CLI, MCP, Prompt Engineering, LLMs locaux</div>
+              <div class="items"><strong>Hermes Agent</strong>, <strong>ClawBot</strong>, <strong>Claude Code</strong>, <strong>Codex CLI</strong>, <strong>MCP</strong>, <strong>Prompt Engineering</strong>, <strong>LLMs locaux</strong></div>
             </div>
             <div class="sk-box">
               <div class="lbl">Outils</div>
-              <div class="items">Jira / Xray / Zephyr, TestRail, Redmine, Confluence, ServiceNow</div>
+              <div class="items"><strong>Jira</strong> / <strong>Xray</strong> / <strong>Zephyr</strong>, <strong>TestRail</strong>, Redmine, Confluence, ServiceNow</div>
             </div>
           </div>
         </div>
@@ -230,10 +233,10 @@
               <div class="exp-co">BRED Banque Populaire · Programme ARGOS</div>
               <div class="exp-ro">Consultant QA — Freelance (ATMAN)</div>
               <div class="exp-de"><ul>
-                <li>Piloté la recette fonctionnelle de bout en bout d'un programme de conformité réglementaire (échéance 2026) — périmètre P2P/O2C, de Corcentric au moteur comptable AIS.</li>
-                <li>Défini la stratégie de test et les plans couvrant toute la chaîne de données : contrôle d'entrée, validation comptable, intégration Mainframe.</li>
-                <li>Coordonné les campagnes multi-équipes dans Jira/Xray : métriques de couverture, cycle de vie des anomalies, reporting Go/No-Go.</li>
-                <li>Animé les rituels Agile/Scrum et géré les cycles de non-régression trimestriels sur SQL Oracle / Mainframe.</li>
+                <li><strong>Piloté la recette fonctionnelle</strong> de bout en bout d'un programme de <strong>conformité réglementaire</strong> (échéance 2026) — périmètre <strong>P2P/O2C</strong>, de Corcentric au moteur comptable AIS.</li>
+                <li>Défini la <strong>stratégie de test</strong> et les plans couvrant toute la chaîne de données : contrôle d'entrée, <strong>validation comptable</strong>, intégration <strong>Mainframe</strong>.</li>
+                <li>Coordonné les <strong>campagnes multi-équipes</strong> dans <strong>Jira/Xray</strong> : métriques de couverture, cycle de vie des anomalies, <strong>reporting Go/No-Go</strong>.</li>
+                <li>Animé les rituels <strong>Agile/Scrum</strong> et géré les cycles de <strong>non-régression</strong> trimestriels sur <strong>SQL Oracle</strong> / <strong>Mainframe</strong>.</li>
               </ul></div>
               <div class="exp-t"><span>Jira</span><span>Xray</span><span>SQL Oracle</span><span>MainFrame</span><span>Corcentric</span><span>ServiceNow</span></div>
             </div>
@@ -245,10 +248,10 @@
               <div class="exp-co">Accor · Apps mobiles (100+ pays)</div>
               <div class="exp-ro">Référent QA Mobile — Consultant</div>
               <div class="exp-de"><ul>
-                <li>Référent QA pour les apps Android & iOS déployées dans 100+ pays — recette et non-régression en Agile Scrum (sprints de 2 semaines).</li>
-                <li>Co-construit les User Stories avec le PO et l'équipe Dev ; rédigé 100% des cas critiques en Gherkin.</li>
-                <li>Validé les flux critiques : réservation, fidélité, paiement — multi-appareils, multi-langues.</li>
-                <li>Assuré le reporting Go/No-Go à la direction.</li>
+                <li><strong>Référent QA</strong> pour les apps <strong>Android & iOS</strong> déployées dans <strong>100+ pays</strong> — <strong>recette</strong> et <strong>non-régression</strong> en <strong>Agile Scrum</strong> (sprints de 2 semaines).</li>
+                <li>Co-construit les <strong>User Stories</strong> avec le PO et l'équipe Dev ; rédigé <strong>100% des cas critiques</strong> en <strong>Gherkin</strong>.</li>
+                <li>Validé les flux critiques : <strong>réservation</strong>, fidélité, <strong>paiement</strong> — multi-appareils, multi-langues.</li>
+                <li>Assuré le <strong>reporting Go/No-Go</strong> à la direction.</li>
               </ul></div>
               <div class="exp-t"><span>Jira</span><span>Xray</span><span>Gherkin</span><span>Charles Proxy</span><span>Crashlytics</span><span>Android</span><span>iOS</span></div>
             </div>
@@ -260,9 +263,9 @@
               <div class="exp-co">Oodrive · Cloud souverain</div>
               <div class="exp-ro">Responsable QA — Ingénieur Qualité</div>
               <div class="exp-de"><ul>
-                <li>Responsable des plans de tests fonctionnels et non-régression pour les applications critiques B2B/B2C du cloud souverain français.</li>
-                <li>Coordonné les campagnes multi-plateformes (Windows, macOS, Linux) et support technique niveau 3.</li>
-                <li>Structuré les processus QA : templates de plans de test, critères d'entrée/sortie, gestion des anomalies.</li>
+                <li><strong>Responsable</strong> des <strong>plans de tests fonctionnels</strong> et <strong>non-régression</strong> pour les applications critiques <strong>B2B/B2C</strong> du <strong>cloud souverain</strong> français.</li>
+                <li>Coordonné les <strong>campagnes multi-plateformes</strong> (Windows, macOS, Linux) et <strong>support technique niveau 3</strong>.</li>
+                <li>Structuré les <strong>processus QA</strong> : templates de plans de test, critères d'entrée/sortie, <strong>gestion des anomalies</strong>.</li>
               </ul></div>
               <div class="exp-t"><span>Jira</span><span>Zephyr</span><span>Ranorex</span><span>Confluence</span><span>Windows</span><span>macOS</span><span>Linux</span></div>
             </div>
@@ -274,9 +277,9 @@
               <div class="exp-co">Profil Technology · Sécurité logicielle</div>
               <div class="exp-ro">Ingénieur Tests & Support N3</div>
               <div class="exp-de"><ul>
-                <li>Campagnes multi-plateformes (Windows, macOS, Linux) sur Witigo, Bitdefender, WebFilter.</li>
-                <li>Développé des scripts d'automatisation AutoIT pour accélérer la régression.</li>
-                <li>Géré le laboratoire de tests sécurité et le support N3 grands comptes.</li>
+                <li><strong>Campagnes multi-plateformes</strong> (Windows, macOS, Linux) sur Witigo, Bitdefender, WebFilter.</li>
+                <li>Développé des scripts d'<strong>automatisation AutoIT</strong> pour accélérer la <strong>régression</strong>.</li>
+                <li>Géré le <strong>laboratoire de tests sécurité</strong> et le <strong>support N3</strong> grands comptes.</li>
               </ul></div>
               <div class="exp-t"><span>AutoIT</span><span>VMware</span><span>Windows</span><span>macOS</span><span>Linux</span><span>Bitdefender</span></div>
             </div>
@@ -288,8 +291,8 @@
               <div class="exp-co">Vinci Construction · SAP BPC</div>
               <div class="exp-ro">Consultant QA</div>
               <div class="exp-de"><ul>
-                <li>Recette fonctionnelle sur applications web SAP BPC — validation conformité, intégrité des données, tests UI.</li>
-                <li>Rédaction des cas de tests, suivi des anomalies, reporting à la MOA.</li>
+                <li><strong>Recette fonctionnelle</strong> sur applications web <strong>SAP BPC</strong> — validation conformité, <strong>intégrité des données</strong>, <strong>tests UI</strong>.</li>
+                <li>Rédaction des <strong>cas de tests</strong>, suivi des <strong>anomalies</strong>, <strong>reporting</strong> à la MOA.</li>
               </ul></div>
               <div class="exp-t"><span>Redmine</span><span>TestRail</span><span>SAP BPC</span><span>SAP HANA</span></div>
             </div>
@@ -304,7 +307,7 @@
               <div class="proj-n"><a href="https://github.com/AtmanTest/jobhunt" target="_blank">JobHunt — Dashboard de jobs QA piloté par IA</a></div>
               <div class="proj-st">Python · Flask · SQLite · Render</div>
             </div>
-            <div class="proj-d">Scraper multi-sources (LinkedIn, Indeed, WTTJ, 6+ sources) avec matching automatique, génération de cover letters par IA, widget DeepSeek Balance live, cron de refresh horaire. Déployé sur Render avec auto-deploy GitHub.</div>
+            <div class="proj-d"><strong>Scraper multi-sources</strong> (LinkedIn, Indeed, WTTJ, 6+ sources) avec <strong>matching automatique</strong>, génération de <strong>cover letters par IA</strong>, widget DeepSeek Balance live, cron de refresh horaire. Déployé sur <strong>Render</strong> avec <strong>auto-deploy GitHub</strong>.</div>
           </div>
 
           <div class="proj">
@@ -312,7 +315,7 @@
               <div class="proj-n">Pipelines QA Agentic — Hermes Agent & ClawBot</div>
               <div class="proj-st">Hermes · ClawBot · MCP · DeepSeek</div>
             </div>
-            <div class="proj-d">Orchestration multi-agents pour la QA automatisée : délégation de tâches, pipelines d'outils, génération de tests par IA et workflows de non-régression autonomes. Intégration LLMs cloud et locaux.</div>
+            <div class="proj-d"><strong>Orchestration multi-agents</strong> pour la <strong>QA automatisée</strong> : délégation de tâches, pipelines d'outils, <strong>génération de tests par IA</strong> et workflows de <strong>non-régression autonomes</strong>. Intégration <strong>LLMs cloud et locaux</strong>.</div>
           </div>
 
           <div class="proj">
@@ -320,7 +323,7 @@
               <div class="proj-n">Infrastructure LLM locale</div>
               <div class="proj-st">LM Studio · Gemma 4 · OLLama · MLX</div>
             </div>
-            <div class="proj-d">Configuration et évaluation de LLMs locaux (Gemma 4, Qwen) sur Apple Silicon. Configuration provider, prompt engineering, benchmark de coûts pour cas d'usage agents autonomes.</div>
+            <div class="proj-d">Configuration et <strong>évaluation de LLMs locaux</strong> (Gemma 4, Qwen) sur <strong>Apple Silicon</strong>. Configuration provider, <strong>prompt engineering</strong>, benchmark de coûts pour cas d'usage <strong>agents autonomes</strong>.</div>
           </div>
         </div>
 
@@ -359,18 +362,18 @@
         </div>
 
         <div class="summary-box">
-          <strong>12+ years</strong> of software quality experience across banking, hospitality, sovereign cloud, and healthcare. End-to-end functional acceptance — test strategy, planning, multi-stakeholder coordination, Go/No-Go reporting. Daily Agile/Scrum. Building AI agents, local LLM workflows, and autonomous QA pipelines.
+          <strong>12+ years</strong> of <strong>software quality</strong> experience across banking, hospitality, sovereign cloud, and healthcare. <strong>End-to-end functional acceptance</strong> — <strong>test strategy</strong>, planning, multi-stakeholder coordination, <strong>Go/No-Go reporting</strong>. Daily <strong>Agile/Scrum</strong>. Building <strong>AI agents</strong>, <strong>local LLM workflows</strong>, and <strong>autonomous QA pipelines</strong>.
         </div>
 
         <div class="sec">
           <div class="sec-title">Technical Skills</div>
           <div class="skills-g">
-            <div class="sk-box"><div class="lbl">Testing & QA</div><div class="items">Functional testing, Test strategy, Acceptance, Regression, UAT, API testing</div></div>
-            <div class="sk-box"><div class="lbl">Automation</div><div class="items">Gherkin, Ranorex, AutoIT, Playwright, AI-assisted test gen.</div></div>
-            <div class="sk-box"><div class="lbl">Languages</div><div class="items">Python, SQL, Gherkin, Bash, JavaScript</div></div>
-            <div class="sk-box"><div class="lbl">Cloud & DevOps</div><div class="items">Render, GitHub Actions, CI/CD, Docker basics, cron</div></div>
-            <div class="sk-box ai"><div class="lbl">AI / LLM</div><div class="items">Hermes Agent, ClawBot, Claude Code, Codex CLI, MCP, Prompt Eng., Local LLMs</div></div>
-            <div class="sk-box"><div class="lbl">Tools</div><div class="items">Jira / Xray / Zephyr, TestRail, Redmine, Confluence, ServiceNow</div></div>
+            <div class="sk-box"><div class="lbl">Testing & QA</div><div class="items"><strong>Functional testing</strong>, <strong>Test strategy</strong>, <strong>Acceptance</strong>, <strong>Regression</strong>, <strong>UAT</strong>, <strong>API testing</strong></div></div>
+            <div class="sk-box"><div class="lbl">Automation</div><div class="items"><strong>Gherkin</strong>, <strong>Ranorex</strong>, <strong>AutoIT</strong>, <strong>Playwright</strong>, <strong>AI-assisted test gen.</strong></div></div>
+            <div class="sk-box"><div class="lbl">Languages</div><div class="items"><strong>Python</strong>, <strong>SQL</strong>, <strong>Gherkin</strong>, Bash, JavaScript</div></div>
+            <div class="sk-box"><div class="lbl">Cloud & DevOps</div><div class="items"><strong>Render</strong>, <strong>GitHub Actions</strong>, <strong>CI/CD</strong>, Docker basics, cron</div></div>
+            <div class="sk-box ai"><div class="lbl">AI / LLM</div><div class="items"><strong>Hermes Agent</strong>, <strong>ClawBot</strong>, <strong>Claude Code</strong>, <strong>Codex CLI</strong>, <strong>MCP</strong>, <strong>Prompt Eng.</strong>, <strong>Local LLMs</strong></div></div>
+            <div class="sk-box"><div class="lbl">Tools</div><div class="items"><strong>Jira</strong> / <strong>Xray</strong> / <strong>Zephyr</strong>, <strong>TestRail</strong>, Redmine, Confluence, ServiceNow</div></div>
           </div>
         </div>
 
@@ -383,10 +386,10 @@
               <div class="exp-co">BRED Banque Populaire · ARGOS Program</div>
               <div class="exp-ro">QA Consultant Engineer — Freelance (ATMAN)</div>
               <div class="exp-de"><ul>
-                <li>Led end-to-end functional acceptance for a regulatory compliance program (2026 deadline) — P2P/O2C scope, Corcentric to AIS.</li>
-                <li>Defined test strategy covering full data chain: input control, accounting validation, mainframe integration.</li>
-                <li>Coordinated multi-team campaigns in Jira/Xray: coverage metrics, defect lifecycle, Go/No-Go reporting.</li>
-                <li>Facilitated Agile/Scrum; managed quarterly regression on SQL Oracle / Mainframe.</li>
+                <li>Led <strong>end-to-end functional acceptance</strong> for a <strong>regulatory compliance</strong> program (2026 deadline) — <strong>P2P/O2C</strong> scope, Corcentric to AIS.</li>
+                <li>Defined <strong>test strategy</strong> covering full data chain: input control, accounting validation, <strong>mainframe integration</strong>.</li>
+                <li>Coordinated <strong>multi-team campaigns</strong> in <strong>Jira/Xray</strong>: coverage metrics, defect lifecycle, <strong>Go/No-Go reporting</strong>.</li>
+                <li>Facilitated <strong>Agile/Scrum</strong>; managed quarterly <strong>regression</strong> on <strong>SQL Oracle</strong> / <strong>Mainframe</strong>.</li>
               </ul></div>
               <div class="exp-t"><span>Jira</span><span>Xray</span><span>SQL Oracle</span><span>MainFrame</span><span>Corcentric</span><span>ServiceNow</span></div>
             </div>
@@ -398,10 +401,10 @@
               <div class="exp-co">Accor · Global Mobile Apps</div>
               <div class="exp-ro">Mobile QA Lead — Consultant</div>
               <div class="exp-de"><ul>
-                <li>QA reference for Android & iOS apps in 100+ countries — acceptance & regression in Agile Scrum (2-week sprints).</li>
-                <li>Co-created User Stories with PO & Dev; authored 100% of critical Gherkin test cases.</li>
-                <li>Validated core flows: booking, loyalty, payment — cross-device, multilingual.</li>
-                <li>Delivered Go/No-Go reporting to product leadership.</li>
+                <li><strong>QA reference</strong> for <strong>Android & iOS</strong> apps in <strong>100+ countries</strong> — <strong>acceptance</strong> & <strong>regression</strong> in <strong>Agile Scrum</strong> (2-week sprints).</li>
+                <li>Co-created <strong>User Stories</strong> with PO & Dev; authored <strong>100% of critical Gherkin</strong> test cases.</li>
+                <li>Validated core flows: <strong>booking</strong>, loyalty, <strong>payment</strong> — cross-device, multilingual.</li>
+                <li>Delivered <strong>Go/No-Go reporting</strong> to product leadership.</li>
               </ul></div>
               <div class="exp-t"><span>Jira</span><span>Xray</span><span>Gherkin</span><span>Charles Proxy</span><span>Crashlytics</span><span>Android</span><span>iOS</span></div>
             </div>
@@ -413,9 +416,9 @@
               <div class="exp-co">Oodrive · Sovereign Cloud</div>
               <div class="exp-ro">QA Lead — Software Quality Engineer</div>
               <div class="exp-de"><ul>
-                <li>Owned functional & regression test plans for B2B/B2C critical apps on French sovereign cloud.</li>
-                <li>Coordinated cross-platform campaigns (Windows, macOS, Linux) and L3 enterprise support.</li>
-                <li>Structured QA processes: test plan templates, entry/exit criteria, defect management.</li>
+                <li>Owned <strong>functional & regression test plans</strong> for <strong>B2B/B2C</strong> critical apps on French <strong>sovereign cloud</strong>.</li>
+                <li>Coordinated <strong>cross-platform campaigns</strong> (Windows, macOS, Linux) and <strong>L3 enterprise support</strong>.</li>
+                <li>Structured <strong>QA processes</strong>: test plan templates, entry/exit criteria, <strong>defect management</strong>.</li>
               </ul></div>
               <div class="exp-t"><span>Jira</span><span>Zephyr</span><span>Ranorex</span><span>Confluence</span><span>Windows</span><span>macOS</span><span>Linux</span></div>
             </div>
@@ -427,9 +430,9 @@
               <div class="exp-co">Profil Technology · Security Software</div>
               <div class="exp-ro">Test Engineer & L3 Support</div>
               <div class="exp-de"><ul>
-                <li>Multi-platform campaigns (Windows, macOS, Linux) on Witigo, Bitdefender, WebFilter.</li>
-                <li>Developed AutoIT automation scripts to accelerate regression.</li>
-                <li>Managed security test lab and enterprise L3 support.</li>
+                <li><strong>Multi-platform campaigns</strong> (Windows, macOS, Linux) on Witigo, Bitdefender, WebFilter.</li>
+                <li>Developed <strong>AutoIT automation</strong> scripts to accelerate <strong>regression</strong>.</li>
+                <li>Managed <strong>security test lab</strong> and enterprise <strong>L3 support</strong>.</li>
               </ul></div>
               <div class="exp-t"><span>AutoIT</span><span>VMware</span><span>Windows</span><span>macOS</span><span>Linux</span><span>Bitdefender</span></div>
             </div>
@@ -441,8 +444,8 @@
               <div class="exp-co">Vinci Construction · SAP BPC</div>
               <div class="exp-ro">QA Consultant Engineer</div>
               <div class="exp-de"><ul>
-                <li>Functional acceptance on SAP BPC web apps — compliance, data integrity, UI testing.</li>
-                <li>Authored test cases, managed defects, stakeholder reporting.</li>
+                <li><strong>Functional acceptance</strong> on <strong>SAP BPC</strong> web apps — compliance, <strong>data integrity</strong>, <strong>UI testing</strong>.</li>
+                <li>Authored <strong>test cases</strong>, managed <strong>defects</strong>, stakeholder <strong>reporting</strong>.</li>
               </ul></div>
               <div class="exp-t"><span>Redmine</span><span>TestRail</span><span>SAP BPC</span><span>SAP HANA</span></div>
             </div>
@@ -457,7 +460,7 @@
               <div class="proj-n"><a href="https://github.com/AtmanTest/jobhunt" target="_blank">JobHunt — AI-Powered QA Job Dashboard</a></div>
               <div class="proj-st">Python · Flask · SQLite · Render</div>
             </div>
-            <div class="proj-d">Multi-source scraper (LinkedIn, Indeed, WTTJ, 6+ sources) with auto-matching, AI cover letters, live DeepSeek balance, hourly refresh cron. Deployed on Render with GitHub auto-deploy.</div>
+            <div class="proj-d"><strong>Multi-source scraper</strong> (LinkedIn, Indeed, WTTJ, 6+ sources) with <strong>auto-matching</strong>, <strong>AI cover letters</strong>, live DeepSeek balance, hourly refresh cron. Deployed on <strong>Render</strong> with <strong>GitHub auto-deploy</strong>.</div>
           </div>
 
           <div class="proj">
@@ -465,7 +468,7 @@
               <div class="proj-n">Agentic QA Pipelines — Hermes Agent & ClawBot</div>
               <div class="proj-st">Hermes · ClawBot · MCP · DeepSeek</div>
             </div>
-            <div class="proj-d">Multi-agent orchestration for automated QA: task delegation, tool-use pipelines, AI-driven test generation, autonomous regression workflows. Local & cloud LLM integration.</div>
+            <div class="proj-d"><strong>Multi-agent orchestration</strong> for <strong>automated QA</strong>: task delegation, tool-use pipelines, <strong>AI-driven test generation</strong>, <strong>autonomous regression</strong> workflows. Local & cloud LLM integration.</div>
           </div>
 
           <div class="proj">
@@ -473,7 +476,7 @@
               <div class="proj-n">Local LLM Infrastructure</div>
               <div class="proj-st">LM Studio · Gemma 4 · OLLama · MLX</div>
             </div>
-            <div class="proj-d">Local LLM setup (Gemma 4, Qwen) on Apple Silicon. Provider config, prompt engineering, cost benchmarking for autonomous agent use cases.</div>
+            <div class="proj-d">Local LLM setup (Gemma 4, Qwen) on <strong>Apple Silicon</strong>. Provider config, <strong>prompt engineering</strong>, cost benchmarking for <strong>autonomous agent</strong> use cases.</div>
           </div>
         </div>
 
