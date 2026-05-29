@@ -26,16 +26,17 @@ from cv_data import CV
 QA_RUNS_DIR = os.path.join(os.path.dirname(__file__), ".qa_runs")
 os.makedirs(QA_RUNS_DIR, exist_ok=True)
 
-GITHUB_TOKEN = None
-token_paths = [
-    os.path.expanduser("~/.hermes/jobhunt_token"),
-    os.path.expanduser("~/.hermes/gh_token"),
-]
-for tp in token_paths:
-    if os.path.exists(tp):
-        with open(tp) as f:
-            GITHUB_TOKEN = f.read().strip()
-        break
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", None)
+if not GITHUB_TOKEN:
+    token_paths = [
+        os.path.expanduser("~/.hermes/jobhunt_token"),
+        os.path.expanduser("~/.hermes/gh_token"),
+    ]
+    for tp in token_paths:
+        if os.path.exists(tp):
+            with open(tp) as f:
+                GITHUB_TOKEN = f.read().strip()
+            break
 
 FEATURES_DIR = os.path.join(os.path.dirname(__file__), "tests", "features")
 
