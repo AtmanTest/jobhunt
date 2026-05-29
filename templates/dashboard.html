@@ -995,11 +995,16 @@ function fetchBalance() {
         const color = data.balance < 2 ? 'red' : data.balance < 5 ? 'orange' : 'green';
         chip.className = 'balance ' + color;
         chip.title = 'Top-up: $' + data.topped_up.toFixed(2);
+      } else if (data.live) {
+        val.textContent = '$0.00';
+        chip.className = 'balance';
       } else {
-        val.textContent = data.live ? '$0.00' : 'err';
+        val.textContent = '—';
+        chip.className = 'balance';
+        chip.title = data.error || 'API key not set on Render';
       }
     })
-    .catch(() => { val.textContent = 'err'; });
+    .catch(() => { val.textContent = '—'; chip.title = 'Connection error'; });
 }
 fetchBalance();
 setInterval(fetchBalance, 60000);
