@@ -1110,6 +1110,48 @@ def qa_github_runs():
         return jsonify({"runs": [], "error": str(e)}), 500
 
 
+# ─── Playwright Tests ─────────────────────────────────────────────
+
+PW_DIR = os.path.join(os.path.dirname(__file__), "tests", "playwright")
+
+
+@app.route("/qa/api/playwright/run", methods=["POST"])
+def qa_playwright_run():
+    """Lancer les tests Playwright sur le dashboard."""
+    import subprocess, json, time
+
+    def _run():
+        result = subprocess.run(
+            ["/tmp/pw_venv/bin/python3", os.path.join(PW_DIR, "run_all.py")],
+            capture_output=True, text=True, timeout=120,
+            cwd=os.path.dirname(__file__),
+        )
+        # Check the output JSON
+        out_path = os.path.join(os.path.dirname(__file__), ".qa_runs", "playwright_latest.json")
+        if os.path.exists(out_path):
+            with open(out_path) as f:
+                data = json.load(f)
+            data["raw_output"] = result.stdout[-500:]
+            if result.stderr:
+                data["stderr"] = result.stderr[-500:]
+            with open(out_path, "w") as f:
+                json.dump(data, f)
+        return result
+
+    thread = threading.Thread(target=_run, daemon=True)
+    thread.start()
+    return jsonify({"status": "started"})
+
+
+@app.route("/qa/api/playwright/results")
+def qa_playwright_results():
+    out_path = os.path.join(os.path.dirname(__file__), ".qa_runs", "playwright_latest.json")
+    if os.path.exists(out_path):
+        with open(out_path) as f:
+            return jsonify(json.load(f))
+    return jsonify({"results": [], "passed": 0, "failed": 0, "total": 0})
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5050))
     print(f"""

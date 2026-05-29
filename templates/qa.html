@@ -104,6 +104,17 @@
     <div id="test-cases"><div class="empty">Chargement…</div></div>
   </div>
 
+  <!-- Playwright Tests -->
+  <div class="card">
+    <div class="section-title"><span class="bar">🎭 Tests Playwright — Démo QA</span></div>
+    <div class="btn-row">
+      <button class="btn btn-primary btn-sm" onclick="runPlaywright()">▶ Lancer les tests</button>
+      <button class="btn btn-outline btn-sm" onclick="loadPlaywrightResults()">↻ Résultats</button>
+    </div>
+    <div id="pw-status" style="font-size:11px;color:var(--text3);margin-bottom:8px;"></div>
+    <div id="pw-results"></div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -167,18 +178,66 @@ function runTests() {
     .finally(() => { btn.textContent = '▶ Run Tests'; btn.disabled = false; });
 }
 
-function triggerGitHub() {
-  const btn = event.target; btn.textContent = '⏳...'; btn.disabled = true;
-  fetch('/qa/api/github/trigger', {method:'POST'})
+// ─── Playwright ───
+function loadPlaywrightResults() {
+  const el = document.getElementById('pw-results');
+  const st = document.getElementById('pw-status');
+  fetch('/qa/api/playwright/results')
+    .then(r => r.json())
+    .then(data => {
+      const r = data.results || [];
+      if (r.length === 0) {
+        el.innerHTML = '<div class="empty"><div class="icon">🎭</div>Aucun run Playwright — clique "Lancer les tests"</div>';
+        st.textContent = '';
+        return;
+      }
+      st.textContent = `${data.passed||0} ✅ / ${data.failed||0} ❌ / ${data.total||r.length} total`;
+      let html = '';
+      r.forEach(t => {
+        const ok = t.passed;
+        html += '<div class="run-item" style="' + (ok ? '' : 'background:rgba(220,38,38,0.03);border-radius:4px;padding:8px;') + '">';
+        html += `<span style="font-size:16px;">${ok ? '✅' : '❌'}</span>`;
+        html += '<div style="flex:1;">';
+        html += `<div style="font-size:12px;font-weight:600;">${t.name || t.scenario}</div>`;
+        html += t.description ? `<div style="font-size:10px;color:var(--text3);">${t.description}</div>` : '';
+        if (!ok && t.error) html += `<div style="font-size:10px;color:var(--red);margin-top:2px;">${t.error}</div>`;
+        html += '</div>';
+        html += `<span style="font-size:10px;color:var(--text3);margin-left:auto;">${t.duration || '?'}s</span>`;
+        html += '</div>';
+      });
+      el.innerHTML = html;
+    })
+    .catch(() => el.innerHTML = '<div class="empty">❌ Erreur de chargement</div>');
+}
+
+function runPlaywright() {
+  const btn = document.querySelector('[onclick="runPlaywright()"]');
+  btn.textContent = '⏳ Running...'; btn.disabled = true;
+  document.getElementById('pw-status').textContent = '⏳ Tests en cours...';
+  fetch('/qa/api/playwright/run', {method:'POST'})
     .then(r => r.json())
     .then(d => {
-      if (d.error) { toast('Erreur: ' + d.error, true); return; }
-      toast('Workflow déclenché ✓');
-      setTimeout(() => location.reload(), 2000);
+      toast('Tests Playwright lancés');
+      // Poll for results
+      let attempts = 0;
+      const iv = setInterval(() => {
+        attempts++;
+        fetch('/qa/api/playwright/results')
+          .then(r => r.json())
+          .then(data => {
+            if (data.results && data.results.length > 0 || attempts > 20) {
+              clearInterval(iv);
+              loadPlaywrightResults();
+              btn.textContent = '▶ Lancer les tests'; btn.disabled = false;
+              document.getElementById('pw-status').textContent = attempts > 20 ? '⏰ Timeout' : '✅ Terminé';
+            }
+          });
+      }, 3000);
     })
-    .catch(e => toast('Erreur: ' + e, true))
-    .finally(() => { btn.textContent = '⚡ GitHub Actions'; btn.disabled = false; });
+    .catch(e => { toast('Erreur: ' + e, true); btn.textContent = '▶ Lancer les tests'; btn.disabled = false; });
 }
+
+loadPlaywrightResults();
 </script>
 </body>
 </html>
