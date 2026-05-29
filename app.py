@@ -283,7 +283,6 @@ COUNTRY_DATA = {
         'name': 'France', 'flag': '🇫🇷',
         'tjm': '550 - 700 €/jour',
         'tip': 'Paris plus cher, missions longues 6-18 mois',
-        'tips': 'Mets à jour ton profil Malt avec "Playwright", "Xray/JIRA", "API testing". TJM entrée 550€/j, monte à 650€ après 2 missions.',
         'platforms': [
             {'name': 'Malt.fr', 'url': 'https://malt.fr', 'desc': '80% des missions QA. Incontournable.', 'tag': 'local'},
             {'name': 'Free-Work', 'url': 'https://free-work.com', 'desc': 'SSII, banques, assurances. Beaucoup d\'annonces.', 'tag': 'local'},
@@ -308,7 +307,6 @@ COUNTRY_DATA = {
         'name': 'Suisse', 'flag': '🇨🇭',
         'tjm': '110 - 160 CHF/h',
         'tip': 'Genève banque/pharma, Zurich fintech',
-        'tips': 'Spécialise-toi "QA Lead Banque" ou "Test Manager Pharma". ISTQB Advanced quasi obligatoire. Vise Genève en frontalier d\'abord.',
         'platforms': [
             {'name': 'Jem.ch', 'url': 'https://jem.ch', 'desc': 'LA plateforme suisse du contracting IT.', 'tag': 'local'},
             {'name': 'SwissDevJobs', 'url': 'https://swissdevjobs.ch', 'desc': 'Annonces bien rémunérées, test automation.', 'tag': 'local'},
@@ -321,7 +319,6 @@ COUNTRY_DATA = {
         'name': 'Luxembourg', 'flag': '🇱🇺',
         'tjm': '550 - 750 €/jour',
         'tip': 'Banque/finance, institutions UE',
-        'tips': 'Petit marché, 80% passe par les régies (Hays, NSI, SFE). Spécialisation SAP testing ou core banking = TJM max.',
         'platforms': [
             {'name': 'Hays Luxembourg', 'url': 'https://hays.lu', 'desc': 'Leader du contracting QA Lux.', 'tag': 'local'},
             {'name': 'NSI Luxembourg', 'url': 'https://nsi.lu', 'desc': 'Régie majeure, missions longues durée.', 'tag': 'local'},
@@ -333,7 +330,6 @@ COUNTRY_DATA = {
         'name': 'Dubaï / EAU', 'flag': '🇦🇪',
         'tjm': '600 - 900 $/jour',
         'tip': 'Fintech, consulting, missions 3-12 mois',
-        'tips': 'Le marché QA freelance à Dubaï est petit mais très bien payé. Passe par des boîtes de consulting internationales (Capgemini, Accenture) ou des plateformes spécialisées.',
         'platforms': [
             {'name': 'Testvox', 'url': 'https://testvox.com', 'desc': 'Plateforme QA freelance internationale, présente Dubaï.', 'tag': 'local'},
             {'name': 'Truelancer', 'url': 'https://truelancer.ae', 'desc': 'Freelance généraliste, section QA active.', 'tag': 'local'},
@@ -345,7 +341,6 @@ COUNTRY_DATA = {
         'name': 'Singapour', 'flag': '🇸🇬',
         'tjm': '80 - 150 SGD/h',
         'tip': 'Fintech asiatique, hub régional',
-        'tips': 'Marché exigeant, profils automation + ISTQB Advanced. Les missions sont souvent via agences de recrutement (Hays SG, Robert Walters) plutôt que plateformes.',
         'platforms': [
             {'name': 'NodeFlair', 'url': 'https://nodeflair.com', 'desc': 'Plateforme tech SG, filtres QA/disponible.', 'tag': 'local'},
             {'name': 'Hays Singapore', 'url': 'https://hays.com.sg', 'desc': 'Recrutement contracting QA.', 'tag': 'local'},
