@@ -42,7 +42,7 @@ def match_job_to_cv(job, cv_skills=None):
     """Score /100: pertinence du job par rapport au profil."""
     if cv_skills is None:
         cv_skills = CV_SKILLS
-    title = job.get("title", "").lower()
+    title = (job.get("title") or "").lower()
     desc = ((job.get("description") or "") + " " + (job.get("tags") or "")).lower()
     text = title + " " + desc
 
@@ -86,7 +86,7 @@ def match_job_to_cv(job, cv_skills=None):
     score += min(bonus, 20)
 
     # TJM bonus (10pts)
-    salary = job.get("salary", "").lower()
+    salary = (job.get("salary") or "").lower()
     if "/jour" in salary or "/j" in salary or "tjm" in salary:
         score += 10
     elif "chf" in salary or "€" in salary:
@@ -97,7 +97,7 @@ def match_job_to_cv(job, cv_skills=None):
 
 def analyze_tjm(job):
     """Détecte TJM dans le job et compare au marché."""
-    text = f"{job.get('salary', '')} {job.get('title', '')} {job.get('description', '')}".lower()
+    text = f"{job.get('salary') or ''} {job.get('title') or ''} {job.get('description') or ''}".lower()
     tjm = None
     currency = ""
     unit = ""

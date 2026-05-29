@@ -469,6 +469,16 @@ def index():
     # Skills gap
     skills = analyze_skills_gap(all_jobs)
 
+    # Last update timestamp
+    last_update = "—"
+    ts_path = os.path.join(os.path.dirname(__file__), "docs", "last_update.txt")
+    if os.path.exists(ts_path):
+        try:
+            with open(ts_path) as f:
+                last_update = f.read().strip()
+        except:
+            pass
+
     return render_template("dashboard.html",
         stats=stats,
         countries=countries,
@@ -479,7 +489,8 @@ def index():
         jobs_of_day=jobs_of_day,
         source_stats=s_stats,
         skills_gap=skills,
-        version=get_version())
+        version=get_version(),
+        last_update=last_update)
 
 
 @app.route("/refresh")
