@@ -78,14 +78,15 @@
   .photo {
     width: 100px; height: 100px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.08);
-    border: 3px solid rgba(255,255,255,0.15);
+    border: 3px solid rgba(255,255,255,0.2);
     margin: 0 auto 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 36px;
-    color: rgba(255,255,255,0.3);
+    overflow: hidden;
+    background: rgba(255,255,255,0.08);
+  }
+  .photo img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
   }
   .sidebar-section-title {
     font-size: 9px;
@@ -247,7 +248,9 @@
 
   <!-- SIDEBAR (same for both langs) -->
   <div class="sidebar">
-    <div class="photo">👤</div>
+    <div class="photo">
+      <img src="{{ url_for('static', filename='cv_photo.jpg') }}" alt="Photo">
+    </div>
 
     <div>
       <div class="sidebar-section-title" data-fr="Contact" data-en="Contact">Contact</div>
