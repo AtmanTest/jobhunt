@@ -43,7 +43,7 @@ def match_job_to_cv(job, cv_skills=None):
     if cv_skills is None:
         cv_skills = CV_SKILLS
     title = job.get("title", "").lower()
-    desc = (job.get("description", "") + " " + job.get("tags", "")).lower()
+    desc = ((job.get("description") or "") + " " + (job.get("tags") or "")).lower()
     text = title + " " + desc
 
     score = 0
