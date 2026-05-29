@@ -92,8 +92,7 @@
   <div class="card">
     <div class="section-title"><span class="bar">Tests</span></div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="runTests()">▶ Run Tests</button>
-      <button class="btn btn-outline" onclick="triggerGitHub()">⚡ GitHub Actions</button>
+      <button class="btn btn-primary btn-sm" onclick="runTests()">▶ Run Tests</button>
       <button class="btn btn-outline btn-sm" onclick="location.reload()">↻ Refresh</button>
     </div>
     <div id="latest-run" style="font-size:11px;color:var(--text3);"></div>
@@ -103,12 +102,6 @@
   <div class="card">
     <div class="section-title"><span class="bar">🧪 Cas de test</span></div>
     <div id="test-cases"><div class="empty">Chargement…</div></div>
-  </div>
-
-  <!-- GitHub Runs -->
-  <div class="card">
-    <div class="section-title"><span class="bar">📋 GitHub Actions</span></div>
-    <div id="gh-runs"><div class="empty">Chargement…</div></div>
   </div>
 
 </div>
@@ -164,31 +157,6 @@ fetch('/qa/api/runs')
     el.innerHTML = `${status} Dernier run: ${last.passed||0} passed, ${last.failed||0} failed, ${last.skipped||0} skipped — ${last.duration}s`;
   })
   .catch(() => {});
-
-// Load GitHub runs
-fetch('/qa/api/github/runs')
-  .then(r => r.json())
-  .then(data => {
-    const el = document.getElementById('gh-runs');
-    if (data.error) {
-      el.innerHTML = '<div class="empty"><div class="icon">⚡</div>GitHub token non configuré</div>';
-      return;
-    }
-    const runs = data.runs || [];
-    if (runs.length === 0) { el.innerHTML = '<div class="empty"><div class="icon">📋</div>Aucun run GitHub Actions</div>'; return; }
-    let html = '';
-    runs.forEach(r => {
-      const statusClass = r.conclusion === 'success' ? 'gh-completed' : r.conclusion === 'failure' ? 'gh-failure' : r.status === 'in_progress' ? 'gh-in_progress' : '';
-      const label = r.conclusion === 'success' ? '✅ Success' : r.conclusion === 'failure' ? '❌ Failed' : r.status === 'in_progress' ? '⏳ Running' : '⬜ ' + r.status;
-      html += '<div class="gh-run">';
-      html += `<span class="gh-status ${statusClass}">${label}</span>`;
-      html += `<a href="${r.html_url}" target="_blank">${r.display_title || 'CI'}</a>`;
-      html += `<span style="color:var(--text3);margin-left:auto;">${r.branch} · ${(r.created_at||'').substring(0,10)}</span>`;
-      html += '</div>';
-    });
-    el.innerHTML = html;
-  })
-  .catch(() => document.getElementById('gh-runs').innerHTML = '<div class="empty"><div class="icon">❌</div>Erreur de chargement</div>');
 
 function runTests() {
   const btn = event.target; btn.textContent = '⏳ Running...'; btn.disabled = true;
