@@ -1038,8 +1038,11 @@ def api_cv():
 
 @app.route("/about")
 def about():
-    import subprocess
+    import subprocess, json
     log_entries = []
+    cv_tags = []
+    
+    # Try local git first
     try:
         r = subprocess.run(
             ["git", "log", "--oneline", "--format=%H|%s|%ar"],
@@ -1050,22 +1053,49 @@ def about():
             if "|" in line:
                 parts = line.split("|", 2)
                 log_entries.append({"hash": parts[0][:7], "msg": parts[1], "date": parts[2] if len(parts) > 2 else ""})
-    except:
-        pass
-    # CV versions (tags matching cv-*)
-    cv_tags = []
-    try:
-        r = subprocess.run(
+        r2 = subprocess.run(
             ["git", "tag", "-l", "cv-*", "--sort=-creatordate", "--format=%(refname:short)|%(objectname:short)"],
             capture_output=True, text=True, timeout=5,
             cwd=os.path.dirname(__file__),
         )
-        for line in r.stdout.strip().split("\n"):
+        for line in r2.stdout.strip().split("\n"):
             if "|" in line:
                 name, h = line.split("|", 1)
                 cv_tags.append({"name": name, "hash": h[:7]})
     except:
         pass
+
+    # Fallback: GitHub API (works on Render where git clone is shallow)
+    if not log_entries or not cv_tags:
+        try:
+            headers = {"Accept": "application/vnd.github+json"}
+            if GITHUB_TOKEN:
+                headers["Authorization"] = f"Bearer {GITHUB_TOKEN}"
+            # Get commits
+            r = requests.get(
+                "https://api.github.com/repos/AtmanTest/jobhunt/commits?per_page=100",
+                headers=headers, timeout=10
+            )
+            if r.status_code == 200:
+                commits = r.json()
+                log_entries = [{
+                    "hash": c["sha"][:7],
+                    "msg": c["commit"]["message"].split("\n")[0][:80],
+                    "date": c["commit"]["committer"]["date"][:10]
+                } for c in commits]
+            # Get tags
+            r2 = requests.get(
+                "https://api.github.com/repos/AtmanTest/jobhunt/git/refs/tags",
+                headers=headers, timeout=10
+            )
+            if r2.status_code == 200:
+                for ref in r2.json():
+                    name = ref["ref"].replace("refs/tags/", "")
+                    if name.startswith("cv-"):
+                        cv_tags.append({"name": name, "hash": ref["object"]["sha"][:7]})
+        except:
+            pass
+
     return render_template("about.html",
         version=get_version(),
         commit=get_git_commit(),
