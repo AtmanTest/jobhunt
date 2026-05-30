@@ -12,6 +12,7 @@ import os
 import subprocess
 import threading
 import requests
+import time
 from datetime import datetime
 
 # Import scraper
@@ -1364,6 +1365,150 @@ def qa_api_run_plan(plan_id):
 @app.route("/qa/api/test-runs")
 def qa_api_test_runs():
     return jsonify({"runs": tr_get_runs(10)})
+
+
+# ─── Uptime Monitor ─────────────────────────────────────────────
+
+MONITOR_FILE = os.path.join(os.path.dirname(__file__), ".monitor_data.json")
+
+
+def _load_monitor():
+    if not os.path.exists(MONITOR_FILE):
+        return {"sites": {}, "alerts": []}
+    with open(MONITOR_FILE) as f:
+        return json.load(f)
+
+
+def _save_monitor(data):
+    with open(MONITOR_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+
+@app.route("/monitoring")
+def monitoring_page():
+    return render_template("monitoring.html", version=get_version())
+
+
+@app.route("/api/monitor/sites", methods=["GET", "POST", "DELETE"])
+def api_monitor_sites():
+    data = _load_monitor()
+
+    if request.method == "GET":
+        sites_list = []
+        for url, s in data.get("sites", {}).items():
+            s["url"] = url
+            sites_list.append(s)
+        return jsonify({"sites": sites_list, "alerts": data.get("alerts", [])[:50]})
+
+    if request.method == "POST":
+        body = request.get_json() or {}
+        url = body.get("url", "").rstrip("/")
+        name = body.get("name", url)
+        if not url or url == "https://":
+            return jsonify({"error": "URL invalide"}), 400
+
+        if url not in data["sites"]:
+            data["sites"][url] = {
+                "name": name,
+                "status": "unknown",
+                "uptime_30d": 100,
+                "total_checks": 0,
+                "last_response": None,
+                "last_check": None,
+                "last_20": [],
+                "added": datetime.now().isoformat(),
+            }
+        _save_monitor(data)
+        return jsonify({"status": "ok"})
+
+    if request.method == "DELETE":
+        body = request.get_json() or {}
+        url = body.get("url", "")
+        if url in data.get("sites", {}):
+            del data["sites"][url]
+        _save_monitor(data)
+        return jsonify({"status": "ok"})
+
+    return jsonify({"error": "Method not allowed"}), 405
+
+
+@app.route("/api/monitor/check-all", methods=["POST"])
+def api_monitor_check_all():
+    data = _load_monitor()
+    for url in list(data.get("sites", {}).keys()):
+        _check_site(data, url)
+    _save_monitor(data)
+    return jsonify({"status": "ok", "checked": len(data["sites"])})
+
+
+@app.route("/api/monitor/check-one", methods=["POST"])
+def api_monitor_check_one():
+    body = request.get_json() or {}
+    url = body.get("url", "")
+    data = _load_monitor()
+    _check_site(data, url)
+    _save_monitor(data)
+    return jsonify({"status": "ok"})
+
+
+def _check_site(data, url):
+    site = data["sites"].get(url)
+    if not site:
+        return
+
+    site["total_checks"] = site.get("total_checks", 0) + 1
+    start = time.time()
+
+    try:
+        resp = requests.get(url, timeout=10, headers={
+            "User-Agent": "ATMAN-Monitor/1.0",
+            "Accept": "text/html,application/json,*/*",
+        })
+        status_code = resp.status_code
+        response_time = round((time.time() - start) * 1000)
+        was_up = status_code < 500
+    except requests.ConnectionError:
+        status_code = 0
+        response_time = 0
+        was_up = False
+    except requests.Timeout:
+        status_code = 0
+        response_time = 10000
+        was_up = False
+    except Exception:
+        status_code = 0
+        response_time = 0
+        was_up = False
+
+    prev_status = site.get("status", "unknown")
+    new_status = "up" if was_up else "down"
+    site["status"] = new_status
+    site["last_response"] = response_time
+    site["last_check"] = datetime.now().isoformat()
+
+    # Keep last 20
+    last20 = site.get("last_20", [])
+    last20.append(new_status)
+    if len(last20) > 20:
+        last20 = last20[-20:]
+    site["last_20"] = last20
+
+    # Uptime 30d = rolling % from last 20
+    up_count = sum(1 for c in last20 if c == "up")
+    site["uptime_30d"] = round((up_count / len(last20)) * 100, 1) if last20 else 100
+
+    # Alert on status change
+    if prev_status != "unknown" and prev_status != new_status:
+        alert = {
+            "type": new_status,
+            "url": url,
+            "name": site.get("name", url),
+            "message": f"{'✅ En ligne' if was_up else '❌ Hors ligne'} — {response_time}ms (HTTP {status_code})",
+            "time": datetime.now().isoformat(),
+        }
+        data.setdefault("alerts", []).insert(0, alert)
+        # Keep max 200 alerts
+        data["alerts"] = data["alerts"][:200]
 
 
 if __name__ == "__main__":
