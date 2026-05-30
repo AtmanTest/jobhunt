@@ -79,6 +79,22 @@
   </div>
 
   <div class="card">
+    <div class="section-title">Versions CV (git tags)</div>
+    {% if cv_versions %}
+    {% for v in cv_versions %}
+    <div class="log-entry">
+      <span class="hash">{{ v.hash[:7] }}</span>
+      <span class="msg"><strong>{{ v.name }}</strong></span>
+      <span class="date">—</span>
+    </div>
+    {% endfor %}
+    <div style="font-size:10px;color:var(--t3);margin-top:6px">Dis &laquo; charge <code>cv-legacy</code> &raquo; ou &laquo; charge <code>cv-v2</code> &raquo; pour switcher.</div>
+    {% else %}
+    <div class="empty">Aucune version taguée</div>
+    {% endif %}
+  </div>
+
+  <div class="card">
     <div class="section-title">Stack technique</div>
     <div class="row"><span class="label">Framework</span><span class="value">Flask + SQLite</span></div>
     <div class="row"><span class="label">Hébergement</span><span class="value">Render (Free) + GitHub Pages</span></div>

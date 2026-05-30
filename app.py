@@ -1052,13 +1052,28 @@ def about():
                 log_entries.append({"hash": parts[0][:7], "msg": parts[1], "date": parts[2] if len(parts) > 2 else ""})
     except:
         pass
+    # CV versions (tags matching cv-*)
+    cv_tags = []
+    try:
+        r = subprocess.run(
+            ["git", "tag", "-l", "cv-*", "--sort=-creatordate", "--format=%(refname:short)|%(objectname:short)"],
+            capture_output=True, text=True, timeout=5,
+            cwd=os.path.dirname(__file__),
+        )
+        for line in r.stdout.strip().split("\n"):
+            if "|" in line:
+                name, h = line.split("|", 1)
+                cv_tags.append({"name": name, "hash": h[:7]})
+    except:
+        pass
     return render_template("about.html",
         version=get_version(),
         commit=get_git_commit(),
         tag=get_git_tag(),
         dirty=is_dirty(),
         db_schema=DB_SCHEMA_VERSION,
-        log_entries=log_entries)
+        log_entries=log_entries,
+        cv_versions=cv_tags)
 
 
 @app.route("/changelog")
