@@ -1,94 +1,13 @@
 {
   "jobs": [
     {
-      "title": "Consultant tests / QA Agile H/F \n    \n    \n\nConsultant tests / QA Agile H/F with verification",
-      "company": "B/Acceptance",
-      "location": "Ville de Paris, Île-de-France, France (Hybride)",
-      "country": "France",
-      "url": "https://www.linkedin.com/jobs/view/4416819289/",
-      "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:04:57.623513"
-    },
-    {
       "title": "CDI - QA /Test Engineer (H/F) \n    \n    \n\nCDI - QA /Test Engineer (H/F) with verification",
       "company": "Hermès",
       "location": "Paris, Île-de-France, France (Sur site)",
       "country": "France",
       "url": "https://www.linkedin.com/jobs/view/4367823314/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:04:57.716227"
-    },
-    {
-      "title": "QA Tester \n    \n    \n\nQA Tester with verification",
-      "company": "Qim info",
-      "location": "Ville de Paris, Île-de-France, France (Sur site)",
-      "country": "France",
-      "url": "https://www.linkedin.com/jobs/view/4412808452/",
-      "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:04:57.807112"
-    },
-    {
-      "title": "Manual QA Tester",
-      "company": "Sama",
-      "location": "France (À distance)",
-      "country": "France",
-      "url": "https://www.linkedin.com/jobs/view/4415385644/",
-      "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:04:57.894577"
-    },
-    {
-      "title": "QA MOBILE",
-      "company": "Skapa Agency",
-      "location": "Paris, Île-de-France, France (Hybride)",
-      "country": "France",
-      "url": "https://www.linkedin.com/jobs/view/4417116768/",
-      "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:04:57.982642"
-    },
-    {
-      "title": "Quality Assurance \n    \n    \n\nQuality Assurance with verification",
-      "company": "Degetel",
-      "location": "Ville de Paris, Île-de-France, France (Sur site)",
-      "country": "France",
-      "url": "https://www.linkedin.com/jobs/view/4417945722/",
-      "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:04:58.068792"
-    },
-    {
-      "title": "QA CDI - Ouvert au full Remote (F/H)",
-      "company": "Tiime",
-      "location": "Paris, Île-de-France, France (À distance)",
-      "country": "France",
-      "url": "https://www.linkedin.com/jobs/view/4413471785/",
-      "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:04:58.157137"
-    },
-    {
-      "title": "Consultant QA e-commerce",
-      "company": "WeYouBetter",
-      "location": "Ville de Paris, Île-de-France, France (Hybride)",
-      "country": "France",
-      "url": "https://www.linkedin.com/jobs/view/4410057264/",
-      "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:05.658951"
-    },
-    {
-      "title": "Analyste QA (H/F) \n    \n    \n\nAnalyste QA (H/F) with verification",
-      "company": "Groupe Beaumanoir",
-      "location": "Saint-Malo-de-Beignon, Bretagne, France (À distance)",
-      "country": "France",
-      "url": "https://www.linkedin.com/jobs/view/4412693907/",
-      "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:05.942913"
-    },
-    {
-      "title": "Testeur de logiciels/Testeuse de logiciels",
-      "company": "OLLY'S",
-      "location": "Lyon et périphérie (Hybride)",
-      "country": "France",
-      "url": "https://www.linkedin.com/jobs/view/4419949280/",
-      "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:06.036864"
+      "scraped_at": "2026-05-30T19:01:48.707960"
     },
     {
       "title": "Ingénieur(e) QA - Paiement en ligne \n    \n    \n\nIngénieur(e) QA - Paiement en ligne with verification",
@@ -97,7 +16,88 @@
       "country": "France",
       "url": "https://www.linkedin.com/jobs/view/4419879786/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:06.135026"
+      "scraped_at": "2026-05-30T19:01:48.808815"
+    },
+    {
+      "title": "QA Tester \n    \n    \n\nQA Tester with verification",
+      "company": "Qim info",
+      "location": "Ville de Paris, Île-de-France, France (Sur site)",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4412808452/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-30T19:01:48.918718"
+    },
+    {
+      "title": "Manual QA Tester",
+      "company": "Sama",
+      "location": "France (À distance)",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4415385644/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-30T19:01:49.017424"
+    },
+    {
+      "title": "QA MOBILE",
+      "company": "Skapa Agency",
+      "location": "Paris, Île-de-France, France (Hybride)",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4417116768/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-30T19:01:49.111232"
+    },
+    {
+      "title": "Quality Assurance \n    \n    \n\nQuality Assurance with verification",
+      "company": "Degetel",
+      "location": "Ville de Paris, Île-de-France, France (Sur site)",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4417945722/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-30T19:01:49.196128"
+    },
+    {
+      "title": "QA CDI - Ouvert au full Remote (F/H)",
+      "company": "Tiime",
+      "location": "Paris, Île-de-France, France (À distance)",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4413471785/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-30T19:01:49.284135"
+    },
+    {
+      "title": "Consultant QA e-commerce",
+      "company": "WeYouBetter",
+      "location": "Ville de Paris, Île-de-France, France (Hybride)",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4410057264/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-30T19:01:57.001516"
+    },
+    {
+      "title": "Consultant tests / QA Agile H/F \n    \n    \n\nConsultant tests / QA Agile H/F with verification",
+      "company": "B/Acceptance",
+      "location": "Ville de Paris, Île-de-France, France (Hybride)",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4416819289/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-30T19:01:57.093430"
+    },
+    {
+      "title": "Analyste QA (H/F) \n    \n    \n\nAnalyste QA (H/F) with verification",
+      "company": "Groupe Beaumanoir",
+      "location": "Saint-Malo-de-Beignon, Bretagne, France (À distance)",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4412693907/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-30T19:01:57.280828"
+    },
+    {
+      "title": "Testeur de logiciels/Testeuse de logiciels",
+      "company": "OLLY'S",
+      "location": "Lyon et périphérie (Hybride)",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4419949280/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-30T19:01:57.378204"
     },
     {
       "title": "Testeur logiciel (H/F)",
@@ -106,7 +106,7 @@
       "country": "France",
       "url": "https://www.linkedin.com/jobs/view/4416883272/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:06.223130"
+      "scraped_at": "2026-05-30T19:01:57.560905"
     },
     {
       "title": "Testeuse / Testeur QA \n    \n    \n\nTesteuse / Testeur QA with verification",
@@ -115,7 +115,7 @@
       "country": "France",
       "url": "https://www.linkedin.com/jobs/view/4319048269/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:13.887672"
+      "scraped_at": "2026-05-30T19:02:05.196103"
     },
     {
       "title": "Testeur de logiciels/Testeuse de logiciels \n    \n    \n\nTesteur de logiciels/Testeuse de logiciels with verification",
@@ -124,7 +124,7 @@
       "country": "France",
       "url": "https://www.linkedin.com/jobs/view/4415286955/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:14.065724"
+      "scraped_at": "2026-05-30T19:02:05.518388"
     },
     {
       "title": "Testeur QA H/F \n    \n    \n\nTesteur QA H/F with verification",
@@ -133,7 +133,7 @@
       "country": "France",
       "url": "Lyon, Auvergne-Rhône-Alpes, France (Sur site)|https://www.linkedin.com/jobs/view/4403722577/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:14.151354"
+      "scraped_at": "2026-05-30T19:02:05.618493"
     },
     {
       "title": "Testeur/Testeuse",
@@ -142,16 +142,7 @@
       "country": "France",
       "url": "https://www.linkedin.com/jobs/view/4418089597/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:14.238936"
-    },
-    {
-      "title": "Senior Software Tester",
-      "company": "EfficientVision",
-      "location": "Job, Auvergne-Rhône-Alpes, France (À distance)",
-      "country": "France",
-      "url": "https://www.linkedin.com/jobs/view/4400469127/",
-      "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:14.325566"
+      "scraped_at": "2026-05-30T19:02:05.731663"
     },
     {
       "title": "Test/ Recette Assurance \n    \n    \n\nTest/ Recette Assurance with verification",
@@ -160,7 +151,7 @@
       "country": "France",
       "url": "https://www.linkedin.com/jobs/view/4392849571/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:22.302530"
+      "scraped_at": "2026-05-30T19:02:13.567304"
     },
     {
       "title": "QA Tester H/F",
@@ -169,25 +160,43 @@
       "country": "France",
       "url": "https://www.linkedin.com/jobs/view/4407632131/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:30.281940"
+      "scraped_at": "2026-05-30T19:02:13.876012"
     },
     {
-      "title": "Ingénieur Test et Validation - Paiement & Monétique - Services Financiers - Ile-de-France \n    \n    \n\nIngénieur Test et Validation - Paiement & Monétique - Services Financiers - Ile-de-France with verification",
-      "company": "galitt",
-      "location": "Paris, Île-de-France, France (Hybride)",
+      "title": "Test manager H/F \n    \n    \n\nTest manager H/F with verification",
+      "company": "Crédit Agricole Payment Services",
+      "location": "Guyancourt, Île-de-France, France (Hybride)",
       "country": "France",
-      "url": "https://www.linkedin.com/jobs/view/4379639554/",
+      "url": "https://www.linkedin.com/jobs/view/4343993719/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:30.457545"
+      "scraped_at": "2026-05-30T19:02:21.660682"
     },
     {
-      "title": "Inspecteur Qualité Fournisseurs \n    \n    \n\nInspecteur Qualité Fournisseurs with verification",
-      "company": "Expleo Group",
-      "location": "Lausanne, Vaud, Suisse (Hybride)",
-      "country": "Suisse",
-      "url": "https://www.linkedin.com/jobs/view/4405694181/",
+      "title": "QA Engineer",
+      "company": "MEOGROUP",
+      "location": "Boulogne-Billancourt, Île-de-France, France (Sur site)",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4419156082/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:37.955350"
+      "scraped_at": "2026-05-30T19:02:22.000973"
+    },
+    {
+      "title": "Quality Assurance Analyst, Paris",
+      "company": "Air Apps",
+      "location": "Paris, Île-de-France, France (À distance)",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4406608576/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-30T19:02:22.112889"
+    },
+    {
+      "title": "TECHNICIEN QUALITÉ AGROALIMENTAIRE 100% (H/F)",
+      "company": "OK JOB SA",
+      "location": "Fribourg, Suisse (Sur site)",
+      "country": "Suisse",
+      "url": "https://www.linkedin.com/jobs/view/4419879505/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-30T19:02:29.700064"
     },
     {
       "title": "QA Lead Engineer (Europe only) \n    \n    \n\nQA Lead Engineer (Europe only) with verification",
@@ -196,7 +205,7 @@
       "country": "Suisse",
       "url": "https://www.linkedin.com/jobs/view/4416906766/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:38.043794"
+      "scraped_at": "2026-05-30T19:02:29.792626"
     },
     {
       "title": "Ingénieur(e) QA",
@@ -205,7 +214,7 @@
       "country": "Suisse",
       "url": "https://www.linkedin.com/jobs/collections/recommended/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:38.129353"
+      "scraped_at": "2026-05-30T19:02:29.883838"
     },
     {
       "title": "Consultant QA SAP Retail / Fiori",
@@ -214,7 +223,7 @@
       "country": "Suisse",
       "url": "https://www.linkedin.com/jobs/collections/recommended/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:38.222549"
+      "scraped_at": "2026-05-30T19:02:29.982729"
     },
     {
       "title": "QA ENGINEER ",
@@ -223,7 +232,7 @@
       "country": "Suisse",
       "url": "Ville de Paris, Île-de-France, France (Hybride)|https://www.linkedin.com/jobs/collections/recommended/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:38.309151"
+      "scraped_at": "2026-05-30T19:02:30.084886"
     },
     {
       "title": "Senior Quality Assurance Engineer",
@@ -232,7 +241,7 @@
       "country": "Suisse",
       "url": "https://www.linkedin.com/jobs/search/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:38.393294"
+      "scraped_at": "2026-05-30T19:02:30.176675"
     },
     {
       "title": "Quality Assurance Test Lead",
@@ -241,7 +250,7 @@
       "country": "Suisse",
       "url": "https://www.linkedin.com/jobs/search/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:38.487984"
+      "scraped_at": "2026-05-30T19:02:30.274648"
     },
     {
       "title": "AI Chatbot Tester",
@@ -250,7 +259,7 @@
       "country": "Suisse",
       "url": "https://www.linkedin.com/jobs/search/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:38.583248"
+      "scraped_at": "2026-05-30T19:02:30.374637"
     },
     {
       "title": "Test Analyst \n    \n    \n\nTest Analyst with verification",
@@ -259,7 +268,7 @@
       "country": "Suisse",
       "url": "https://www.linkedin.com/jobs/view/4396587227/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:46.251577"
+      "scraped_at": "2026-05-30T19:02:38.048973"
     },
     {
       "title": "Senior Software Tester",
@@ -268,7 +277,7 @@
       "country": "Suisse",
       "url": "https://www.linkedin.com/jobs/view/4414309684/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:46.345553"
+      "scraped_at": "2026-05-30T19:02:38.167257"
     },
     {
       "title": "Test Manager",
@@ -277,7 +286,7 @@
       "country": "Suisse",
       "url": "https://www.linkedin.com/jobs/view/4414017185/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:46.438391"
+      "scraped_at": "2026-05-30T19:02:38.269102"
     },
     {
       "title": "Test Analyst \n    \n    \n\nTest Analyst with verification",
@@ -286,7 +295,7 @@
       "country": "Suisse",
       "url": "https://www.linkedin.com/jobs/view/4378955076/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:46.525543"
+      "scraped_at": "2026-05-30T19:02:38.375498"
     },
     {
       "title": "Software Engineer in Test",
@@ -295,7 +304,7 @@
       "country": "Suisse",
       "url": "https://www.linkedin.com/jobs/view/4417085705/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:46.611331"
+      "scraped_at": "2026-05-30T19:02:38.480331"
     },
     {
       "title": "Senior QA Software Engineer \n    \n    \n\nSenior QA Software Engineer with verification",
@@ -304,7 +313,7 @@
       "country": "Suisse",
       "url": "https://www.linkedin.com/jobs/view/4405273698/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:46.699641"
+      "scraped_at": "2026-05-30T19:02:38.582241"
     },
     {
       "title": "Quality Assurance Analyst, Berlin",
@@ -313,7 +322,7 @@
       "country": "Suisse",
       "url": "https://www.linkedin.com/jobs/view/4405161851/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:46.791910"
+      "scraped_at": "2026-05-30T19:02:38.691527"
     },
     {
       "title": "Senior Quality Assurance Engineer \n    \n    \n\nSenior Quality Assurance Engineer with verification",
@@ -322,7 +331,7 @@
       "country": "Luxembourg",
       "url": "https://www.linkedin.com/jobs/view/4413586514/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:54.343217"
+      "scraped_at": "2026-05-30T19:02:46.259149"
     },
     {
       "title": "QA Engineer \n    \n    \n\nQA Engineer with verification",
@@ -331,7 +340,7 @@
       "country": "Luxembourg",
       "url": "https://www.linkedin.com/jobs/view/4420920037/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:54.531652"
+      "scraped_at": "2026-05-30T19:02:46.477084"
     },
     {
       "title": "Manual QA Engineer (Relocation to Portugal Required) \n    \n    \n\nManual QA Engineer (Relocation to Portugal Required) with verification",
@@ -340,7 +349,7 @@
       "country": "Luxembourg",
       "url": "https://www.linkedin.com/jobs/view/4413609651/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:54.616692"
+      "scraped_at": "2026-05-30T19:02:46.574873"
     },
     {
       "title": "QA Automation Engineer \n    \n    \n\nQA Automation Engineer with verification",
@@ -349,9 +358,18 @@
       "country": "Luxembourg",
       "url": "https://www.linkedin.com/jobs/view/4420908658/",
       "source": "LinkedIn",
-      "scraped_at": "2026-05-30T18:05:54.708817"
+      "scraped_at": "2026-05-30T19:02:46.672003"
+    },
+    {
+      "title": "Technicien HSE",
+      "company": "POLYGONE LUXEMBOURG",
+      "location": "Mersch, Luxembourg, Luxembourg (Sur site)",
+      "country": "Luxembourg",
+      "url": "https://www.linkedin.com/jobs/view/4422089172/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-30T19:02:46.766502"
     }
   ],
-  "scraped_at": "2026-05-30T18:06:10.478475",
-  "count": 39
+  "scraped_at": "2026-05-30T19:03:03.359587",
+  "count": 41
 }
