@@ -244,23 +244,25 @@ def get_db():
 
 
 
-# Auto-scrape LinkedIn pays au démarrage
-def _startup_scrape():
-    import time
-    time.sleep(5)
-    try:
-        print("[Startup] Scraping LinkedIn pays...")
-        from scraper import fetch_linkedin_countries, save_jobs
-        jobs = fetch_linkedin_countries()
-        if jobs:
-            n = save_jobs(jobs)
-            print(f"[Startup] {n} nouveaux jobs LinkedIn ajoutés")
-        else:
-            print("[Startup] Aucun nouveau job LinkedIn")
-    except Exception as e:
-        print(f"[Startup] Erreur scrape: {e}")
+# Auto-scrape LinkedIn pays au démarrage (désactivé sur Render - trop lent)
+ON_RENDER = os.environ.get("RENDER", "") == "true"
+if not ON_RENDER:
+    def _startup_scrape():
+        import time
+        time.sleep(5)
+        try:
+            print("[Startup] Scraping LinkedIn pays...")
+            from scraper import fetch_linkedin_countries, save_jobs
+            jobs = fetch_linkedin_countries()
+            if jobs:
+                n = save_jobs(jobs)
+                print(f"[Startup] {n} nouveaux jobs LinkedIn ajoutés")
+            else:
+                print("[Startup] Aucun nouveau job LinkedIn")
+        except Exception as e:
+            print(f"[Startup] Erreur scrape: {e}")
 
-threading.Thread(target=_startup_scrape, daemon=True).start()
+    threading.Thread(target=_startup_scrape, daemon=True).start()
 
 
 # ============================
@@ -370,7 +372,7 @@ def filter_jobs_by_country(country_id):
             SELECT MAX(id)
             FROM jobs 
             WHERE ({placeholders})
-            AND (freelance_status IS NULL OR freelance_status IN ('VALIDÉE', 'AMBIGUË'))
+            AND (freelance_status IN ('VALIDÉE', 'AMBIGUË'))
             GROUP BY LOWER(TRIM(title)), LOWER(TRIM(company))
         )
         ORDER BY 
@@ -460,6 +462,31 @@ def index():
     if fresh_jobs:
         jobs_of_day = sorted(fresh_jobs, key=lambda j: (-j.get('match_score', 0), -(j.get('freelance_score') or 0)))[:3]
 
+    # Priority scoring: combine match + freelance fit + freshness
+    def compute_priority(job):
+        match = job.get('match_score', 0)
+        freelance = job.get('freelance_score') or 0
+        freshness_map = {'A': 30, 'B': 20, 'C': 10, 'D': 0}
+        freshness = freshness_map.get(job.get('freshness_score', 'D'), 0)
+        # Bonuses: applied jobs get lower priority, VALIDÉE gets higher
+        stage = job.get('pipeline_stage', 'new')
+        stage_bonus = -15 if stage != 'new' else 0
+        status_bonus = 10 if job.get('freelance_status') == 'VALIDÉE' else 0
+        return match * 2 + freelance * 3 + freshness + stage_bonus + status_bonus
+
+    # Hot Picks: top jobs by priority (excluding already applied)
+    hot_picks = sorted(
+        [j for j in all_jobs if (j.get('pipeline_stage') or 'new') == 'new'],
+        key=compute_priority, reverse=True
+    )[:5]
+
+    # Pipeline stats
+    pipeline_counts = {'new': 0, 'applied': 0, 'phone': 0, 'interview': 0, 'offer': 0}
+    for j in all_jobs:
+        stage = j.get('pipeline_stage') or 'new'
+        if stage in pipeline_counts:
+            pipeline_counts[stage] += 1
+
     # Stats sources
     s_stats = src_stats(all_jobs)
     
@@ -484,6 +511,8 @@ def index():
         top_matches=top_matches,
         job_of_day=jobs_of_day[0] if jobs_of_day else None,
         jobs_of_day=jobs_of_day,
+        hot_picks=hot_picks,
+        pipeline_counts=pipeline_counts,
         source_stats=s_stats,
         skills_gap=skills,
         version=get_version(),

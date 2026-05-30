@@ -604,6 +604,30 @@
     </div>
     {% endif %}
 
+    <!-- 🔥 Hot Picks: meilleurs jobs classés par priorité -->
+    {% if hot_picks %}
+    <div class="featured-section">
+      <div class="section-label"><span class="bar orange"></span> 🔥 Hot Picks — Priorité Max</div>
+      <div class="featured-grid">
+      {% for job in hot_picks %}
+        <a href="{{ job.url }}" target="_blank" class="featured-card" onclick="fetch('/api/job/{{ job.id }}/click');">
+          <div class="rank">#{{ loop.index }} · {{ job.match_score }}% match</div>
+          <div class="fc-title">{{ job.title }}</div>
+          <div class="fc-meta">{{ job.company }} · {{ job.location }} · {{ job.date }}</div>
+          {% if job.matched_skills %}
+          <div class="fc-skills">{% for s in job.matched_skills %}<span>{{ s }}</span>{% endfor %}</div>
+          {% endif %}
+          <div style="display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:4px;">
+            <span class="fc-score"><span class="num">{{ job.match_score }}%</span> match</span>
+            {% if job.freelance_status == 'VALIDÉE' %}<span style="font-size:10px;background:var(--green-dim);color:var(--green);padding:2px 6px;border-radius:4px;">✓ Validé</span>{% endif %}
+            <span style="font-size:11px;color:var(--accent);margin-left:auto;">Postuler →</span>
+          </div>
+        </a>
+      {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
     <!-- Top Matches (horizontal scroll) -->
     {% if top_matches %}
     <div class="featured-section">
@@ -728,6 +752,13 @@
             <a href="{{ job.url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
             {% endif %}
             <a href="/cover-letter/{{ job.id }}" class="btn-letter" onclick="event.stopPropagation();">✉️</a>
+            <select class="pipeline-select stage-{{ job.pipeline_stage or 'new' }}" onchange="updateStage({{ job.id }}, this.value);event.stopPropagation();">
+              <option value="new" {% if (job.pipeline_stage or 'new') == 'new' %}selected{% endif %}>New</option>
+              <option value="applied" {% if job.pipeline_stage == 'applied' %}selected{% endif %}>Applied</option>
+              <option value="phone" {% if job.pipeline_stage == 'phone' %}selected{% endif %}>Phone</option>
+              <option value="interview" {% if job.pipeline_stage == 'interview' %}selected{% endif %}>Interview</option>
+              <option value="offer" {% if job.pipeline_stage == 'offer' %}selected{% endif %}>Offer</option>
+            </select>
           </div>
         </div>
       {% endfor %}
@@ -786,6 +817,13 @@
             <a href="{{ job.url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
             {% endif %}
             <a href="/cover-letter/{{ job.id }}" class="btn-letter" onclick="event.stopPropagation();">✉️</a>
+            <select class="pipeline-select stage-{{ job.pipeline_stage or 'new' }}" onchange="updateStage({{ job.id }}, this.value);event.stopPropagation();">
+              <option value="new" {% if (job.pipeline_stage or 'new') == 'new' %}selected{% endif %}>New</option>
+              <option value="applied" {% if job.pipeline_stage == 'applied' %}selected{% endif %}>Applied</option>
+              <option value="phone" {% if job.pipeline_stage == 'phone' %}selected{% endif %}>Phone</option>
+              <option value="interview" {% if job.pipeline_stage == 'interview' %}selected{% endif %}>Interview</option>
+              <option value="offer" {% if job.pipeline_stage == 'offer' %}selected{% endif %}>Offer</option>
+            </select>
           </div>
         </div>
       {% endfor %}
@@ -1065,6 +1103,22 @@ function refreshLinkedIn() {
 fetch('/api/linkedin/jobs').then(r=>r.json()).then(d => {
   document.getElementById('linkedin-count').textContent = (d.qa_jobs||d.jobs||[]).length;
 });
+
+// ── Pipeline stage update ──
+function updateStage(jobId, stage) {
+  fetch('/api/job/' + jobId + '/stage', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({stage: stage})
+  }).then(r => r.json()).then(d => {
+    var sel = document.querySelector('select[onchange*="updateStage(' + jobId + '"]');
+    if (sel) {
+      sel.className = 'pipeline-select stage-' + stage;
+      sel.style.borderColor = 'var(--green)';
+      setTimeout(function() { sel.style.borderColor = ''; }, 1000);
+    }
+  });
+}
 </script>
 </body>
 </html>
