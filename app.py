@@ -178,12 +178,15 @@ from urllib.parse import urlparse, urlunparse
 app = Flask(__name__)
 
 def clean_linkedin_url(url):
-    """Strip LinkedIn tracking params from job URLs."""
+    """Normalize LinkedIn job URLs: extract numeric job ID, drop domain locale + slug + tracking params."""
+    import re
     if not url or 'linkedin.com/jobs/' not in url:
         return url
     parsed = urlparse(url)
-    # Keep scheme + netloc + path only (strip query params)
-    return urlunparse((parsed.scheme, parsed.netloc, parsed.path, '', '', ''))
+    m = re.search(r'(\d+)/?$', parsed.path)
+    if m:
+        return f'https://www.linkedin.com/jobs/view/{m.group(1)}/'
+    return urlunparse((parsed.scheme, 'www.linkedin.com', parsed.path, '', '', ''))
 
 app.jinja_env.filters['clean_url'] = clean_linkedin_url
 app.secret_key = "jobhunt-secret-2026"
