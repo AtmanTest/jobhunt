@@ -597,7 +597,7 @@
       <div class="section-label"><span class="bar purple"></span> ✦ Jobs du Jour</div>
       <div class="featured-grid">
       {% for job in jobs_of_day %}
-        <div class="featured-card" onclick="window.open('{{ job.url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;">
+        <div class="featured-card" onclick="window.open('{{ job.url | clean_url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;">
           <button class="btn-dismiss" onclick="event.stopPropagation();dismissJob({{ job.id }}, this);" title="Masquer">✕</button>
           <div class="rank">#{{ loop.index }} · {{ job.match_score }}% match</div>
           <div class="fc-title">{{ job.title }}</div>
@@ -621,7 +621,7 @@
       <div class="section-label"><span class="bar orange"></span> 🔥 Hot Picks — Priorité Max</div>
       <div class="featured-grid">
       {% for job in hot_picks %}
-        <div class="featured-card" onclick="window.open('{{ job.url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;">
+        <div class="featured-card" onclick="window.open('{{ job.url | clean_url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;">
           <button class="btn-dismiss" onclick="event.stopPropagation();dismissJob({{ job.id }}, this);" title="Masquer">✕</button>
           <div class="rank">#{{ loop.index }} · {{ job.match_score }}% match</div>
           <div class="fc-title">{{ job.title }}</div>
@@ -762,7 +762,7 @@
             {% if job.applied %}
             <span class="applied-label">✓ Postulé</span>
             {% else %}
-            <a href="{{ job.url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
+            <a href="{{ job.url | clean_url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
             {% endif %}
             <a href="/cover-letter/{{ job.id }}" class="btn-letter" onclick="event.stopPropagation();">✉️</a>
             <select class="pipeline-select stage-{{ job.pipeline_stage or 'new' }}" onchange="updateStage({{ job.id }}, this.value);event.stopPropagation();">
@@ -829,7 +829,7 @@
             {% if job.applied %}
             <span class="applied-label">✓ Postulé</span>
             {% else %}
-            <a href="{{ job.url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
+            <a href="{{ job.url | clean_url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
             {% endif %}
             <a href="/cover-letter/{{ job.id }}" class="btn-letter" onclick="event.stopPropagation();">✉️</a>
             <select class="pipeline-select stage-{{ job.pipeline_stage or 'new' }}" onchange="updateStage({{ job.id }}, this.value);event.stopPropagation();">

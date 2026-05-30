@@ -10,9 +10,17 @@ import time
 import os
 import re
 from datetime import datetime
+from urllib.parse import urlparse, urlunparse
 
 BASE_DIR = os.path.dirname(__file__)
 OUTPUT_FILE = os.path.join(BASE_DIR, "linkedin_jobs.json")
+
+def clean_url(url):
+    """Strip LinkedIn tracking params from job URLs."""
+    if not url or 'linkedin.com/jobs/' not in url:
+        return url
+    parsed = urlparse(url)
+    return urlunparse((parsed.scheme, parsed.netloc, parsed.path, '', '', ''))
 
 # ─── Filtres d'exclusion (titles qui ne sont PAS du QA logiciel) ──
 EXCLUDE_TITLES = [
@@ -95,7 +103,7 @@ def scrape_search(keywords, location, country):
         parts = result.split('|', 3)
         if len(parts) >= 3:
             title, company, location_raw = parts[0], parts[1], parts[2]
-            url_job = parts[3] if len(parts) > 3 else ''
+            url_job = clean_url(parts[3]) if len(parts) > 3 else ''
             if title and title != 'N/A' and company:
                 jobs.append({
                     "title": title,

@@ -172,7 +172,20 @@ def get_qa_runs(limit=10):
     return runs
 
 
+import re
+from urllib.parse import urlparse, urlunparse
+
 app = Flask(__name__)
+
+def clean_linkedin_url(url):
+    """Strip LinkedIn tracking params from job URLs."""
+    if not url or 'linkedin.com/jobs/' not in url:
+        return url
+    parsed = urlparse(url)
+    # Keep scheme + netloc + path only (strip query params)
+    return urlunparse((parsed.scheme, parsed.netloc, parsed.path, '', '', ''))
+
+app.jinja_env.filters['clean_url'] = clean_linkedin_url
 app.secret_key = "jobhunt-secret-2026"
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "jobs.db")
