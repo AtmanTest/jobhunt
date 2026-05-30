@@ -28,6 +28,16 @@ SOURCES = [
         "url": "https://fr.indeed.com/jobs?q=QA+testeur+test+automation&l=France&jt=freelance_contract",
         "type": "indeed"
     },
+    {
+        "name": "Comet",
+        "url": "https://www.comet.co/fr/freelances/trouver-une-mission",
+        "type": "comet"
+    },
+    {
+        "name": "Malt",
+        "url": "https://www.malt.fr/search?keyword=QA+test",
+        "type": "malt"
+    },
 ]
 
 
@@ -1673,6 +1683,202 @@ def fetch_indeed():
     return jobs
 
 
+def fetch_comet():
+    """Scrape QA missions from Comet (comet.co - French freelance platform for IT consultants).
+
+    Comet is a JS-heavy Vue app (app.comet.co) backed by a private GraphQL API
+    (api.comet.co/api/graphql) that requires authentication. The public-facing
+    website (www.comet.co) is built on HubSpot CMS and does not render mission
+    data server-side. No RSS feed is available.
+
+    This function attempts to access the GraphQL API first. Since the API is
+    private (requires auth token), it falls back gracefully with a clear message.
+    """
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                      "AppleWebKit/537.36 (KHTML, like Gecko) "
+                      "Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test engineer", "test automation", "tester",
+                       "testing", "automation engineer", "test lead",
+                       "test manager", "qa lead", "qa engineer",
+                       "software test", "software testing", "test developer",
+                       "engineer in test", "testeur", "recette", "qualite",
+                       "automation"]
+
+    # Try 1: GraphQL API (requires auth, will return 401/403)
+    try:
+        # The mission listing query used by the Vue frontend
+        resp = requests.post(
+            "https://api.comet.co/api/graphql",
+            json={
+                "query": (
+                    "query MissionsSearch($search: String!, $filters: MissionSearchInput!) {"
+                    "  missionsSearch(search: $search, groups: [{key: \"all\", filters: $filters, limit: 50}]) {"
+                    "    items {"
+                    "      id title"
+                    "    }"
+                    "  }"
+                    "}"
+                ),
+                "variables": {
+                    "search": "QA test",
+                    "filters": {},
+                },
+            },
+            headers={**headers, "Content-Type": "application/json"},
+            timeout=15,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            if "errors" not in data and data.get("data", {}).get("missionsSearch"):
+                items = data["data"]["missionsSearch"].get("items", []) or []
+                for item in items:
+                    title = item.get("title", "")
+                    title_lower = title.lower()
+                    if not any(k in title_lower for k in filter_keywords):
+                        continue
+                    mission_id = item.get("id", "")
+                    jobs.append({
+                        "title": title,
+                        "company": "Comet client",
+                        "source": "Comet",
+                        "url": f"https://app.comet.co/freelancer/explore/mission/{mission_id}" if mission_id else "",
+                        "location": "France",
+                        "salary": "",
+                        "tags": "",
+                        "date": datetime.now().strftime("%Y-%m-%d"),
+                        "description": "",
+                        "raw_date": int(time.time()),
+                    })
+                if jobs:
+                    print(f"  Comet GraphQL: {len(jobs)} QA missions")
+                    return jobs
+            else:
+                err_msg = data.get("errors", [{}])[0].get("message", "unknown")
+                print(f"  Comet GraphQL returned error: {err_msg}")
+        elif resp.status_code in (401, 403):
+            print(f"  Comet GraphQL: API requires authentication (HTTP {resp.status_code})")
+        else:
+            print(f"  Comet GraphQL returned HTTP {resp.status_code}")
+    except requests.exceptions.ConnectionError:
+        print("  Comet GraphQL: connection error")
+    except Exception as e:
+        print(f"  Comet GraphQL error: {e}")
+
+    # Try 2: Public search page (HubSpot CMS - won't have mission data rendered server-side)
+    try:
+        pub_resp = requests.get(
+            "https://www.comet.co/fr/freelances/trouver-une-mission",
+            headers={**headers, "Accept": "text/html"},
+            timeout=15,
+        )
+        if pub_resp.status_code == 200:
+            soup = BeautifulSoup(pub_resp.text, "html.parser")
+            # The actual missions are loaded client-side via Vue/GraphQL.
+            # The server HTML only contains static HubSpot CMS content.
+            # Check for any embedded JSON or __NEXT_DATA__ equivalent
+            scripts = soup.find_all("script")
+            for script in scripts:
+                text = script.string or ""
+                if "mission" in text.lower() and ("title" in text.lower() or "id" in text.lower()):
+                    try:
+                        data = json.loads(text)
+                        # Attempt to parse any embedded mission data
+                        if isinstance(data, dict):
+                            missions = data.get("missions", []) or data.get("results", []) or []
+                            for item in missions:
+                                title = item.get("title", "")
+                                title_lower = title.lower()
+                                if not any(k in title_lower for k in filter_keywords):
+                                    continue
+                                company = item.get("company", "") or item.get("client", "")
+                                url = item.get("url", "") or ""
+                                location = item.get("location", "") or "France"
+                                budget = item.get("budget", "") or item.get("salary", "") or ""
+                                jobs.append({
+                                    "title": title, "company": company, "source": "Comet",
+                                    "url": url, "location": location, "salary": budget,
+                                    "tags": "", "description": "",
+                                    "date": datetime.now().strftime("%Y-%m-%d"),
+                                    "raw_date": int(time.time()),
+                                })
+                    except (json.JSONDecodeError, TypeError):
+                        continue
+            if not jobs:
+                print("  Comet public page: no embedded mission data (page requires JS rendering)")
+        else:
+            print(f"  Comet public page returned HTTP {pub_resp.status_code}")
+    except Exception as e:
+        print(f"  Comet public page error: {e}")
+
+    if not jobs:
+        print("  Comet: 0 missions (API is private, search requires authentication)")
+    return jobs
+
+
+def fetch_malt():
+    """Fetch QA missions from Malt.fr (leading French freelance platform).
+    Malt.fr is behind Cloudflare challenge - direct scraping is blocked.
+    This function attempts the public search page; if blocked, reports gracefully."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test", "tester", "testing", "automation",
+                       "testeur", "recette", "qualite", "recetteur"]
+
+    try:
+        resp = requests.get(
+            "https://www.malt.fr/search?keyword=QA+test&sort=relevance",
+            headers=headers, timeout=15
+        )
+        if resp.status_code == 200:
+            soup = BeautifulSoup(resp.text, "html.parser")
+            # Try to find mission cards - Malt uses various selectors
+            cards = soup.select("[class*=mission], [class*=card], [class*=result], article, li[class*=job]")
+            for card in cards:
+                title_el = card.select_one("h2, h3, a[title], [class*=title] a")
+                if not title_el:
+                    continue
+                title = title_el.get_text(strip=True)
+                title_lower = title.lower()
+                if not any(k in title_lower for k in filter_keywords):
+                    continue
+
+                url = title_el.get("href", "")
+                if url and not url.startswith("http"):
+                    url = "https://www.malt.fr" + url
+
+                company_el = card.select_one("[class*=company], [class*=client], [class*=author]")
+                company = company_el.get_text(strip=True) if company_el else ""
+
+                location_el = card.select_one("[class*=location], [class*=place], [class*=city]")
+                location = location_el.get_text(strip=True) if location_el else "France"
+
+                jobs.append({
+                    "title": title, "company": company, "source": "Malt",
+                    "url": url, "location": location, "salary": "", "tags": "",
+                    "description": "", "date": datetime.now().strftime("%Y-%m-%d"),
+                    "raw_date": int(time.time()),
+                })
+        elif resp.status_code == 403 or "challenge" in resp.text.lower() or "cf-browser-verification" in resp.text:
+            print("  Malt: blocked by Cloudflare challenge")
+        else:
+            print(f"  Malt: HTTP {resp.status_code}")
+    except Exception as e:
+        print(f"  Malt error: {e}")
+
+    if not jobs:
+        print("  Malt: 0 missions (Cloudflare or JS required)")
+    return jobs
+
+
 def fetch_all():
     """Fetch jobs from all sources - legacy wrapper."""
     return fetch_all_new_sources()
@@ -1699,6 +1905,8 @@ def fetch_all_new_sources():
         ("HN Hiring", fetch_hn_whoishiring),
         ("LinkedIn Countries", fetch_linkedin_countries),
         ("Indeed", fetch_indeed),
+        ("Comet", fetch_comet),
+        ("Malt", fetch_malt),
     ]
     
     for name, fetcher in sources:
