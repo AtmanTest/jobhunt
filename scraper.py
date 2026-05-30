@@ -23,6 +23,11 @@ SOURCES = [
         "url": "https://weworkremotely.com/categories/remote-software-development-jobs",
         "type": "wwr"
     },
+    {
+        "name": "Indeed",
+        "url": "https://fr.indeed.com/jobs?q=QA+testeur+test+automation&l=France&jt=freelance_contract",
+        "type": "indeed"
+    },
 ]
 
 
@@ -543,7 +548,7 @@ def fetch_freework():
 # ─── French-specific scrapers ──────────────────────────────────────
 
 def fetch_lesjeudis():
-    """Fetch QA freelance jobs from LesJeudis (French IT freelance platform)."""
+    """Fetch QA freelance jobs from LesJeudis (French IT freelance platform) via __NEXT_DATA__ JSON."""
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
         "Accept": "text/html,application/xhtml+xml",
@@ -558,45 +563,86 @@ def fetch_lesjeudis():
             "https://www.lesjeudis.com/recherche?q=QA&type=Mission&field=IT",
             headers=headers, timeout=15
         )
-        if resp.status_code == 200:
-            from bs4 import BeautifulSoup
-            soup = BeautifulSoup(resp.text, "html.parser")
-            cards = soup.select("article.job-card, div.job-item, li.job, div[class*=job]")
-            for card in cards:
-                title_el = card.select_one("h2 a, h3 a, a[title], .job-title a, .posting-title")
-                if not title_el:
-                    continue
-                title = title_el.get_text(strip=True)
-                title_lower = title.lower()
-                if not any(k in title_lower for k in filter_keywords):
-                    continue
+        if resp.status_code != 200:
+            print(f"  LesJeudis error: HTTP {resp.status_code}")
+            return jobs
 
-                url = title_el.get("href", "")
-                if url and not url.startswith("http"):
-                    url = "https://www.lesjeudis.com" + url
+        # Extract __NEXT_DATA__ JSON from the script tag
+        match = re.search(
+            r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>',
+            resp.text, re.DOTALL
+        )
+        if not match:
+            print("  LesJeudis: __NEXT_DATA__ script tag not found")
+            return jobs
 
-                company_el = card.select_one(".company, .org, [class*=company]")
-                company = company_el.get_text(strip=True) if company_el else ""
+        data = json.loads(match.group(1))
+        apollo_state = data.get("props", {}).get("pageProps", {}).get("__APOLLO_STATE__", {})
+        if not apollo_state:
+            print("  LesJeudis: __APOLLO_STATE__ not found in page props")
+            return jobs
 
-                location_el = card.select_one(".location, .place, [class*=location]")
-                location = location_el.get_text(strip=True) if location_el else "France"
+        # Walk all Apollo cache entries looking for Job: prefixed keys
+        for key, entry in apollo_state.items():
+            if not key.startswith("Job:"):
+                continue
+            if not isinstance(entry, dict):
+                continue
+            # Must have title, slug, locationText
+            title = entry.get("title")
+            slug = entry.get("slug")
+            location_text = entry.get("locationText")
+            if not title or not slug:
+                continue
 
-                jobs.append({
-                    "title": title, "company": company, "source": "LesJeudis",
-                    "url": url, "location": location, "salary": "", "tags": "",
-                    "description": "", "date": datetime.now().strftime("%Y-%m-%d"),
-                    "raw_date": int(time.time()),
-                })
+            title_lower = title.lower()
+            if not any(k in title_lower for k in filter_keywords):
+                continue
+
+            # Company: dict with 'name' key, might be {} empty
+            company_dict = entry.get("company") or {}
+            company = company_dict.get("name", "") if isinstance(company_dict, dict) else ""
+
+            # Build URL from slug
+            url = f"https://lesjeudis.com/jobs/{slug}"
+
+            location = location_text if location_text else "France"
+
+            jobs.append({
+                "title": title, "company": company, "source": "LesJeudis",
+                "url": url, "location": location, "salary": "", "tags": "",
+                "description": "", "date": datetime.now().strftime("%Y-%m-%d"),
+                "raw_date": int(time.time()),
+            })
+
+    except json.JSONDecodeError as e:
+        print(f"  LesJeudis JSON parse error: {e}")
     except Exception as e:
         print(f"  LesJeudis error: {e}")
 
     if not jobs:
-        print("  LesJeudis: 0 jobs (selector may need update)")
+        print("  LesJeudis: 0 jobs")
     return jobs
 
 
 def fetch_optioncarriere():
-    """Fetch QA jobs from Optioncarriere (French job aggregator)."""
+    """Fetch QA jobs from Optioncarriere (French job aggregator).
+
+    NOTE: Optioncarriere uses Cloudflare Turnstile anti-bot protection.
+    The correct search URL is /recherche/emplois (not /recherche/s-emplois).
+    This function tries cloudscraper first (better at bypassing), then falls
+    back to plain requests if cloudscraper is unavailable.
+    """
+    try:
+        import cloudscraper
+        scraper = cloudscraper.create_scraper(
+            browser={"browser": "chrome", "platform": "darwin", "desktop": True}
+        )
+        use_scraper = True
+    except ImportError:
+        scraper = requests
+        use_scraper = False
+
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
         "Accept": "text/html",
@@ -607,44 +653,84 @@ def fetch_optioncarriere():
                        "software test", "testeur", "recette", "qualite"]
 
     try:
-        resp = requests.get(
-            "https://www.optioncarriere.com/recherche/s-emplois?q=QA&l=France&t=freelance",
-            headers=headers, timeout=15
-        )
-        if resp.status_code == 200:
-            from bs4 import BeautifulSoup
-            soup = BeautifulSoup(resp.text, "html.parser")
-            cards = soup.select("article, .job, .result, li.result, div[class*=job]")
-            for card in cards:
-                title_el = card.select_one("a[title], h2 a, h3 a, .title a")
-                if not title_el:
-                    continue
-                title = title_el.get_text(strip=True)
-                title_lower = title.lower()
-                if not any(k in title_lower for k in filter_keywords):
-                    continue
+        url = "https://www.optioncarriere.com/recherche/emplois?q=QA&l=France&t=freelance"
+        resp = scraper.get(url, headers=headers, timeout=20)
+        if resp.status_code != 200:
+            print(f"  Optioncarriere: HTTP {resp.status_code}")
+            return jobs
 
-                url = title_el.get("href", "")
-                if url and not url.startswith("http"):
-                    url = "https://www.optioncarriere.com" + url
+        soup = BeautifulSoup(resp.text, "html.parser")
 
-                company_el = card.select_one(".company, .employer, [class*=company]")
-                company = company_el.get_text(strip=True) if company_el else ""
+        # Check if Cloudflare blocked us
+        if "turnstile" in resp.text.lower() or "trafic inhabituel" in resp.text.lower():
+            print("  Optioncarriere: blocked by Cloudflare Turnstile")
+            return jobs
 
+        # Select job articles — structure: ul.jobs > li > article.job
+        # or article.job directly on search results page
+        cards = soup.select("article.job")
+        if not cards:
+            cards = soup.select("ul.jobs > li > article.job")
+        if not cards:
+            # Fallback: look inside any jobs section
+            jobs_section = soup.select_one("section.jobs-contextual, .jobs-list, [class*=result]")
+            if jobs_section:
+                cards = jobs_section.select("article.job")
+
+        for card in cards:
+            # Title & URL
+            title_el = card.select_one("header h3 a")
+            if not title_el:
+                # Fallback: any a with title attribute
+                title_el = card.select_one("a[title], h3 a, h2 a")
+            if not title_el:
+                continue
+
+            title = title_el.get_text(strip=True)
+            title_lower = title.lower()
+            if not any(k in title_lower for k in filter_keywords):
+                continue
+
+            url_href = title_el.get("href", "")
+            if url_href and not url_href.startswith("http"):
+                url_href = "https://www.optioncarriere.com" + url_href
+
+            # Company
+            company_el = card.select_one("p.company, .company, [class*=company]")
+            company = company_el.get_text(strip=True) if company_el else ""
+
+            # Location: ul.location li contains SVG + text node
+            location_el = card.select_one("ul.location li")
+            location = ""
+            if location_el:
+                # Get text, stripping out SVG content
+                for tag in location_el.find_all(["svg", "use"]):
+                    tag.decompose()
+                location = location_el.get_text(strip=True)
+            if not location:
                 location_el = card.select_one(".location, .place, .city")
                 location = location_el.get_text(strip=True) if location_el else "France"
 
-                jobs.append({
-                    "title": title, "company": company, "source": "Optioncarriere",
-                    "url": url, "location": location, "salary": "", "tags": "",
-                    "description": "", "date": datetime.now().strftime("%Y-%m-%d"),
-                    "raw_date": int(time.time()),
-                })
+            # Salary (nice to have)
+            salary_el = card.select_one("ul.salary li")
+            salary = ""
+            if salary_el:
+                for tag in salary_el.find_all(["svg", "use"]):
+                    tag.decompose()
+                salary = salary_el.get_text(strip=True)
+
+            jobs.append({
+                "title": title, "company": company, "source": "Optioncarriere",
+                "url": url_href, "location": location, "salary": salary, "tags": "",
+                "description": "", "date": datetime.now().strftime("%Y-%m-%d"),
+                "raw_date": int(time.time()),
+            })
+
     except Exception as e:
         print(f"  Optioncarriere error: {e}")
 
     if not jobs:
-        print("  Optioncarriere: 0 jobs (selector may need update)")
+        print("  Optioncarriere: 0 jobs (site blocked by Cloudflare Turnstile)")
     return jobs
 
 
@@ -818,123 +904,144 @@ def compute_freshness_score(date_str):
 
 
 def fetch_wttj():
-    """Fetch QA jobs from Welcome to the Jungle using their GraphQL API."""
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Origin": "https://www.welcome-to-the-jungle.com",
-        "Referer": "https://www.welcome-to-the-jungle.com/",
-    }
-    jobs = []
-    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
-                       "test engineer", "test automation", "tester",
-                       "testing", "automation engineer", "test lead",
-                       "test manager", "qa lead", "qa engineer",
-                       "software test", "software testing", "test developer",
-                       "engineer in test"]
+    """Fetch QA jobs from Welcome to the Jungle using their Algolia search API.
 
-    query = """
-    query SearchJobs($query: String!, $contractType: [String!], $remote: [String!], $page: Int) {
-      jobs(query: $query, contractType: $contractType, remote: $remote, page: $page) {
-        totalCount
-        collections {
-          id
-          name
-          slug
-          contractType {
-            en
-          }
-          office {
-            name
-            city
-            country
-          }
-          company {
-            name
-          }
-          publishedAt
-          idea {
-            description
-          }
-          compensation {
-            minSalary
-            maxSalary
-            currency
-          }
-        }
-      }
-    }
+    WTTJ rebranded from welcome-to-the-jungle.com to welcometothejungle.com.
+    The old GraphQL API no longer exists. The new site uses Algolia for job
+    search with a publicly accessible API key.
     """
+    algolia_app_id = "CSEKHVMS53"
+    algolia_api_key = "4bd8f6215d0cc52b26430765769e65a0"
+    algolia_index = "wttj_jobs_production_fr"
 
-    try:
-        resp = requests.post(
-            "https://www.welcome-to-the-jungle.com/api/graphql",
-            json={
-                "query": query,
-                "variables": {
-                    "query": "QA OR SDET OR test OR quality assurance",
-                    "contractType": None,
-                    "remote": ["remote", "full_remote"],
-                    "page": 1,
+    # QA/testing profession sub-category reference from Algolia
+    qa_sub_category = "quality-assurance-and-testing-hNDAz"
+
+    jobs = []
+
+    # Algolia returns max 1000 hits total; fetch up to 200 QA jobs across pages
+    hits_per_page = 100
+    max_pages = 2
+
+    for page in range(max_pages):
+        try:
+            resp = requests.post(
+                f"https://{algolia_app_id}-dsn.algolia.net/1/indexes/{algolia_index}/query",
+                json={
+                    "params": (
+                        f"query="
+                        f"&hitsPerPage={hits_per_page}"
+                        f"&page={page}"
+                        f"&filters=new_profession.sub_category_reference:{qa_sub_category}"
+                        f"&attributesToRetrieve="
+                        f"name,slug,organization.name,organization.slug,"
+                        f"published_at,published_at_date,"
+                        f"offices,salary_minimum,salary_maximum,"
+                        f"salary_currency,salary_period,remote,contract_type,"
+                        f"summary,new_profession,has_remote,"
+                        f"experience_level_minimum"
+                    )
                 },
-            },
-            headers=headers,
-            timeout=20,
-        )
-        if resp.status_code == 200:
+                headers={
+                    "Content-Type": "application/json",
+                    "X-Algolia-API-Key": algolia_api_key,
+                    "X-Algolia-Application-Id": algolia_app_id,
+                    "Referer": "https://www.welcometothejungle.com/fr/jobs",
+                    "Origin": "https://www.welcometothejungle.com",
+                },
+                timeout=20,
+            )
+
+            if resp.status_code != 200:
+                print(f"  WTTJ Algolia returned {resp.status_code}: {resp.text[:200]}")
+                break
+
             data = resp.json()
-            collections = data.get("data", {}).get("jobs", {}).get("collections", [])
-            for item in collections:
-                title = item.get("name", "")
-                title_lower = title.lower()
-                if not any(k in title_lower for k in filter_keywords):
-                    continue
+            hits = data.get("hits", [])
+            if not hits:
+                break
 
-                company = ""
-                if item.get("company"):
-                    company = item["company"].get("name", "")
+            for hit in hits:
+                title = hit.get("name", "")
+                org = hit.get("organization", {}) or {}
+                company = org.get("name", "")
 
-                slug = item.get("slug", "")
-                url = f"https://www.welcome-to-the-jungle.com/fr/companies/{slug}/jobs" if slug else ""
+                org_slug = org.get("slug", "")
+                job_slug = hit.get("slug", "")
+                if org_slug and job_slug:
+                    url = f"https://www.welcometothejungle.com/fr/companies/{org_slug}/jobs/{job_slug}"
+                else:
+                    url = ""
 
-                location = ""
-                office = item.get("office")
-                if office:
-                    parts = []
-                    for key in ("name", "city", "country"):
-                        if office.get(key):
-                            parts.append(office[key])
-                    location = ", ".join(parts)
-                if not location:
+                # Location from offices array
+                offices = hit.get("offices", []) or []
+                if offices:
+                    location = ", ".join(
+                        filter(None, [
+                            o.get("city", "").strip()
+                            for o in offices
+                            if o.get("city")
+                        ])
+                    )
+                    if not location:
+                        countries = set(
+                            o.get("country_code", "") for o in offices if o.get("country_code")
+                        )
+                        location = ", ".join(sorted(countries))
+                else:
                     location = "Remote"
 
+                remote = hit.get("remote", "")
+                if remote:
+                    location += f" ({remote})"
+
                 # Salary
-                comp = item.get("compensation") or {}
                 salary = ""
-                min_sal = comp.get("minSalary")
-                max_sal = comp.get("maxSalary")
-                currency = comp.get("currency", "EUR")
+                min_sal = hit.get("salary_minimum")
+                max_sal = hit.get("salary_maximum")
+                currency = hit.get("salary_currency", "EUR")
+                period = hit.get("salary_period", "yearly")
                 if min_sal or max_sal:
+                    period_label = "/yr" if period == "yearly" else "/mo"
                     if min_sal and max_sal:
-                        salary = f"{min_sal:,.0f} - {max_sal:,.0f} {currency}"
+                        if min_sal == max_sal:
+                            salary = f"{min_sal:,.0f} {currency}{period_label}"
+                        else:
+                            salary = f"{min_sal:,.0f} - {max_sal:,.0f} {currency}{period_label}"
                     elif min_sal:
-                        salary = f"From {min_sal:,.0f} {currency}"
+                        salary = f"From {min_sal:,.0f} {currency}{period_label}"
                     elif max_sal:
-                        salary = f"Up to {max_sal:,.0f} {currency}"
+                        salary = f"Up to {max_sal:,.0f} {currency}{period_label}"
 
-                # Tags
+                # Contract type as tags
                 tags = ""
-                contract = item.get("contractType") or {}
-                if contract.get("en"):
-                    tags = contract["en"]
+                contract_type = hit.get("contract_type", "")
+                contract_labels = {
+                    "full_time": "Full-time",
+                    "part_time": "Part-time",
+                    "internship": "Internship",
+                    "apprenticeship": "Apprenticeship",
+                    "freelance": "Freelance",
+                    "temporary": "Temporary",
+                    "contract": "Contract",
+                    "other": "Other",
+                    "vie": "VIE",
+                }
+                if contract_type:
+                    tags = contract_labels.get(contract_type, contract_type)
 
-                # Description
-                idea = item.get("idea") or {}
-                description = idea.get("description", "") or ""
+                # Description (summary + key missions)
+                description = hit.get("summary", "") or ""
+                key_missions = hit.get("key_missions", []) or []
+                if key_missions:
+                    if description:
+                        description += "\n\nKey missions:\n"
+                    else:
+                        description = "Key missions:\n"
+                    description += "\n".join(f"- {m}" for m in key_missions)
 
                 # Date
-                published = item.get("publishedAt", "")
+                published = hit.get("published_at", "") or ""
                 date = published[:10] if published else datetime.now().strftime("%Y-%m-%d")
                 raw_date = 0
                 if published:
@@ -957,22 +1064,33 @@ def fetch_wttj():
                     "description": description,
                     "raw_date": raw_date,
                 })
-        else:
-            print(f"  WTTJ API returned {resp.status_code}")
-    except Exception as e:
-        print(f"  WTTJ error: {e}")
+
+            # Stop if we've hit the last page
+            page_count = data.get("nbPages", 0)
+            if page + 1 >= page_count:
+                break
+
+        except Exception as e:
+            print(f"  WTTJ Algolia error (page {page}): {e}")
+            break
 
     if not jobs:
         print("  WTTJ: 0 jobs found")
+    else:
+        print(f"  WTTJ: {len(jobs)} QA jobs fetched via Algolia")
     return jobs
 
 
 def fetch_francetravail():
-    """Fetch QA jobs from France Travail (ex Pôle Emploi) API."""
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/json",
-    }
+    """Fetch QA jobs from France Travail (ex Pôle Emploi) API.
+
+    The old API at api.pole-emploi-dsp.fr no longer resolves (DNS failure).
+    The new API at api.francetravail.io requires OAuth2 authentication via
+    client credentials (client_id + client_secret). To use it, register at
+    https://developer.francetravail.io and set FRANCE_TRAVAIL_CLIENT_ID and
+    FRANCE_TRAVAIL_CLIENT_SECRET environment variables, or pre-fetch a token
+    and set FRANCE_TRAVAIL_ACCESS_TOKEN.
+    """
     jobs = []
     filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
                        "test engineer", "test automation", "tester",
@@ -981,9 +1099,50 @@ def fetch_francetravail():
                        "testeur", "recette", "qualite", "qualité",
                        "testeur logiciel", "testeur QA", "test automatise"]
 
+    # Check for France Travail API credentials
+    client_id = os.environ.get("FRANCE_TRAVAIL_CLIENT_ID", "")
+    client_secret = os.environ.get("FRANCE_TRAVAIL_CLIENT_SECRET", "")
+    access_token = os.environ.get("FRANCE_TRAVAIL_ACCESS_TOKEN", "")
+
+    if not access_token and (not client_id or not client_secret):
+        print("  France Travail: API requires OAuth2 authentication. Set FRANCE_TRAVAIL_CLIENT_ID and")
+        print("    FRANCE_TRAVAIL_CLIENT_SECRET env vars, or FRANCE_TRAVAIL_ACCESS_TOKEN.")
+        print("    Register at https://developer.francetravail.io to obtain credentials.")
+        print("  France Travail: 0 jobs (no API credentials configured)")
+        return jobs
+
     try:
+        # Obtain access token if not already set
+        if not access_token:
+            token_resp = requests.post(
+                "https://api.francetravail.io/partenaire/oauth2/token",
+                data={
+                    "grant_type": "client_credentials",
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "scope": "api_offresdemploiv2 o2dsoffre",
+                },
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                timeout=15,
+            )
+            if token_resp.status_code != 200:
+                print(f"  France Travail: failed to obtain access token (HTTP {token_resp.status_code})")
+                print(f"  France Travail: 0 jobs (authentication failure)")
+                return jobs
+            token_data = token_resp.json()
+            access_token = token_data.get("access_token", "")
+            if not access_token:
+                print("  France Travail: access token not found in response")
+                print("  France Travail: 0 jobs (authentication failure)")
+                return jobs
+
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Accept": "application/json",
+        }
+
         resp = requests.get(
-            "https://api.pole-emploi-dsp.fr/rechercheoffres",
+            "https://api.francetravail.io/partenaire/offresdemploi/v2/offres/search",
             params={
                 "motsCles": "QA OR testeur OR test OR assurance qualité",
                 "typeContrat": "MIS,CDI,CDD",  # Mission, CDI, CDD
@@ -1063,14 +1222,24 @@ def fetch_francetravail():
                     "raw_date": raw_date,
                 })
         elif resp.status_code == 401:
-            print("  France Travail API returned 401 (API key may be required, trying alternate endpoint)")
+            print("  France Travail: API returned 401 Unauthorized")
+            print("    The API requires OAuth2 authentication. Set FRANCE_TRAVAIL_CLIENT_ID and")
+            print("    FRANCE_TRAVAIL_CLIENT_SECRET env vars, or FRANCE_TRAVAIL_ACCESS_TOKEN.")
+            print("    Register at https://developer.francetravail.io to obtain credentials.")
         else:
-            print(f"  France Travail API returned {resp.status_code}")
+            print(f"  France Travail: API returned HTTP {resp.status_code}")
+            try:
+                err_detail = resp.json()
+                print(f"    Detail: {err_detail}")
+            except Exception:
+                print(f"    Response: {resp.text[:200]}")
+    except requests.exceptions.ConnectionError as e:
+        print(f"  France Travail: connection error - {e}")
     except Exception as e:
-        print(f"  France Travail error: {e}")
+        print(f"  France Travail: error - {e}")
 
     if not jobs:
-        print("  France Travail: 0 jobs found (API may require authentication)")
+        print("  France Travail: 0 jobs found")
     return jobs
 
 
@@ -1297,6 +1466,213 @@ def fetch_hn_whoishiring():
     return jobs
 
 
+def fetch_indeed():
+    """Fetch QA freelance/contract jobs from Indeed France.
+    
+    Primary: Scrape fr.indeed.com with requests+BeautifulSoup.
+    Fallback: Indeed RSS feed when captcha/block page detected.
+    """
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test", "tester", "testing", "automation",
+                       "testeur", "recette", "qualite"]
+
+    # ── Helper: check if a response is a block/captcha page ──
+    def is_block_page(html_text):
+        indicators = [
+            "captcha", "cf-challenge", "challenge-platform",
+            "verify you are human", "please verify you are a human",
+            "are you a human", "attention required", "unusual traffic",
+            "enable javascript", "please enable javascript",
+            "access denied", "blocked", "cf-browser-verify",
+        ]
+        lower = html_text.lower()
+        return any(ind in lower for ind in indicators)
+
+    # ── Helper: filter and append job dicts ──
+    def add_job(title, company, url, location, salary):
+        title_lower = title.lower()
+        if not any(k in title_lower for k in filter_keywords):
+            return
+        if url and not url.startswith("http"):
+            url = "https://fr.indeed.com" + url
+        jobs.append({
+            "title": title, "company": company, "source": "Indeed",
+            "url": url, "location": location, "salary": salary,
+            "tags": "", "description": "", "date": datetime.now().strftime("%Y-%m-%d"),
+            "raw_date": int(time.time()),
+        })
+
+    # ── Primary: scrape Indeed HTML ──
+    try:
+        base_url = "https://fr.indeed.com/jobs"
+        params = {
+            "q": "QA+testeur+test+automation",
+            "l": "France",
+            "jt": "freelance_contract",
+        }
+        resp = requests.get(base_url, params=params, headers=headers, timeout=20)
+        text = resp.text
+
+        if resp.status_code != 200 or is_block_page(text):
+            # Indeed blocked us – attempt fallback
+            print("  Indeed: blocked or captcha (status %s), trying RSS fallback..." % resp.status_code)
+            raise BlockingIOError("Blocked")
+
+        soup = BeautifulSoup(text, "html.parser")
+
+        # Indeed job cards (structure varies by region/ab-test, try multiple selectors)
+        cards = soup.select(
+            "div.job_seen_beacon, div.job-card-container, "
+            "div.job-search-item, div[class*=jobCard], "
+            "div[class*=tapItem], div.slider_container, "
+            "li.css-1ac2h1w, li[class*=job-listing]"
+        )
+        if not cards:
+            # Fallback: try Indeed's mosaic layout
+            cards = soup.select("div[data-tn-component*=jobCard], div[class*=resultContent]")
+        if not cards:
+            cards = soup.select("a[class*=jobtitle], div[class*=title]")
+        if not cards:
+            # Last resort: look for any link containing job title pattern
+            cards = soup.find_all("div", class_=lambda c: c and ("job" in c.lower() or "card" in c.lower()))
+
+        for card in cards:
+            # Title
+            title_el = (
+                card.select_one("h2.jobTitle a, h2 a, a.jobtitle, a[data-jk]")
+                or card.select_one("a[class*=title], a[id*=job], span[title]")
+                or card.select_one("a > span[class*=title]")
+            )
+            if not title_el:
+                continue
+            title = title_el.get_text(strip=True)
+
+            # URL
+            url = ""
+            link_el = title_el if title_el.name == "a" else card.find("a", href=True)
+            if link_el:
+                url = link_el.get("href", "")
+                # Indeed relative URLs
+                if url and url.startswith("/"):
+                    url = "https://fr.indeed.com" + url
+                # Indeed internal redirect
+                if "rd?to=" in url or "clk" in url:
+                    # Keep as-is, it will redirect to the actual employer page
+                    url = "https://fr.indeed.com" + url if url.startswith("/") else url
+
+            # Company
+            company_el = (
+                card.select_one("[class*=company], [data-testid=company-name]")
+                or card.select_one("span.companyName, div.company, span[class*=employer]")
+            )
+            company = company_el.get_text(strip=True) if company_el else ""
+
+            # Location
+            location_el = (
+                card.select_one("[class*=location], [data-testid=location]")
+                or card.select_one("div[class*=location], span[class*=location]")
+            )
+            location = location_el.get_text(strip=True) if location_el else "France"
+
+            # Salary
+            salary_el = (
+                card.select_one("[class*=salary], [data-testid=salary]")
+                or card.select_one("div.salaryOnly, span.salary, div[class*=salary]")
+            )
+            salary = salary_el.get_text(strip=True) if salary_el else ""
+
+            add_job(title, company, url, location, salary)
+
+    except (BlockingIOError, Exception) as e:
+        if not isinstance(e, BlockingIOError):
+            print(f"  Indeed scrape error: {e}")
+
+        # ── Fallback: Indeed RSS feed ──
+        try:
+            print("  Indeed: using RSS fallback...")
+            rss_urls = [
+                "https://fr.indeed.com/rss/jobs?q=QA+testeur+test+automation&l=France&jt=freelance_contract",
+                "https://fr.indeed.com/rss?q=QA+testeur+test+automation&l=France",
+                "https://fr.indeed.com/rss?q=QA+automation+test&l=France",
+            ]
+            fallback_jobs = set()
+            for rss_url in rss_urls:
+                if len(fallback_jobs) >= 50:
+                    break
+                try:
+                    rss_resp = requests.get(rss_url, headers=headers, timeout=15)
+                    if rss_resp.status_code != 200:
+                        continue
+                    rss_soup = BeautifulSoup(rss_resp.text, "xml")
+                    items = rss_soup.find_all("item")
+                    if not items:
+                        items = rss_soup.find_all("entry")
+                    for item in items:
+                        title = ""
+                        title_el = item.find("title")
+                        if title_el:
+                            title = title_el.get_text(strip=True)
+
+                        link = ""
+                        link_el = item.find("link")
+                        if link_el:
+                            link = link_el.get_text(strip=True) or link_el.get("href", "")
+                        if link and link.startswith("/"):
+                            link = "https://fr.indeed.com" + link
+
+                        desc = ""
+                        desc_el = item.find("description") or item.find("summary")
+                        if desc_el:
+                            desc = desc_el.get_text(strip=True)
+
+                        location = "France"
+                        salary = ""
+                        # Parse description for location and salary hints
+                        if desc:
+                            loc_match = re.search(r'(?:localisation|location|lieu)[:\s]+([^\n<,]+)', desc, re.I)
+                            if loc_match:
+                                location = loc_match.group(1).strip()
+                            sal_match = re.search(r'(\d[\d\s.,]*(?:EUR|€|\$|k|K).*?(?:jour|mois|an|hour|hr))', desc)
+                            if sal_match:
+                                salary = sal_match.group(1).strip()
+
+                        company = ""
+                        # Some RSS feeds include company in description or category
+                        cat_el = item.find("category")
+                        if cat_el:
+                            company = cat_el.get_text(strip=True)
+                        if not company and desc:
+                            co_match = re.search(r'(?:entreprise|company|societe|employer)[:\s]+([^\n<,]+)', desc, re.I)
+                            if co_match:
+                                company = co_match.group(1).strip()
+
+                        if title:
+                            # Deduplicate within fallback
+                            dedup_key = (title, company, link)
+                            if dedup_key not in fallback_jobs:
+                                fallback_jobs.add(dedup_key)
+                                add_job(title, company, link or "https://fr.indeed.com", location, salary)
+
+                except Exception as rss_e:
+                    print(f"  Indeed RSS sub-error: {rss_e}")
+                    continue
+
+        except Exception as rss_fatal:
+            print(f"  Indeed RSS fallback failed: {rss_fatal}")
+
+    if not jobs:
+        print("  Indeed: 0 jobs (blocked or no matches)")
+    else:
+        print(f"  Indeed: {len(jobs)} jobs found")
+    return jobs
+
+
 def fetch_all():
     """Fetch jobs from all sources - legacy wrapper."""
     return fetch_all_new_sources()
@@ -1322,6 +1698,7 @@ def fetch_all_new_sources():
         ("Remotive", fetch_remotive),
         ("HN Hiring", fetch_hn_whoishiring),
         ("LinkedIn Countries", fetch_linkedin_countries),
+        ("Indeed", fetch_indeed),
     ]
     
     for name, fetcher in sources:
