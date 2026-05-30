@@ -408,14 +408,14 @@
   }
   .btn-apply:hover { background: var(--accent-dim); }
   .btn-dismiss {
-    position: absolute; top: 10px; right: 10px;
-    width: 26px; height: 26px; border-radius: 50%;
-    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
-    color: var(--text-dim); font-size: 14px; cursor: pointer;
+    position: absolute; top: 8px; right: 10px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.7); font-size: 15px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s; z-index: 2;
+    transition: all 0.15s; z-index: 2; line-height: 1;
   }
-  .btn-dismiss:hover { background: rgba(255,107,107,0.15); border-color: rgba(255,107,107,0.4); color: var(--red); }
+  .btn-dismiss:hover { background: rgba(255,107,107,0.25); border-color: rgba(255,107,107,0.5); color: #ff6b6b; }
   .job-card { position: relative; }
   .btn-letter {
     padding: 5px 8px; border-radius: 7px;
@@ -597,7 +597,8 @@
       <div class="section-label"><span class="bar purple"></span> ✦ Jobs du Jour</div>
       <div class="featured-grid">
       {% for job in jobs_of_day %}
-        <a href="{{ job.url }}" target="_blank" class="featured-card" onclick="fetch('/api/job/{{ job.id }}/click');">
+        <div class="featured-card" onclick="window.open('{{ job.url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;">
+          <button class="btn-dismiss" onclick="event.stopPropagation();dismissJob({{ job.id }}, this);" title="Masquer">✕</button>
           <div class="rank">#{{ loop.index }} · {{ job.match_score }}% match</div>
           <div class="fc-title">{{ job.title }}</div>
           <div class="fc-meta">{{ job.company }} · {{ job.location }} · {{ job.date }}</div>
@@ -608,7 +609,7 @@
             <span class="fc-score"><span class="num">{{ job.match_score }}%</span> match</span>
             <span style="font-size:11px;color:var(--accent);margin-left:auto;">Postuler →</span>
           </div>
-        </a>
+        </div>
       {% endfor %}
       </div>
     </div>
@@ -620,7 +621,8 @@
       <div class="section-label"><span class="bar orange"></span> 🔥 Hot Picks — Priorité Max</div>
       <div class="featured-grid">
       {% for job in hot_picks %}
-        <a href="{{ job.url }}" target="_blank" class="featured-card" onclick="fetch('/api/job/{{ job.id }}/click');">
+        <div class="featured-card" onclick="window.open('{{ job.url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;">
+          <button class="btn-dismiss" onclick="event.stopPropagation();dismissJob({{ job.id }}, this);" title="Masquer">✕</button>
           <div class="rank">#{{ loop.index }} · {{ job.match_score }}% match</div>
           <div class="fc-title">{{ job.title }}</div>
           <div class="fc-meta">{{ job.company }} · {{ job.location }} · {{ job.date }}</div>
@@ -632,7 +634,7 @@
             {% if job.freelance_status == 'VALIDÉE' %}<span style="font-size:10px;background:var(--green-dim);color:var(--green);padding:2px 6px;border-radius:4px;">✓ Validé</span>{% endif %}
             <span style="font-size:11px;color:var(--accent);margin-left:auto;">Postuler →</span>
           </div>
-        </a>
+        </div>
       {% endfor %}
       </div>
     </div>
