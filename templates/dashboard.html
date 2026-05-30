@@ -407,6 +407,16 @@
     transition: all 0.2s;
   }
   .btn-apply:hover { background: var(--accent-dim); }
+  .btn-dismiss {
+    position: absolute; top: 10px; right: 10px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: transparent; border: 1px solid transparent;
+    color: var(--text-muted); font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; z-index: 2;
+  }
+  .btn-dismiss:hover { background: rgba(255,107,107,0.1); border-color: rgba(255,107,107,0.3); color: var(--red); }
+  .job-card { position: relative; }
   .btn-letter {
     padding: 5px 8px; border-radius: 7px;
     border: 1px solid var(--border); color: var(--text-dim);
@@ -715,6 +725,7 @@
       {% if country_data.jobs %}
       {% for job in country_data.jobs %}
         <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}">
+          <button class="btn-dismiss" onclick="dismissJob({{ job.id }}, this);event.stopPropagation();" title="Masquer">✕</button>
           <div class="jc-left">
             <div class="jc-title">
               {{ job.title }}
@@ -758,6 +769,7 @@
               <option value="phone" {% if job.pipeline_stage == 'phone' %}selected{% endif %}>Phone</option>
               <option value="interview" {% if job.pipeline_stage == 'interview' %}selected{% endif %}>Interview</option>
               <option value="offer" {% if job.pipeline_stage == 'offer' %}selected{% endif %}>Offer</option>
+              <option value="dismissed" {% if job.pipeline_stage == 'dismissed' %}selected{% endif %}>✕ Masqué</option>
             </select>
           </div>
         </div>
@@ -785,6 +797,7 @@
       {% if tous_jobs %}
       {% for job in tous_jobs %}
         <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}">
+          <button class="btn-dismiss" onclick="dismissJob({{ job.id }}, this);event.stopPropagation();" title="Masquer">✕</button>
           <div class="jc-left">
             <div class="jc-title">
               {{ job.title }}
@@ -823,6 +836,7 @@
               <option value="phone" {% if job.pipeline_stage == 'phone' %}selected{% endif %}>Phone</option>
               <option value="interview" {% if job.pipeline_stage == 'interview' %}selected{% endif %}>Interview</option>
               <option value="offer" {% if job.pipeline_stage == 'offer' %}selected{% endif %}>Offer</option>
+              <option value="dismissed" {% if job.pipeline_stage == 'dismissed' %}selected{% endif %}>✕ Masqué</option>
             </select>
           </div>
         </div>
@@ -1116,6 +1130,27 @@ function updateStage(jobId, stage) {
       sel.className = 'pipeline-select stage-' + stage;
       sel.style.borderColor = 'var(--green)';
       setTimeout(function() { sel.style.borderColor = ''; }, 1000);
+    }
+  });
+}
+
+// ── Dismiss job ──
+function dismissJob(jobId, btn) {
+  fetch('/api/job/' + jobId + '/stage', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({stage: 'dismissed'})
+  }).then(r => r.json()).then(d => {
+    var card = btn.closest('.job-card');
+    if (card) {
+      card.style.opacity = '0';
+      card.style.transform = 'translateX(20px)';
+      card.style.transition = 'all 0.25s';
+      setTimeout(function() { card.remove(); }, 250);
+      // Also hide same job in other panels
+      document.querySelectorAll('.job-card[data-id="' + jobId + '"]').forEach(function(c) {
+        if (c !== card) c.remove();
+      });
     }
   });
 }

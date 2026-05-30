@@ -373,6 +373,7 @@ def filter_jobs_by_country(country_id):
             FROM jobs 
             WHERE ({placeholders})
             AND (freelance_status IN ('VALIDÉE', 'AMBIGUË'))
+            AND (pipeline_stage IS NULL OR pipeline_stage != 'dismissed')
             GROUP BY LOWER(TRIM(title)), LOWER(TRIM(company))
         )
         ORDER BY 
