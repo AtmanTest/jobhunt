@@ -5454,14 +5454,14 @@
       "is_qa": 1,
       "applied": 0,
       "created_at": "2026-05-30 12:07:01",
-      "tech_stack": null,
+      "tech_stack": "[]",
       "seniority": null,
       "contract_type": null,
       "remote_type": null,
       "salary_min": null,
       "salary_max": null,
       "currency": null,
-      "ai_enriched": 0,
+      "ai_enriched": 1,
       "saved": 0,
       "applied_at": null,
       "viewed": 0,
@@ -5486,14 +5486,14 @@
       "is_qa": 1,
       "applied": 0,
       "created_at": "2026-05-30 12:07:02",
-      "tech_stack": null,
-      "seniority": null,
-      "contract_type": null,
+      "tech_stack": "[\"Golang\", \"Python\", \"JavaScript\", \"Playwright\", \"Postman\", \"Wiremock\", \"Docker\", \"Kubernetes\", \"GitLab CI/CD\", \"SQL\"]",
+      "seniority": "senior",
+      "contract_type": "fulltime",
       "remote_type": null,
       "salary_min": null,
       "salary_max": null,
       "currency": null,
-      "ai_enriched": 0,
+      "ai_enriched": 1,
       "saved": 0,
       "applied_at": null,
       "viewed": 0,
@@ -5633,5 +5633,5 @@
       "pipeline_stage": "new"
     }
   ],
-  "exported_at": "2026-05-30T15:01:04.016495"
+  "exported_at": "2026-05-30T16:00:56.773201"
 }
