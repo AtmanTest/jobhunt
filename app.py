@@ -1042,7 +1042,7 @@ def about():
     log_entries = []
     try:
         r = subprocess.run(
-            ["git", "log", "--oneline", "--format=%H|%s|%ar", "-30"],
+            ["git", "log", "--oneline", "--format=%H|%s|%ar"],
             capture_output=True, text=True, timeout=5,
             cwd=os.path.dirname(__file__),
         )
