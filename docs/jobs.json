@@ -3150,14 +3150,14 @@
       "is_qa": 1,
       "applied": 0,
       "created_at": "2026-05-30 22:12:17",
-      "tech_stack": null,
+      "tech_stack": "[]",
       "seniority": null,
-      "contract_type": "ambig\u00fce",
-      "remote_type": "",
+      "contract_type": null,
+      "remote_type": null,
       "salary_min": null,
       "salary_max": null,
       "currency": null,
-      "ai_enriched": 0,
+      "ai_enriched": 1,
       "saved": 0,
       "applied_at": null,
       "viewed": 0,
@@ -6401,5 +6401,5 @@
       "pipeline_stage": "new"
     }
   ],
-  "exported_at": "2026-05-31T11:05:34.276785"
+  "exported_at": "2026-05-31T12:02:09.273883"
 }
