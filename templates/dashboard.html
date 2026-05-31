@@ -1317,11 +1317,9 @@ function updateStage(jobId, stage) {
     dd.style.display = dd.style.display === 'none' ? '' : 'none';
   };
 
-  // Logout
   window.logout = function() {
     fetch('/api/auth/logout', {method:'POST'}).then(() => location.reload());
   };
-}
 
 // ── Dismiss job ──
 function dismissJob(jobId, btn) {
