@@ -1931,6 +1931,136 @@ def fetch_malt():
     return jobs
 
 
+def fetch_jeanmichel():
+    """Fetch QA jobs from Jean-Michel.io (French IT freelance/CDI platform) via their API."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "application/json",
+    }
+    jobs = []
+
+    # Search both CDI and freelance contracts
+    contracts = ["cdi", "freelance"]
+    base_url = "https://sebs.jean-michel.io/offers"
+
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test engineer", "test automation", "tester",
+                       "testing", "automation engineer", "qa lead", "qa engineer",
+                       "test lead", "testeur", "recette", "qualité", "qualite"]
+
+    for contract in contracts:
+        page = 1
+        nb_pages = 1
+        while page <= nb_pages:
+            try:
+                params = {
+                    "page": page,
+                    "query": "QA test qualité",
+                    "sortBy": "pertinence",
+                    "includeUnknownRemote": "true",
+                    "minExperience": 0,
+                    "maxExperience": 20,
+                    "includeUnknownExperience": "true",
+                    "minTjm": 0,
+                    "includeOnRequestRemuneration": "true",
+                    "contract": contract,
+                }
+                qs = "&".join(f"{k}={v}" for k, v in params.items())
+                url = f"{base_url}?{qs}"
+                resp = requests.get(url, headers=headers, timeout=15)
+                if resp.status_code != 200:
+                    print(f"  Jean-Michel.io ({contract}) page {page}: HTTP {resp.status_code}")
+                    break
+
+                data = resp.json()
+                nb_pages = data.get("nbPages", 1)
+                offers = data.get("offers", [])
+
+                for item in offers:
+                    title = item.get("title", "")
+                    title_lower = title.lower()
+                    if not any(k in title_lower for k in filter_keywords):
+                        continue
+
+                    company = ""
+                    if isinstance(item.get("company"), dict):
+                        company = item["company"].get("name", "")
+
+                    location = ""
+                    if isinstance(item.get("city"), dict):
+                        location = item["city"].get("name", "")
+
+                    offer_id = item.get("id")
+                    offer_url = f"https://consultant.jean-michel.io/annonces/{offer_id}" if offer_id else ""
+
+                    # Salary / TJM
+                    salary = ""
+                    salary_min = item.get("salaryMin")
+                    salary_max = item.get("salaryMax")
+                    tjm_min = item.get("tjmMin")
+                    tjm_max = item.get("tjmMax")
+
+                    if salary_min or salary_max:
+                        if salary_min and salary_max:
+                            salary = f"{salary_min} - {salary_max} €/an"
+                        elif salary_min:
+                            salary = f"From {salary_min} €/an"
+                        elif salary_max:
+                            salary = f"Up to {salary_max} €/an"
+                    if tjm_min or tjm_max:
+                        tjm_str = ""
+                        if tjm_min and tjm_max:
+                            tjm_str = f"{tjm_min} - {tjm_max} €/jour"
+                        elif tjm_min:
+                            tjm_str = f"{tjm_min} €/jour"
+                        elif tjm_max:
+                            tjm_str = f"{tjm_max} €/jour"
+                        if tjm_str:
+                            salary = f"{tjm_str}" if not salary else f"{salary} | {tjm_str}"
+
+                    remote_days = item.get("remoteDaysPerWeek")
+                    tags = item["contract"] if item.get("contract") else ""
+                    if remote_days is not None:
+                        tags += f", {remote_days}j télétravail/sem"
+                    category = item.get("category", "")
+                    if category:
+                        tags += f", {category}" if tags else category
+
+                    desc = item.get("description", "") or ""
+                    # Clean HTML from description
+                    import re as _re
+                    desc = _re.sub(r"<[^>]+>", " ", desc)
+                    desc = _re.sub(r"\s+", " ", desc).strip()
+
+                    pub_date = item.get("publishDate", "")
+                    date = pub_date[:10] if pub_date else datetime.now().strftime("%Y-%m-%d")
+
+                    jobs.append({
+                        "title": title,
+                        "company": company,
+                        "source": "Jean-Michel.io",
+                        "url": offer_url,
+                        "location": location,
+                        "salary": salary,
+                        "tags": tags,
+                        "description": desc[:2000],
+                        "date": date,
+                        "raw_date": int(time.time()),
+                        "contract_type": "freelance" if "freelance" in (item.get("contract") or "") else contract,
+                    })
+
+                page += 1
+                time.sleep(0.5)
+
+            except Exception as e:
+                print(f"  Jean-Michel.io ({contract}) page {page} error: {e}")
+                break
+
+    if not jobs:
+        print("  Jean-Michel.io: 0 QA jobs found")
+    return jobs
+
+
 def fetch_all():
     """Fetch jobs from all sources - legacy wrapper."""
     return fetch_all_new_sources()
@@ -1959,6 +2089,7 @@ def fetch_all_new_sources():
         ("Indeed", fetch_indeed),
         ("Comet", fetch_comet),
         ("Malt", fetch_malt),
+        ("Jean-Michel.io", fetch_jeanmichel),
     ]
     
     for name, fetcher in sources:
