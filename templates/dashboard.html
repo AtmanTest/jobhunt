@@ -400,6 +400,7 @@
     cursor: pointer;
     transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
     display: flex; justify-content: space-between; align-items: flex-start; gap: 14px;
+    position: relative;
   }
   .job-card:hover {
     background: var(--card-hover);
@@ -1277,7 +1278,10 @@ function updateStage(jobId, stage) {
       var ws = document.getElementById('welcome-section');
       if (ws) { ws.style.display = ''; }
       var wn = document.getElementById('welcome-name');
-      if (wn) { wn.textContent = (d.full_name || '').split(' ')[0] + ' 👋' || '👋'; }
+      if (wn) {
+        var first = (d.full_name || d.email || '').split(' ')[0].split('@')[0];
+        wn.textContent = first ? first.charAt(0).toUpperCase() + first.slice(1) + ' 👋' : '👋';
+      }
       var wh = document.getElementById('welcome-headline');
       if (wh) { wh.textContent = d.headline || 'Bienvenue sur ton tableau de bord'; }
     } else {
