@@ -2607,6 +2607,8 @@ def get_jobs(filters=None):
             query += " AND saved = 1"
         if filters.get("applied_filter"):
             query += " AND applied = 1"
+        if filters.get("not_dismissed"):
+            query += " AND (pipeline_stage IS NULL OR pipeline_stage != 'dismissed')"
     
     query += " ORDER BY raw_date DESC, date DESC LIMIT 200"
     
@@ -2619,7 +2621,7 @@ def get_jobs(filters=None):
 def export_static_json(output_path="docs/jobs.json"):
     """Export jobs to JSON for the static site."""
     import json, os
-    jobs = get_jobs({"qa_only": True})
+    jobs = get_jobs({"qa_only": True, "not_dismissed": True})
     # Clean up for export - keep new enriched fields
     for j in jobs:
         j.pop("description", None)
