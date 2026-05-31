@@ -9,3 +9,7 @@ services:
         value: 3.12
       - key: RENDER
         value: "true"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
