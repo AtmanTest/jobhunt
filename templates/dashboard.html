@@ -1345,6 +1345,25 @@ function updateStage(jobId, stage) {
   };
 
 // ── Dismiss job ──
+function updateAllCounts() {
+  var total = 0;
+  document.querySelectorAll('.country-btn').forEach(function(btn) {
+    var tab = btn.dataset.tab;
+    if (tab === 'linkedin') return;
+    var panel = document.getElementById('panel-' + tab);
+    var badge = btn.querySelector('.badge');
+    var count = 0;
+    if (panel) {
+      count = panel.querySelectorAll('.job-card:not(.filtered-out)').length;
+    }
+    if (badge) badge.textContent = count;
+    if (tab !== 'tous') total += count;
+  });
+  // Update Marchés actifs hero
+  var mkt = document.getElementById('total-markets');
+  if (mkt) mkt.textContent = total;
+}
+
 function dismissJob(jobId, btn) {
   fetch('/api/job/' + jobId + '/stage', {
     method: 'POST',
@@ -1356,7 +1375,10 @@ function dismissJob(jobId, btn) {
       card.style.opacity = '0';
       card.style.transform = 'translateX(20px)';
       card.style.transition = 'all 0.25s';
-      setTimeout(function() { card.remove(); }, 250);
+      setTimeout(function() {
+        card.remove();
+        updateAllCounts();
+      }, 250);
       // Also hide same job in other panels
       document.querySelectorAll('.job-card[data-id="' + jobId + '"]').forEach(function(c) {
         if (c !== card) c.remove();
