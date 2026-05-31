@@ -864,7 +864,7 @@
               <span>📍 {% if is_idf %}<span class="loc-idf">{{ job.location }}</span>{% else %}{{ job.location }}{% endif %}</span>
               {% if job.salary %}<span>💰 {{ job.salary }}</span>{% endif %}
               <span>📅 {{ job.date }}</span>
-              <span class="badge-source">{{ job.source }}</span>
+              <a href="{% if 'Jean-Michel' in job.source %}https://jean-michel.io{% elif 'RemoteOK' in job.source %}https://remoteok.com{% elif 'WTTJ' in job.source %}https://wttj.com{% elif 'LinkedIn' in job.source %}https://linkedin.com{% elif 'WWR' in job.source %}https://weworkremotely.com{% elif 'Free-Work' in job.source %}https://free-work.com{% elif 'Indeed' in job.source %}https://indeed.com{% elif 'Malt' in job.source %}https://malt.fr{% elif 'Comet' in job.source %}https://comet.co{% elif 'Otta' in job.source %}https://otta.com{% endif %}" target="_blank" class="badge-source" style="text-decoration:none;">{{ job.source }}</a>
             </div>
             {% if job.matched_skills %}
             <div class="jc-tags">
@@ -937,7 +937,7 @@
               <span>📍 {% if is_idf %}<span class="loc-idf">{{ job.location }}</span>{% else %}{{ job.location }}{% endif %}</span>
               {% if job.salary %}<span>💰 {{ job.salary }}</span>{% endif %}
               <span>📅 {{ job.date }}</span>
-              <span class="badge-source">{{ job.source }}</span>
+              <a href="{% if 'Jean-Michel' in job.source %}https://jean-michel.io{% elif 'RemoteOK' in job.source %}https://remoteok.com{% elif 'WTTJ' in job.source %}https://wttj.com{% elif 'LinkedIn' in job.source %}https://linkedin.com{% elif 'WWR' in job.source %}https://weworkremotely.com{% elif 'Free-Work' in job.source %}https://free-work.com{% elif 'Indeed' in job.source %}https://indeed.com{% elif 'Malt' in job.source %}https://malt.fr{% elif 'Comet' in job.source %}https://comet.co{% elif 'Otta' in job.source %}https://otta.com{% endif %}" target="_blank" class="badge-source" style="text-decoration:none;">{{ job.source }}</a>
             </div>
             {% if job.matched_skills %}
             <div class="jc-tags">
