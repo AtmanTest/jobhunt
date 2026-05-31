@@ -1,1 +1,5 @@
-1.3.0
+# Version: x.y.z
+# x = majeure (redesign, gros changements)
+# y = mineure (nouvelles features)
+# z = patch (fix, optimisations)
+1.4.0

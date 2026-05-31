@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 jobs.db
 .qa_runs/
+__pycache__/

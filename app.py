@@ -769,6 +769,38 @@ def api_deepseek_balance():
         return jsonify({"balance": 0, "error": str(e), "live": False}), 200
 
 
+# ─── Supabase Status ──────────────────────────────────────
+
+@app.route("/api/supabase/status")
+def api_supabase_status():
+    """Check Supabase connection status."""
+    url = os.environ.get("SUPABASE_URL", "")
+    key = os.environ.get("SUPABASE_KEY", "")
+    if not url or not key:
+        env_path = os.path.expanduser("~/.hermes/.env")
+        if os.path.exists(env_path):
+            with open(env_path) as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("SUPABASE_URL="):
+                        url = line.split("=", 1)[1].strip().strip("\"'")
+                    elif line.startswith("SUPABASE_KEY="):
+                        key = line.split("=", 1)[1].strip().strip("'\"")
+    if not url or not key:
+        return jsonify({"connected": False, "error": "not configured"})
+    try:
+        resp = requests.get(
+            f"{url}/rest/v1/jobs?select=id&limit=1",
+            headers={"apikey": key, "Authorization": f"Bearer {key}"},
+            timeout=5,
+        )
+        if resp.status_code == 200:
+            return jsonify({"connected": True, "status": "ok"})
+        return jsonify({"connected": False, "status": f"HTTP {resp.status_code}"})
+    except Exception as e:
+        return jsonify({"connected": False, "error": str(e)[:100]})
+
+
 LINKEDIN_JOBS_FILE = os.path.join(os.path.dirname(__file__), "linkedin_jobs.json")
 
 

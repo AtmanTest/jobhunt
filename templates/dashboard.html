@@ -871,6 +871,7 @@
   <!-- Footer -->
   <div class="footer">
     JobHunt · v{{ version }} · <a href="{{ url_for('changelog') }}">Changelog</a> · <a href="{{ url_for('about') }}">À propos</a>
+    <span id="supabase-badge" style="font-size:11px;opacity:0.6;margin-left:8px;">☁️ ...</span>
   </div>
 
 </div><!-- /app -->
@@ -1134,6 +1135,22 @@ function updateStage(jobId, stage) {
       setTimeout(function() { sel.style.borderColor = ''; }, 1000);
     }
   });
+
+  // Check Supabase status
+  fetch('/api/supabase/status')
+    .then(r => r.json())
+    .then(d => {
+      const badge = document.getElementById('supabase-badge');
+      if (badge) {
+        badge.textContent = d.connected ? '☁️ Supabase ✅' : '☁️ Supabase ❌';
+        badge.style.color = d.connected ? 'var(--green)' : 'var(--red)';
+        badge.style.opacity = d.connected ? '0.5' : '0.7';
+      }
+    })
+    .catch(() => {
+      const badge = document.getElementById('supabase-badge');
+      if (badge) badge.textContent = '☁️ Supabase ❌';
+    });
 }
 
 // ── Dismiss job ──

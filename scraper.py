@@ -10,6 +10,58 @@ import time
 import json
 import os
 import re
+import urllib.request
+import urllib.error
+
+
+# ─── Supabase integration ────────────────────────────────────
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    env_path = os.path.expanduser("~/.hermes/.env")
+    if os.path.exists(env_path):
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("SUPABASE_URL="):
+                    SUPABASE_URL = line.split("=", 1)[1].strip().strip("\"'")
+                elif line.startswith("SUPABASE_KEY="):
+                    SUPABASE_KEY = line.split("=", 1)[1].strip().strip("'\"")
+
+_SUPABASE_BASE = f"{SUPABASE_URL}/rest/v1" if SUPABASE_URL else ""
+_SUPABASE_HEADERS = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": f"Bearer {SUPABASE_KEY}",
+    "Content-Type": "application/json",
+} if SUPABASE_KEY else {}
+
+
+def _supabase_reachable():
+    return bool(SUPABASE_URL and SUPABASE_KEY)
+
+
+def _supabase_bulk_upsert(table, records):
+    """Upsert records into Supabase table. Falls back silently on failure."""
+    if not _supabase_reachable() or not records:
+        return
+    for i in range(0, len(records), 100):
+        batch = records[i:i+100]
+        body = json.dumps(batch).encode()
+        req = urllib.request.Request(
+            f"{_SUPABASE_BASE}/{table}",
+            data=body,
+            headers={**_SUPABASE_HEADERS, "Prefer": "resolution=merge-duplicates"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=15):
+                pass
+        except Exception:
+            pass  # silent fallback
+
+
+# ─────────────────────────────────────────────────────────────
 
 
 SOURCES = [
@@ -2358,6 +2410,20 @@ def save_jobs(jobs):
     
     conn.commit()
     conn.close()
+    
+    # Sync new jobs to Supabase
+    if new_count > 0 and _supabase_reachable():
+        # Re-fetch the new jobs to get assigned IDs, then upsert
+        try:
+            conn2 = get_db()
+            all_jobs = [dict(r) for r in conn2.execute(
+                "SELECT * FROM jobs ORDER BY id DESC LIMIT ?", (new_count,)
+            ).fetchall()]
+            conn2.close()
+            _supabase_bulk_upsert("jobs", all_jobs)
+        except Exception:
+            pass
+    
     return new_count
 
 
@@ -2432,6 +2498,18 @@ def export_static_json(output_path="docs/jobs.json"):
     with open(output_path, "w") as f:
         json.dump({"jobs": jobs, "exported_at": datetime.now().isoformat()}, f, indent=2)
     print(f"✓ Exported {len(jobs)} jobs to {output_path}")
+    
+    # Also sync full dataset to Supabase
+    if _supabase_reachable():
+        try:
+            conn = get_db()
+            all_jobs = [dict(r) for r in conn.execute("SELECT * FROM jobs").fetchall()]
+            conn.close()
+            _supabase_bulk_upsert("jobs", all_jobs)
+            print(f"  ✓ Synced {len(all_jobs)} jobs to Supabase")
+        except Exception as e:
+            print(f"  ✗ Supabase sync failed: {e}")
+    
     return len(jobs)
 
 
@@ -2444,6 +2522,14 @@ def mark_applied(job_id, cover_letter=""):
                  (job_id, cover_letter))
     conn.commit()
     conn.close()
+    
+    # Sync to Supabase
+    if _supabase_reachable():
+        try:
+            _supabase_bulk_upsert("jobs", [{"id": job_id, "applied": 1, "cover_letter": cover_letter}])
+            _supabase_bulk_upsert("applications", [{"job_id": job_id, "cover_letter": cover_letter, "status": "applied"}])
+        except Exception:
+            pass
 
 
 def get_stats():
