@@ -310,7 +310,7 @@
   .top-match-card .tm-company { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
   .top-match-card .tm-source {
     font-size: 9px; text-transform: uppercase; letter-spacing: 1px;
-    color: var(--text-muted); margin-top: 6px;
+    color: var(--orange); margin-top: 6px;
   }
 
   /* ── Main Filter Bar ── */
@@ -452,11 +452,22 @@
   .badge-source {
     font-size: 8px; text-transform: uppercase; letter-spacing: 1px;
     padding: 1px 6px; border-radius: 3px;
-    border: 1px solid var(--border); color: var(--text-muted);
+    border: 1px solid var(--border); color: var(--orange);
   }
   .badge-status-VALIDÉE { background: var(--green-dim); color: var(--green); }
   .badge-status-AMBIGUË { background: rgba(255,159,67,0.15); color: var(--orange); }
   .badge-status-REJETÉE { background: rgba(255,107,107,0.15); color: var(--red); }
+
+  .badge-source-orange {
+    font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 2px 8px; border-radius: 4px;
+    background: rgba(255,159,67,0.18); color: #ffb84d; border: 1px solid rgba(255,159,67,0.3);
+  }
+  .loc-idf {
+    background: linear-gradient(135deg, rgba(255,107,107,0.12), rgba(255,159,67,0.12));
+    padding: 1px 6px; border-radius: 4px;
+    color: #ff8a5c; font-weight: 500;
+  }
 
   .btn-apply {
     padding: 5px 12px; border-radius: 7px;
@@ -699,7 +710,10 @@
           <button class="btn-dismiss" onclick="event.stopPropagation();dismissJob({{ job.id }}, this);" title="Masquer">✕</button>
           <div class="rank">#{{ loop.index }} · {{ job.match_score }}% match</div>
           <div class="fc-title">{{ job.title }}</div>
-          <div class="fc-meta">{{ job.company }} · {{ job.location }} · {{ job.date }}</div>
+          {% set loc = job.location | lower %}
+          {% set is_idf = 'paris' in loc or 'boulogne' in loc or 'nanterre' in loc or 'courbevoie' in loc or 'levallois' in loc or 'issy' in loc or 'montreuil' in loc or 'vincennes' in loc or 'puteaux' in loc or 'clichy' in loc or 'neuilly' in loc or 'suresnes' in loc or 'rueil' in loc or 'noisy' in loc or 'saint-denis' in loc or 'vitry' in loc or 'créteil' in loc %}
+          <div class="fc-meta">{{ job.company }} · <span{% if is_idf %} class="loc-idf"{% endif %}>{{ job.location }}</span> · {{ job.date }}</div>
+          <div style="margin-top:4px;"><span class="badge-source-orange">{{ job.source }}</span></div>
           {% if job.matched_skills %}
           <div class="fc-skills">{% for s in job.matched_skills %}<span>{{ s }}</span>{% endfor %}</div>
           {% endif %}
@@ -723,13 +737,15 @@
           <button class="btn-dismiss" onclick="event.stopPropagation();dismissJob({{ job.id }}, this);" title="Masquer">✕</button>
           <div class="rank">#{{ loop.index }} · {{ job.match_score }}% match</div>
           <div class="fc-title">{{ job.title }}</div>
-          <div class="fc-meta">{{ job.company }} · {{ job.location }} · {{ job.date }}</div>
+          {% set loc = job.location | lower %}
+          {% set is_idf = 'paris' in loc or 'boulogne' in loc or 'nanterre' in loc or 'courbevoie' in loc or 'levallois' in loc or 'issy' in loc or 'montreuil' in loc or 'vincennes' in loc or 'puteaux' in loc or 'clichy' in loc or 'neuilly' in loc or 'suresnes' in loc or 'rueil' in loc or 'noisy' in loc or 'saint-denis' in loc or 'vitry' in loc or 'créteil' in loc %}
+          <div class="fc-meta">{{ job.company }} · <span{% if is_idf %} class="loc-idf"{% endif %}>{{ job.location }}</span> · {{ job.date }}</div>
+          <div style="margin-top:4px;"><span class="badge-source-orange">{{ job.source }}</span></div>
           {% if job.matched_skills %}
           <div class="fc-skills">{% for s in job.matched_skills %}<span>{{ s }}</span>{% endfor %}</div>
           {% endif %}
           <div style="display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:4px;">
             <span class="fc-score"><span class="num">{{ job.match_score }}%</span> match</span>
-            {% if job.freelance_status == 'VALIDÉE' %}<span style="font-size:10px;background:var(--green-dim);color:var(--green);padding:2px 6px;border-radius:4px;">✓ Validé</span>{% endif %}
             <span style="font-size:11px;color:var(--accent);margin-left:auto;">Postuler →</span>
           </div>
         </div>
@@ -839,11 +855,12 @@
             </div>
             <div class="jc-company">{{ job.company }}</div>
             <div class="jc-meta">
-              <span>📍 {{ job.location }}</span>
+{% set loc = job.location | lower %}
+{% set is_idf = 'paris' in loc or 'boulogne' in loc or 'nanterre' in loc or 'courbevoie' in loc or 'levallois' in loc or 'issy' in loc or 'montreuil' in loc or 'vincennes' in loc or 'puteaux' in loc or 'clichy' in loc or 'neuilly' in loc or 'suresnes' in loc or 'rueil' in loc or 'noisy' in loc or 'saint-denis' in loc or 'vitry' in loc or 'créteil' in loc %}
+              <span>📍 {% if is_idf %}<span class="loc-idf">{{ job.location }}</span>{% else %}{{ job.location }}{% endif %}</span>
               {% if job.salary %}<span>💰 {{ job.salary }}</span>{% endif %}
               <span>📅 {{ job.date }}</span>
               <span class="badge-source">{{ job.source }}</span>
-              {% if job.freelance_status %}<span class="badge-status-{{ job.freelance_status }}">{{ job.freelance_status }}</span>{% endif %}
             </div>
             {% if job.matched_skills %}
             <div class="jc-tags">
@@ -911,11 +928,12 @@
             </div>
             <div class="jc-company">{{ job.company }}</div>
             <div class="jc-meta">
-              <span>📍 {{ job.location }}</span>
+{% set loc = job.location | lower %}
+{% set is_idf = 'paris' in loc or 'boulogne' in loc or 'nanterre' in loc or 'courbevoie' in loc or 'levallois' in loc or 'issy' in loc or 'montreuil' in loc or 'vincennes' in loc or 'puteaux' in loc or 'clichy' in loc or 'neuilly' in loc or 'suresnes' in loc or 'rueil' in loc or 'noisy' in loc or 'saint-denis' in loc or 'vitry' in loc or 'créteil' in loc %}
+              <span>📍 {% if is_idf %}<span class="loc-idf">{{ job.location }}</span>{% else %}{{ job.location }}{% endif %}</span>
               {% if job.salary %}<span>💰 {{ job.salary }}</span>{% endif %}
               <span>📅 {{ job.date }}</span>
               <span class="badge-source">{{ job.source }}</span>
-              {% if job.freelance_status %}<span class="badge-status-{{ job.freelance_status }}">{{ job.freelance_status }}</span>{% endif %}
             </div>
             {% if job.matched_skills %}
             <div class="jc-tags">
