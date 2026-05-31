@@ -5,7 +5,7 @@ Lance avec: python3 app.py
 Ouvre: http://localhost:5050
 """
 
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 import sqlite3
 import json
 import os
@@ -14,6 +14,28 @@ import threading
 import requests
 import time
 from datetime import datetime
+import uuid
+
+# ─── Supabase Auth ───────────────────────────────────────────
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
+if not SUPABASE_URL or not SUPABASE_KEY:
+    env_path = os.path.expanduser("~/.hermes/.env")
+    if os.path.exists(env_path):
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("SUPABASE_URL="):
+                    SUPABASE_URL = line.split("=", 1)[1].strip().strip("\"'")
+                elif line.startswith("SUPABASE_KEY="):
+                    SUPABASE_KEY = line.split("=", 1)[1].strip().strip("'\"")
+
+_supabase_auth = None
+try:
+    from supabase import create_client
+    _supabase_auth = create_client(SUPABASE_URL, SUPABASE_KEY).auth if SUPABASE_URL and SUPABASE_KEY else None
+except Exception:
+    pass
 
 # Import scraper
 import sys
@@ -190,6 +212,103 @@ def clean_linkedin_url(url):
 
 app.jinja_env.filters['clean_url'] = clean_linkedin_url
 app.secret_key = "jobhunt-secret-2026"
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
+# ─── Auth helpers ──────────────────────────────────────────────
+
+def get_user_id():
+    """Get current user_id from session. Returns None if not logged in."""
+    return session.get('user_id')
+
+def require_auth():
+    """Redirect to login if not authenticated. For page routes."""
+    if not get_user_id():
+        return False
+    return True
+
+def auth_headers(user_id=None):
+    """Get Supabase headers filtered by user_id. Falls back to public data."""
+    uid = user_id or get_user_id()
+    if uid:
+        return {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+    return {}
+
+
+# ─── Auth Routes ──────────────────────────────────────────────
+
+@app.route("/login")
+def login_page():
+    if get_user_id():
+        return redirect(url_for("index"))
+    return render_template("login.html")
+
+
+@app.route("/api/auth/signup", methods=["POST"])
+def api_auth_signup():
+    if not _supabase_auth:
+        return jsonify({"error": "Supabase auth not configured"}), 500
+    data = request.get_json() or {}
+    email = data.get("email", "").strip()
+    password = data.get("password", "")
+    if not email or not password:
+        return jsonify({"error": "Email et mot de passe requis"}), 400
+    if len(password) < 6:
+        return jsonify({"error": "Mot de passe : min 6 caractères"}), 400
+    try:
+        res = _supabase_auth.sign_up({"email": email, "password": password})
+        user = res.user
+        if user:
+            session['user_id'] = user.id
+            session['email'] = email
+            return jsonify({"ok": True, "user_id": user.id})
+        return jsonify({"error": "Échec de l'inscription"}), 400
+    except Exception as e:
+        msg = str(e)
+        if "already registered" in msg.lower() or "duplicate" in msg.lower() or "already exists" in msg.lower():
+            return jsonify({"error": "Cet email est déjà utilisé. Connecte-toi."}), 400
+        return jsonify({"error": msg[:100]}), 400
+
+
+@app.route("/api/auth/login", methods=["POST"])
+def api_auth_login():
+    if not _supabase_auth:
+        return jsonify({"error": "Supabase auth not configured"}), 500
+    data = request.get_json() or {}
+    email = data.get("email", "").strip()
+    password = data.get("password", "")
+    try:
+        res = _supabase_auth.sign_in_with_password({"email": email, "password": password})
+        user = res.user
+        if user:
+            session['user_id'] = user.id
+            session['email'] = email
+            return jsonify({"ok": True, "user_id": user.id})
+        return jsonify({"error": "Email ou mot de passe incorrect"}), 401
+    except Exception as e:
+        msg = str(e)
+        if "invalid" in msg.lower() or "wrong" in msg.lower():
+            return jsonify({"error": "Email ou mot de passe incorrect"}), 401
+        return jsonify({"error": msg[:100]}), 401
+
+
+@app.route("/api/auth/logout", methods=["POST"])
+def api_auth_logout():
+    session.clear()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/auth/me")
+def api_auth_me():
+    """Return current user info."""
+    uid = get_user_id()
+    if not uid:
+        return jsonify({"authenticated": False})
+    return jsonify({
+        "authenticated": True,
+        "user_id": uid,
+        "email": session.get("email"),
+    })
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "jobs.db")
 GITHUB_JOBS_URL = "https://raw.githubusercontent.com/AtmanTest/jobhunt/main/docs/jobs.json"

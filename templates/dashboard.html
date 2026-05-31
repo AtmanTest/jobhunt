@@ -872,6 +872,7 @@
   <div class="footer">
     JobHunt · v{{ version }} · <a href="{{ url_for('changelog') }}">Changelog</a> · <a href="{{ url_for('about') }}">À propos</a>
     <span id="supabase-badge" style="font-size:11px;opacity:0.6;margin-left:8px;">☁️ ...</span>
+    <span id="user-badge" style="font-size:11px;margin-left:8px;"></span>
   </div>
 
 </div><!-- /app -->
@@ -1151,6 +1152,24 @@ function updateStage(jobId, stage) {
       const badge = document.getElementById('supabase-badge');
       if (badge) badge.textContent = '☁️ Supabase ❌';
     });
+
+  // Check auth status
+  fetch('/api/auth/me')
+    .then(r => r.json())
+    .then(d => {
+      const badge = document.getElementById('user-badge');
+      if (!badge) return;
+      if (d.authenticated) {
+        badge.innerHTML = '👤 ' + d.email + ' <a href="#" onclick="logout();return false;" style="color:#888;font-size:11px;">déconnexion</a>';
+      } else {
+        badge.innerHTML = '<a href="/login" style="color:#4f46e5;font-size:11px;">🔑 connexion</a>';
+      }
+    });
+
+  // Logout
+  window.logout = function() {
+    fetch('/api/auth/logout', {method:'POST'}).then(() => location.reload());
+  };
 }
 
 // ── Dismiss job ──
