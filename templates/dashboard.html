@@ -713,7 +713,9 @@
           {% set loc = job.location | lower %}
           {% set is_idf = 'paris' in loc or 'boulogne' in loc or 'nanterre' in loc or 'courbevoie' in loc or 'levallois' in loc or 'issy' in loc or 'montreuil' in loc or 'vincennes' in loc or 'puteaux' in loc or 'clichy' in loc or 'neuilly' in loc or 'suresnes' in loc or 'rueil' in loc or 'noisy' in loc or 'saint-denis' in loc or 'vitry' in loc or 'créteil' in loc %}
           <div class="fc-meta">{{ job.company }} · <span{% if is_idf %} class="loc-idf"{% endif %}>{{ job.location }}</span> · {{ job.date }}</div>
-          <div style="margin-top:4px;"><span class="badge-source-orange">{{ job.source }}</span></div>
+          <div style="margin-top:4px;">
+            <a href="{% if 'Jean-Michel' in job.source %}https://jean-michel.io{% elif 'RemoteOK' in job.source %}https://remoteok.com{% elif 'WTTJ' in job.source %}https://wttj.com{% elif 'LinkedIn' in job.source %}https://linkedin.com{% elif 'WWR' in job.source %}https://weworkremotely.com{% elif 'Free-Work' in job.source %}https://free-work.com{% elif 'Indeed' in job.source %}https://indeed.com{% endif %}" target="_blank" class="badge-source-orange" style="text-decoration:none;display:inline-block;">{{ job.source }}</a>
+          </div>
           {% if job.matched_skills %}
           <div class="fc-skills">{% for s in job.matched_skills %}<span>{{ s }}</span>{% endfor %}</div>
           {% endif %}
@@ -740,7 +742,9 @@
           {% set loc = job.location | lower %}
           {% set is_idf = 'paris' in loc or 'boulogne' in loc or 'nanterre' in loc or 'courbevoie' in loc or 'levallois' in loc or 'issy' in loc or 'montreuil' in loc or 'vincennes' in loc or 'puteaux' in loc or 'clichy' in loc or 'neuilly' in loc or 'suresnes' in loc or 'rueil' in loc or 'noisy' in loc or 'saint-denis' in loc or 'vitry' in loc or 'créteil' in loc %}
           <div class="fc-meta">{{ job.company }} · <span{% if is_idf %} class="loc-idf"{% endif %}>{{ job.location }}</span> · {{ job.date }}</div>
-          <div style="margin-top:4px;"><span class="badge-source-orange">{{ job.source }}</span></div>
+          <div style="margin-top:4px;">
+            <a href="{% if 'Jean-Michel' in job.source %}https://jean-michel.io{% elif 'RemoteOK' in job.source %}https://remoteok.com{% elif 'WTTJ' in job.source %}https://wttj.com{% elif 'LinkedIn' in job.source %}https://linkedin.com{% elif 'WWR' in job.source %}https://weworkremotely.com{% elif 'Free-Work' in job.source %}https://free-work.com{% elif 'Indeed' in job.source %}https://indeed.com{% endif %}" target="_blank" class="badge-source-orange" style="text-decoration:none;display:inline-block;">{{ job.source }}</a>
+          </div>
           {% if job.matched_skills %}
           <div class="fc-skills">{% for s in job.matched_skills %}<span>{{ s }}</span>{% endfor %}</div>
           {% endif %}

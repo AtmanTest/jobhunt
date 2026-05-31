@@ -1278,6 +1278,22 @@ function isIdf(location) {
     return idfCities.some(function(city) { return loc.includes(city); });
 }
 
+function getSourceUrl(source) {
+    if (!source) return '#';
+    var s = source.toLowerCase();
+    if (s.includes('jean-michel')) return 'https://jean-michel.io';
+    if (s.includes('remoteok')) return 'https://remoteok.com';
+    if (s.includes('wttj') || s.includes('welcome to the jungle')) return 'https://wttj.com';
+    if (s.includes('linkedin')) return 'https://linkedin.com';
+    if (s.includes('wwr') || s.includes('weworkremotely')) return 'https://weworkremotely.com';
+    if (s.includes('free-work')) return 'https://free-work.com';
+    if (s.includes('indeed')) return 'https://indeed.com';
+    if (s.includes('malt')) return 'https://malt.fr';
+    if (s.includes('comet')) return 'https://comet.co';
+    if (s.includes('otta')) return 'https://otta.com';
+    return '#';
+}
+
 function renderActiveFilters() {
     var container = document.getElementById('activeFilterChips');
     var chips = [];
@@ -1362,7 +1378,7 @@ function renderAllJobs() {
             '</div>' +
             '<div class="job-card-tags">' +
                 (j.tags ? j.tags.split(',').filter(Boolean).map(function(t) { return '<span class="tag-pill">' + escHtml(t.trim()) + '</span>'; }).join('') : '') +
-                (j.source ? '<span class="tag-pill orange">' + j.source + '</span>' : '') +
+                (j.source ? '<a href="' + getSourceUrl(j.source) + '" target="_blank" class="tag-pill orange" style="text-decoration:none;" onclick="event.stopPropagation();">' + j.source + '</a>' : '') +
             '</div>' +
             '<div class="job-card-footer">' +
                 '<div class="job-card-meta">' +
