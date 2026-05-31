@@ -486,7 +486,6 @@
     transition: all 0.15s; z-index: 2; line-height: 1;
   }
   .btn-dismiss:hover { background: rgba(255,107,107,0.25); border-color: rgba(255,107,107,0.5); color: #ff6b6b; }
-  .job-card { position: relative; }
   .btn-letter {
     padding: 5px 8px; border-radius: 7px;
     border: 1px solid var(--border); color: var(--text-dim);
@@ -884,13 +883,6 @@
             <a href="{{ job.url | clean_url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
             {% endif %}
             <a href="/cover-letter/{{ job.id }}" class="btn-letter" onclick="event.stopPropagation();">✉️</a>
-            <select class="pipeline-select stage-{{ job.pipeline_stage or 'new' }}" onchange="updateStage({{ job.id }}, this.value);event.stopPropagation();">
-              <option value="applied" {% if job.pipeline_stage == 'applied' %}selected{% endif %}>Applied</option>
-              <option value="phone" {% if job.pipeline_stage == 'phone' %}selected{% endif %}>Phone</option>
-              <option value="interview" {% if job.pipeline_stage == 'interview' %}selected{% endif %}>Interview</option>
-              <option value="offer" {% if job.pipeline_stage == 'offer' %}selected{% endif %}>Offer</option>
-              <option value="dismissed" {% if job.pipeline_stage == 'dismissed' %}selected{% endif %}>✕ Masqué</option>
-            </select>
           </div>
         </div>
       {% endfor %}
@@ -951,13 +943,6 @@
             <a href="{{ job.url | clean_url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
             {% endif %}
             <a href="/cover-letter/{{ job.id }}" class="btn-letter" onclick="event.stopPropagation();">✉️</a>
-            <select class="pipeline-select stage-{{ job.pipeline_stage or 'new' }}" onchange="updateStage({{ job.id }}, this.value);event.stopPropagation();">
-              <option value="applied" {% if job.pipeline_stage == 'applied' %}selected{% endif %}>Applied</option>
-              <option value="phone" {% if job.pipeline_stage == 'phone' %}selected{% endif %}>Phone</option>
-              <option value="interview" {% if job.pipeline_stage == 'interview' %}selected{% endif %}>Interview</option>
-              <option value="offer" {% if job.pipeline_stage == 'offer' %}selected{% endif %}>Offer</option>
-              <option value="dismissed" {% if job.pipeline_stage == 'dismissed' %}selected{% endif %}>✕ Masqué</option>
-            </select>
           </div>
         </div>
       {% endfor %}
