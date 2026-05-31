@@ -102,15 +102,18 @@
   }
   .header-nav a:hover { color: var(--text); background: var(--card); }
   .header-nav a.active { color: var(--accent); background: var(--accent-glow); }
-  .header-nav .refresh-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 14px; border-radius: 8px;
-    background: var(--accent); color: #fff !important; font-weight: 600;
-    cursor: pointer; border: none; font-family: inherit; font-size: 13px;
-    transition: all 0.2s;
+  .header-nav .nav-more-btn:hover { color: var(--text); background: var(--card); }
+  .nav-more-drop a:hover { background: var(--card-hover) !important; color: var(--text) !important; }
+
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .refresh-btn {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--card);
+    color: var(--text-dim); font-size: 15px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; font-family: inherit;
   }
-  .header-nav .refresh-btn:hover { background: var(--accent-dim); transform: scale(1.02); }
-  .header-right { display: flex; align-items: center; gap: 14px; }
+  .refresh-btn:hover { border-color: var(--accent); color: var(--text); background: var(--card-hover); transform: scale(1.05); }
 
   /* ── User Menu ── */
   .user-menu { position: relative; }
@@ -601,24 +604,33 @@
 
   <!-- ─── HEADER ─── -->
   <div class="header">
-    <div class="header-logo">JobHunt <span>· QA Market</span></div>
-    <div class="header-nav">
+    <div class="header-logo">
+      <a href="/" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:20px;font-weight:900;background:linear-gradient(135deg,var(--accent),#a89bff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px;">JH</span>
+        <span style="font-size:13px;color:var(--text-muted);font-weight:400;">·</span>
+      </a>
+    </div>
+    <nav class="header-nav">
       <a href="{{ url_for('index') }}" class="active">Dashboard</a>
       <a href="{{ url_for('cv_page') }}">CV</a>
-      <a href="{{ url_for('qa_dashboard') }}">QA Test</a>
-      <a href="{{ url_for('monitoring_page') }}">Monitor</a>
       <a href="{{ url_for('marche_qa') }}">Marché</a>
-      <a href="{{ url_for('stats_page') }}">Stats</a>
-      <a href="{{ url_for('about') }}">À propos</a>
-    </div>
+      <div class="nav-more" style="position:relative;">
+        <button class="nav-more-btn" onclick="toggleMore()" style="background:none;border:none;padding:6px 10px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text-dim);cursor:pointer;font-family:inherit;transition:all 0.2s;">Plus ▾</button>
+        <div class="nav-more-drop" id="nav-more-drop" style="display:none;position:absolute;top:100%;left:0;min-width:160px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:4px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+          <a href="{{ url_for('qa_dashboard') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">🧪 QA Test</a>
+          <a href="{{ url_for('monitoring_page') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">📊 Monitor</a>
+          <a href="{{ url_for('stats_page') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">📈 Stats</a>
+          <a href="{{ url_for('about') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">ℹ️ À propos</a>
+        </div>
+      </div>
+    </nav>
     <div class="header-right">
-      <span class="live-dot"><span class="time">{{ last_update }}</span></span>
-      <button class="refresh-btn" onclick="window.location.href='{{ url_for('refresh') }}';this.textContent='⏳';">↻ Refresh</button>
+      <button class="refresh-btn" onclick="window.location.href='{{ url_for('refresh') }}';this.textContent='⏳';" title="Rafraîchir les offres">↻</button>
       <div class="user-menu" id="user-menu">
-        <button class="user-trigger" id="user-trigger" onclick="toggleDropdown()">
-          <div class="user-avatar" id="nav-avatar">—</div>
-          <span class="user-name" id="nav-name">—</span>
-          <span class="user-chevron" id="nav-chevron">▼</span>
+        <button class="user-trigger" id="user-trigger">
+          <div class="user-avatar" id="nav-avatar">?</div>
+          <span class="user-name" id="nav-name">Connexion</span>
+          <span class="user-chevron" id="nav-chevron">▾</span>
         </button>
         <div class="user-dropdown" id="user-dropdown">
           <div class="dd-header">
@@ -1220,6 +1232,8 @@ function updateStage(jobId, stage) {
     }
   });
 
+}
+
   // Check Supabase status
   fetch('/api/supabase/status')
     .then(r => r.json())
@@ -1273,10 +1287,17 @@ function updateStage(jobId, stage) {
     .then(r => r.json())
     .then(d => { window.renderUserMenu(d); });
 
-  window.toggleDropdown = function() {
-    document.getElementById('user-dropdown').classList.toggle('open');
-    document.getElementById('nav-chevron').classList.toggle('open');
-  };
+  // User menu toggle
+  var trigger = document.getElementById('user-trigger');
+  if (trigger) {
+    trigger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.getElementById('user-dropdown').classList.toggle('open');
+      document.getElementById('nav-chevron').classList.toggle('open');
+    });
+  }
+
+  // Close dropdowns on outside click
   document.addEventListener('click', function(e) {
     var menu = document.getElementById('user-menu');
     if (menu && !menu.contains(e.target)) {
@@ -1285,7 +1306,16 @@ function updateStage(jobId, stage) {
       if (dd) dd.classList.remove('open');
       if (ch) ch.classList.remove('open');
     }
+    var more = document.getElementById('nav-more-drop');
+    if (more && !e.target.closest('.nav-more')) {
+      more.style.display = 'none';
+    }
   });
+
+  window.toggleMore = function() {
+    var dd = document.getElementById('nav-more-drop');
+    dd.style.display = dd.style.display === 'none' ? '' : 'none';
+  };
 
   // Logout
   window.logout = function() {
