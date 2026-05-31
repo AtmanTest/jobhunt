@@ -616,10 +616,12 @@ def filter_jobs_by_country(country_id):
             WHERE ({placeholders})
             AND (freelance_status IN ('VALIDÉE', 'AMBIGUË'))
             AND (pipeline_stage IS NULL OR pipeline_stage != 'dismissed')
-            AND (LOWER(TRIM(title)), LOWER(TRIM(company))) NOT IN (
-                SELECT LOWER(TRIM(title)), LOWER(TRIM(company)) FROM dismissed_jobs
-            )
             GROUP BY LOWER(TRIM(title)), LOWER(TRIM(company))
+        )
+        AND NOT EXISTS (
+            SELECT 1 FROM dismissed_jobs d 
+            WHERE LOWER(TRIM(jobs.title)) = LOWER(TRIM(d.title)) 
+            AND LOWER(TRIM(COALESCE(jobs.company,''))) = LOWER(TRIM(COALESCE(d.company,'')))
         )
         ORDER BY 
             viewed ASC,
@@ -817,20 +819,23 @@ def api_job_stage(job_id):
     
     # When dismissed, also record in dismissed_jobs table (permanent filter)
     if stage == "dismissed":
-        job = conn.execute("SELECT title, company, url FROM jobs WHERE id = ?", (job_id,)).fetchone()
-        if job:
-            norm_title = job["title"].strip().lower()[:100]
-            norm_company = (job["company"] or "").strip().lower()[:100]
-            # Check if already exists
-            existing = conn.execute(
-                "SELECT id FROM dismissed_jobs WHERE LOWER(TRIM(title)) = ? AND LOWER(TRIM(company)) = ?",
-                (norm_title, norm_company)
-            ).fetchone()
-            if not existing:
-                conn.execute(
-                    "INSERT INTO dismissed_jobs (title, company, url) VALUES (?, ?, ?)",
-                    (norm_title, norm_company, job["url"])
-                )
+        try:
+            job = conn.execute("SELECT title, company, url FROM jobs WHERE id = ?", (job_id,)).fetchone()
+            if job:
+                norm_title = job["title"].strip().lower()[:100]
+                norm_company = (job["company"] or "").strip().lower()[:100]
+                # Check if already exists
+                existing = conn.execute(
+                    "SELECT id FROM dismissed_jobs WHERE LOWER(TRIM(title)) = ? AND LOWER(TRIM(company)) = ?",
+                    (norm_title, norm_company)
+                ).fetchone()
+                if not existing:
+                    conn.execute(
+                        "INSERT INTO dismissed_jobs (title, company, url) VALUES (?, ?, ?)",
+                        (norm_title, norm_company, job["url"])
+                    )
+        except Exception:
+            pass  # dismissed_jobs is bonus; pipeline_stage is the primary filter
     
     conn.commit()
     conn.close()

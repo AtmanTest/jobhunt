@@ -2626,6 +2626,9 @@ def get_jobs(filters=None):
         if filters.get("not_dismissed"):
             query += " AND (pipeline_stage IS NULL OR pipeline_stage != 'dismissed')"
     
+    # ALWAYS filter out dismissed jobs
+    query += " AND (pipeline_stage IS NULL OR pipeline_stage != 'dismissed')"
+    
     query += " ORDER BY raw_date DESC, date DESC LIMIT 200"
     
     cursor = conn.execute(query, params)
