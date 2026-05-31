@@ -1939,8 +1939,8 @@ def fetch_jeanmichel():
     }
     jobs = []
 
-    # Search both CDI and freelance contracts
-    contracts = ["cdi", "freelance"]
+    # Freelance only (le CDI ne nous intéresse pas)
+    contracts = ["freelance"]
     base_url = "https://sebs.jean-michel.io/offers"
 
     filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
