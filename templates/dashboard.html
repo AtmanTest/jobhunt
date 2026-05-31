@@ -885,7 +885,6 @@
             {% endif %}
             <a href="/cover-letter/{{ job.id }}" class="btn-letter" onclick="event.stopPropagation();">✉️</a>
             <select class="pipeline-select stage-{{ job.pipeline_stage or 'new' }}" onchange="updateStage({{ job.id }}, this.value);event.stopPropagation();">
-              <option value="new" {% if (job.pipeline_stage or 'new') == 'new' %}selected{% endif %}>New</option>
               <option value="applied" {% if job.pipeline_stage == 'applied' %}selected{% endif %}>Applied</option>
               <option value="phone" {% if job.pipeline_stage == 'phone' %}selected{% endif %}>Phone</option>
               <option value="interview" {% if job.pipeline_stage == 'interview' %}selected{% endif %}>Interview</option>
@@ -953,7 +952,6 @@
             {% endif %}
             <a href="/cover-letter/{{ job.id }}" class="btn-letter" onclick="event.stopPropagation();">✉️</a>
             <select class="pipeline-select stage-{{ job.pipeline_stage or 'new' }}" onchange="updateStage({{ job.id }}, this.value);event.stopPropagation();">
-              <option value="new" {% if (job.pipeline_stage or 'new') == 'new' %}selected{% endif %}>New</option>
               <option value="applied" {% if job.pipeline_stage == 'applied' %}selected{% endif %}>Applied</option>
               <option value="phone" {% if job.pipeline_stage == 'phone' %}selected{% endif %}>Phone</option>
               <option value="interview" {% if job.pipeline_stage == 'interview' %}selected{% endif %}>Interview</option>
