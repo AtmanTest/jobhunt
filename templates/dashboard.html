@@ -128,15 +128,13 @@
   .user-trigger:hover { border-color: var(--accent); background: var(--card-hover); }
   .user-avatar {
     width: 28px; height: 28px; border-radius: 50%;
-    background: var(--accent-dim);
+    background: #0088ff;
     display: flex; align-items: center; justify-content: center;
     font-size: 12px; font-weight: 700; color: #fff;
     overflow: hidden; flex-shrink: 0;
   }
   .user-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .user-name { font-weight: 500; font-size: 12px; }
-  .user-chevron { font-size: 10px; color: var(--text-muted); transition: transform 0.2s; }
-  .user-chevron.open { transform: rotate(180deg); }
   .user-dropdown {
     position: absolute; top: calc(100% + 6px); right: 0;
     min-width: 200px; background: var(--card);
@@ -235,20 +233,13 @@
   .balance.red .num { color: var(--red); }
 
   /* ── Section Color Gradients ── */
-  .section-jobs-jour {
-    background: linear-gradient(135deg, rgba(84,160,255,0.06), transparent 60%);
-    border-radius: var(--radius-lg);
-    padding: 2px 4px 6px;
-    margin-bottom: 16px;
+  .card-blue {
+    background: linear-gradient(135deg, rgba(84,160,255,0.1), var(--card) 70%) !important;
+    border-color: rgba(84,160,255,0.2) !important;
   }
-  .section-hot-picks {
-    background: linear-gradient(135deg, rgba(124,108,240,0.06), transparent 60%);
-    border-radius: var(--radius-lg);
-    padding: 2px 4px 6px;
-    margin-bottom: 16px;
-  }
-  .section-countries {
-    background: transparent;
+  .card-purple {
+    background: linear-gradient(135deg, rgba(124,108,240,0.1), var(--card) 70%) !important;
+    border-color: rgba(124,108,240,0.2) !important;
   }
 
   /* ── Featured / Top Matches ── */
@@ -295,7 +286,7 @@
   }
   .featured-card .fc-score .num {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 20px; font-weight: 800; color: var(--green);
+    font-size: 20px; font-weight: 800; color: var(--blue);
   }
   .featured-card .fc-skills {
     display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px;
@@ -321,7 +312,7 @@
   .top-match-card:hover { border-color: var(--accent); background: var(--card-hover); transform: translateY(-2px); }
   .top-match-card .tm-score {
     font-size: 22px; font-weight: 800;
-    font-family: 'JetBrains Mono', monospace; color: var(--green);
+    font-family: 'JetBrains Mono', monospace; color: var(--blue);
   }
   .top-match-card .tm-title { font-size: 12px; font-weight: 600; margin-top: 6px; line-height: 1.3; }
   .top-match-card .tm-company { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
@@ -465,7 +456,7 @@
   .badge-fresh-B { background: rgba(84,160,255,0.15); color: var(--blue); }
   .badge-fresh-C { background: rgba(255,159,67,0.15); color: var(--orange); }
   .badge-fresh-D { background: rgba(85,85,122,0.2); color: var(--text-muted); }
-  .badge-score { background: var(--green-dim); color: var(--green); font-size: 10px; }
+  .badge-score { background: rgba(84,160,255,0.15); color: var(--blue); font-size: 10px; }
   .badge-score-low { background: rgba(255,107,107,0.15); color: var(--red); }
   .badge-source {
     font-size: 8px; text-transform: uppercase; letter-spacing: 1px;
@@ -653,6 +644,7 @@
           <a href="{{ url_for('about') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">ℹ️ À propos</a>
         </div>
       </div>
+      <span id="balance-header" style="font-size:11px;font-weight:500;color:var(--text-dim);font-family:'JetBrains Mono',monospace;margin-left:4px;white-space:nowrap;">API AI ⟳</span>
     </nav>
     <div class="header-right">
       <button class="refresh-btn" onclick="window.location.href='{{ url_for('refresh') }}';this.textContent='⏳';" title="Rafraîchir les offres">↻</button>
@@ -660,7 +652,6 @@
         <button class="user-trigger" id="user-trigger">
           <div class="user-avatar" id="nav-avatar">?</div>
           <span class="user-name" id="nav-name">Connexion</span>
-          <span class="user-chevron" id="nav-chevron">▾</span>
         </button>
         <div class="user-dropdown" id="user-dropdown">
           <div class="dd-header">
@@ -709,21 +700,15 @@
         <div class="value blue" id="total-markets">{{ country_counts|sum(attribute='count') }}</div>
         <div class="sub">France · Suisse · Lux · Dubaï · SG</div>
       </div>
-      <div class="hero-card">
-        <div class="label">DeepSeek Balance</div>
-        <div class="value orange balance" id="balance-chip"><span class="num" id="balance-value">⟳</span></div>
-        <div class="sub">API live</div>
-      </div>
     </div>
 
     <!-- Jobs du Jour (featured) -->
     {% if jobs_of_day %}
-    <div class="section-jobs-jour">
     <div class="featured-section">
       <div class="section-label"><span class="bar purple"></span> ✦ Jobs du Jour</div>
       <div class="featured-grid">
       {% for job in jobs_of_day %}
-        <div class="featured-card" onclick="window.open('{{ job.url | clean_url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;">
+        <div class="featured-card card-blue" onclick="window.open('{{ job.url | clean_url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;">
           <button class="btn-dismiss" onclick="event.stopPropagation();dismissJob({{ job.id }}, this);" title="Masquer">✕</button>
           <div class="rank">#{{ loop.index }} · {{ job.match_score }}% match</div>
           <div class="fc-title">{{ job.title }}</div>
@@ -745,16 +730,14 @@
       </div>
     </div>
     {% endif %}
-    </div>
 
     <!-- 🔥 Hot Picks: meilleurs jobs classés par priorité -->
     {% if hot_picks %}
-    <div class="section-hot-picks">
     <div class="featured-section">
       <div class="section-label"><span class="bar orange"></span> 🔥 Hot Picks — Priorité Max</div>
       <div class="featured-grid">
       {% for job in hot_picks %}
-        <div class="featured-card" onclick="window.open('{{ job.url | clean_url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;">
+        <div class="featured-card card-purple" onclick="window.open('{{ job.url | clean_url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;">
           <button class="btn-dismiss" onclick="event.stopPropagation();dismissJob({{ job.id }}, this);" title="Masquer">✕</button>
           <div class="rank">#{{ loop.index }} · {{ job.match_score }}% match</div>
           <div class="fc-title">{{ job.title }}</div>
@@ -776,7 +759,6 @@
       </div>
     </div>
     {% endif %}
-    </div>
 
     <!-- Top Matches (horizontal scroll) -->
     {% if top_matches %}
@@ -1165,26 +1147,23 @@ document.querySelectorAll('.tab-panel[id^="panel-"]').forEach(p => {
 
 // ─── Balance Widget ───
 function fetchBalance() {
-  const val = document.getElementById('balance-value');
-  const chip = document.getElementById('balance-chip');
+  const val = document.getElementById('balance-header');
+  if (!val) return;
   fetch('/api/deepseek/balance')
     .then(r => r.json())
     .then(data => {
       if (data.live && data.balance > 0) {
-        val.textContent = '$' + data.balance.toFixed(2);
-        const color = data.balance < 2 ? 'red' : data.balance < 5 ? 'orange' : 'green';
-        chip.className = 'balance ' + color;
-        chip.title = 'Top-up: $' + data.topped_up.toFixed(2);
+        val.textContent = 'API AI $' + data.balance.toFixed(2);
+        val.style.color = data.balance < 2 ? 'var(--red)' : data.balance < 5 ? 'var(--orange)' : 'var(--green)';
       } else if (data.live) {
-        val.textContent = '$0.00';
-        chip.className = 'balance';
+        val.textContent = 'API AI $0.00';
+        val.style.color = 'var(--red)';
       } else {
-        val.textContent = '—';
-        chip.className = 'balance';
-        chip.title = data.error || 'API key not set on Render';
+        val.textContent = 'API AI —';
+        val.style.color = 'var(--text-dim)';
       }
     })
-    .catch(() => { val.textContent = '—'; chip.title = 'Connection error'; });
+    .catch(() => { val.textContent = 'API AI —'; });
 }
 fetchBalance();
 setInterval(fetchBalance, 60000);
@@ -1323,7 +1302,6 @@ function updateStage(jobId, stage) {
     trigger.addEventListener('click', function(e) {
       e.stopPropagation();
       document.getElementById('user-dropdown').classList.toggle('open');
-      document.getElementById('nav-chevron').classList.toggle('open');
     });
   }
 
@@ -1332,9 +1310,7 @@ function updateStage(jobId, stage) {
     var menu = document.getElementById('user-menu');
     if (menu && !menu.contains(e.target)) {
       var dd = document.getElementById('user-dropdown');
-      var ch = document.getElementById('nav-chevron');
       if (dd) dd.classList.remove('open');
-      if (ch) ch.classList.remove('open');
     }
     var more = document.getElementById('nav-more-drop');
     if (more && !e.target.closest('.nav-more')) {
