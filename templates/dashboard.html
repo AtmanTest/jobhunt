@@ -234,6 +234,23 @@
   .balance.orange .num { color: var(--orange); }
   .balance.red .num { color: var(--red); }
 
+  /* ── Section Color Gradients ── */
+  .section-jobs-jour {
+    background: linear-gradient(135deg, rgba(84,160,255,0.06), transparent 60%);
+    border-radius: var(--radius-lg);
+    padding: 2px 4px 6px;
+    margin-bottom: 16px;
+  }
+  .section-hot-picks {
+    background: linear-gradient(135deg, rgba(124,108,240,0.06), transparent 60%);
+    border-radius: var(--radius-lg);
+    padding: 2px 4px 6px;
+    margin-bottom: 16px;
+  }
+  .section-countries {
+    background: transparent;
+  }
+
   /* ── Featured / Top Matches ── */
   .featured-section { margin-bottom: 28px; }
   .section-label {
@@ -620,8 +637,7 @@
   <div class="header">
     <div class="header-logo">
       <a href="/" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
-        <span style="font-size:20px;font-weight:900;background:linear-gradient(135deg,var(--accent),#a89bff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px;">JH</span>
-        <span style="font-size:13px;color:var(--text-muted);font-weight:400;">·</span>
+        <span style="font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--accent),#a89bff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px;">JobHunt</span>
       </a>
     </div>
     <nav class="header-nav">
@@ -702,6 +718,7 @@
 
     <!-- Jobs du Jour (featured) -->
     {% if jobs_of_day %}
+    <div class="section-jobs-jour">
     <div class="featured-section">
       <div class="section-label"><span class="bar purple"></span> ✦ Jobs du Jour</div>
       <div class="featured-grid">
@@ -728,9 +745,11 @@
       </div>
     </div>
     {% endif %}
+    </div>
 
     <!-- 🔥 Hot Picks: meilleurs jobs classés par priorité -->
     {% if hot_picks %}
+    <div class="section-hot-picks">
     <div class="featured-section">
       <div class="section-label"><span class="bar orange"></span> 🔥 Hot Picks — Priorité Max</div>
       <div class="featured-grid">
@@ -757,6 +776,7 @@
       </div>
     </div>
     {% endif %}
+    </div>
 
     <!-- Top Matches (horizontal scroll) -->
     {% if top_matches %}
@@ -1267,7 +1287,7 @@ function updateStage(jobId, stage) {
     if (d.authenticated) {
       var displayName = d.full_name || '';
       var initial = displayName ? displayName.charAt(0).toUpperCase() : (d.email || 'U').charAt(0).toUpperCase();
-      name.textContent = displayName || initial;
+      name.textContent = displayName;
       ddName.textContent = displayName || initial;
       if (d.avatar_url && d.avatar_url.startsWith('data:')) {
         avatar.innerHTML = '<img src="' + d.avatar_url + '" alt="">';

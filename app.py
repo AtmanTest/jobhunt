@@ -616,6 +616,9 @@ def filter_jobs_by_country(country_id):
             WHERE ({placeholders})
             AND (freelance_status IN ('VALIDÉE', 'AMBIGUË'))
             AND (pipeline_stage IS NULL OR pipeline_stage != 'dismissed')
+            AND (LOWER(TRIM(title)), LOWER(TRIM(company))) NOT IN (
+                SELECT LOWER(TRIM(title)), LOWER(TRIM(company)) FROM dismissed_jobs
+            )
             GROUP BY LOWER(TRIM(title)), LOWER(TRIM(company))
         )
         ORDER BY 
@@ -811,6 +814,24 @@ def api_job_stage(job_id):
     stage = data.get("stage", "saved")
     conn = get_db()
     conn.execute("UPDATE jobs SET pipeline_stage = ? WHERE id = ?", (stage, job_id))
+    
+    # When dismissed, also record in dismissed_jobs table (permanent filter)
+    if stage == "dismissed":
+        job = conn.execute("SELECT title, company, url FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        if job:
+            norm_title = job["title"].strip().lower()[:100]
+            norm_company = (job["company"] or "").strip().lower()[:100]
+            # Check if already exists
+            existing = conn.execute(
+                "SELECT id FROM dismissed_jobs WHERE LOWER(TRIM(title)) = ? AND LOWER(TRIM(company)) = ?",
+                (norm_title, norm_company)
+            ).fetchone()
+            if not existing:
+                conn.execute(
+                    "INSERT INTO dismissed_jobs (title, company, url) VALUES (?, ?, ?)",
+                    (norm_title, norm_company, job["url"])
+                )
+    
     conn.commit()
     conn.close()
     return jsonify({"status": "ok"})

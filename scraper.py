@@ -2156,6 +2156,14 @@ def init_db():
             status TEXT DEFAULT 'pending',
             FOREIGN KEY (job_id) REFERENCES jobs(id)
         );
+        CREATE TABLE IF NOT EXISTS dismissed_jobs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            company TEXT,
+            url TEXT,
+            dismissed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE INDEX IF NOT EXISTS idx_dismissed_title_company ON dismissed_jobs(title, company);
         CREATE INDEX IF NOT EXISTS idx_jobs_url ON jobs(url);
         CREATE INDEX IF NOT EXISTS idx_jobs_qa ON jobs(is_qa);
     """)
@@ -2487,6 +2495,14 @@ def save_jobs(jobs):
             (norm_title, norm_company)
         ).fetchone()
         if existing:
+            continue
+        
+        # Skip if this job was previously dismissed by the user
+        dismissed = cursor.execute(
+            "SELECT id FROM dismissed_jobs WHERE LOWER(TRIM(title)) = ? AND LOWER(TRIM(company)) = ?",
+            (norm_title, norm_company)
+        ).fetchone()
+        if dismissed:
             continue
         
         url_hash = hashlib.md5(job["url"].encode()).hexdigest()
