@@ -61,34 +61,6 @@ if not GITHUB_TOKEN:
                 GITHUB_TOKEN = f.read().strip()
             break
 
-def _sync_dismissed_to_github():
-    """Push dismissed job to GitHub so it survives Render restarts."""
-    if not GITHUB_TOKEN:
-        return
-    import base64
-    try:
-        conn = get_db()
-        rows = conn.execute("SELECT title, company, url FROM dismissed_jobs").fetchall()
-        conn.close()
-    except:
-        return
-    dismissed_data = [{"title": r["title"], "company": r.get("company",""), "url": r.get("url","")} for r in rows]
-    payload = json.dumps({"dismissed": dismissed_data, "exported_at": datetime.now().isoformat()}, indent=2)
-    repo = "AtmanTest/jobhunt"
-    gh_url = f"https://api.github.com/repos/{repo}/contents/docs/dismissed_jobs.json"
-    headers = {"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"}
-    try:
-        get_r = requests.get(gh_url, headers=headers, timeout=10)
-        sha = get_r.json().get("sha") if get_r.status_code == 200 else None
-        put_data = {"message": "sync dismissed [auto]", "content": base64.b64encode(payload.encode()).decode()}
-        if sha:
-            put_data["sha"] = sha
-        r = requests.put(gh_url, json=put_data, headers=headers, timeout=15)
-        if r.status_code in (200, 201):
-            print(f"[GitHub] Dismissal synced ({len(dismissed_data)} entries)")
-    except Exception as e:
-        print(f"[GitHub] Sync failed: {e}")
-
 FEATURES_DIR = os.path.join(os.path.dirname(__file__), "tests", "features")
 
 
@@ -473,19 +445,26 @@ def _populate_from_github():
                  job.get("freelance_score",30),
                  job.get("pipeline_stage","new")))
         conn.commit()
-        # Also restore dismissed_jobs from GitHub
-        try:
-            dj_resp = requests.get("https://raw.githubusercontent.com/AtmanTest/jobhunt/main/docs/dismissed_jobs.json", timeout=15)
-            if dj_resp.status_code == 200:
-                dj_data = dj_resp.json()
-                for d in dj_data.get("dismissed", []):
-                    conn.execute("INSERT OR IGNORE INTO dismissed_jobs (title, company, url) VALUES (?, ?, ?)",
-                        (d["title"], d.get("company",""), d.get("url","")))
-                conn.commit()
-                print(f"[Render] Restored {len(dj_data.get('dismissed',[]))} dismissed entries")
-        except Exception as e:
-            print(f"[Render] dismissed_jobs restore skipped: {e}")
         conn.close()
+        
+        # Restore dismissed_jobs per user from Supabase
+        try:
+            dj_resp = requests.get(
+                f"{SUPABASE_REST}/dismissed_jobs?select=title,company,url,user_id",
+                headers=_supabase_headers(),
+                timeout=15
+            )
+            if dj_resp.status_code == 200:
+                rows = dj_resp.json()
+                c2 = sqlite3.connect(DB_PATH)
+                for r in rows:
+                    c2.execute("INSERT OR IGNORE INTO dismissed_jobs (title, company, url, user_id) VALUES (?, ?, ?, ?)",
+                        (r["title"], r.get("company",""), r.get("url",""), r.get("user_id","")))
+                c2.commit()
+                c2.close()
+                print(f"[Render] Restored {len(rows)} dismissed entries from Supabase")
+        except Exception as e:
+            print(f"[Render] dismissed_jobs Supabase restore skipped: {e}")
         print(f"[Render] Loaded {len(jobs)} jobs from GitHub")
     except Exception as e:
         print(f"[Render] Error populating DB: {e}")
@@ -650,6 +629,8 @@ def filter_jobs_by_country(country_id):
     placeholders = ' OR '.join(['location LIKE ?'] * len(keywords))
     params = [f'%{k}%' for k in keywords]
 
+    uid = get_user_id() or ''
+    
     query = f"""
         SELECT * FROM jobs 
         WHERE id IN (
@@ -664,12 +645,14 @@ def filter_jobs_by_country(country_id):
             SELECT 1 FROM dismissed_jobs d 
             WHERE LOWER(TRIM(jobs.title)) = LOWER(TRIM(d.title)) 
             AND LOWER(TRIM(COALESCE(jobs.company,''))) = LOWER(TRIM(COALESCE(d.company,'')))
+            AND d.user_id = ?
         )
         ORDER BY 
             viewed ASC,
             CASE freelance_status WHEN 'VALIDÉE' THEN 0 ELSE 1 END,
             raw_date DESC, date DESC LIMIT 100
     """
+    params.append(uid)
     cursor = conn.execute(query, params)
     jobs = [dict(r) for r in cursor.fetchall()]
     conn.close()
@@ -851,15 +834,39 @@ def api_job_click(job_id):
     return jsonify({"status": "ok"})
 
 
+def _sync_dismissed_to_supabase(uid):
+    """Sync a user's dismissed_jobs to Supabase for persistence."""
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return
+    try:
+        conn = get_db()
+        rows = conn.execute("SELECT title, company, url FROM dismissed_jobs WHERE user_id = ?", (uid,)).fetchall()
+        conn.close()
+        for r in rows:
+            payload = {"user_id": uid, "title": r["title"], "company": r.get("company",""), "url": r.get("url","")}
+            requests.post(
+                f"{SUPABASE_REST}/dismissed_jobs",
+                headers={**_supabase_headers(), "Prefer": "resolution=merge-duplicates,return=representation"},
+                json=payload,
+                timeout=5
+            )
+    except Exception as e:
+        print(f"[Supabase] dismissed_jobs sync failed: {e}")
+
+
 @app.route("/api/job/<int:job_id>/stage", methods=["POST"])
 def api_job_stage(job_id):
     """Mettre à jour le stage pipeline."""
+    uid = get_user_id()
+    if not uid:
+        return jsonify({"error": "Non authentifié"}), 401
+    
     data = request.get_json() or {}
     stage = data.get("stage", "saved")
     conn = get_db()
     conn.execute("UPDATE jobs SET pipeline_stage = ? WHERE id = ?", (stage, job_id))
     
-    # When dismissed, also record in dismissed_jobs table (permanent filter)
+    # When dismissed, record in dismissed_jobs table per user
     if stage == "dismissed":
         try:
             job = conn.execute("SELECT title, company, url FROM jobs WHERE id = ?", (job_id,)).fetchone()
@@ -867,28 +874,29 @@ def api_job_stage(job_id):
                 norm_title = job["title"].strip().lower()[:100]
                 norm_company = (job["company"] or "").strip().lower()[:100]
                 dj_url = job["url"]
-                # Check if already exists
+                # Check if already exists for this user
                 existing = conn.execute(
-                    "SELECT id FROM dismissed_jobs WHERE LOWER(TRIM(title)) = ? AND LOWER(TRIM(company)) = ?",
-                    (norm_title, norm_company)
+                    "SELECT id FROM dismissed_jobs WHERE user_id = ? AND LOWER(TRIM(title)) = ? AND LOWER(TRIM(company)) = ?",
+                    (uid, norm_title, norm_company)
                 ).fetchone()
                 if not existing:
                     conn.execute(
-                        "INSERT INTO dismissed_jobs (title, company, url) VALUES (?, ?, ?)",
-                        (norm_title, norm_company, dj_url)
+                        "INSERT INTO dismissed_jobs (title, company, url, user_id) VALUES (?, ?, ?, ?)",
+                        (norm_title, norm_company, dj_url, uid)
                     )
         except Exception:
-            pass  # dismissed_jobs is bonus; pipeline_stage is the primary filter
+            pass
     
     conn.commit()
     conn.close()
     
-    # Sync to GitHub after commit so the new entry is visible
-    if stage == "dismissed":
+    # Sync dismissed_jobs to Supabase for persistence across restarts
+    if stage == "dismissed" and uid:
         try:
-            _sync_dismissed_to_github()
+            _sync_dismissed_to_supabase(uid)
         except Exception:
             pass
+    
     return jsonify({"status": "ok"})
 
 

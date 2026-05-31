@@ -2161,9 +2161,10 @@ def init_db():
             title TEXT NOT NULL,
             company TEXT,
             url TEXT,
+            user_id TEXT NOT NULL DEFAULT '',
             dismissed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        CREATE INDEX IF NOT EXISTS idx_dismissed_title_company ON dismissed_jobs(title, company);
+        CREATE INDEX IF NOT EXISTS idx_dismissed_user ON dismissed_jobs(user_id, title, company);
         CREATE INDEX IF NOT EXISTS idx_jobs_url ON jobs(url);
         CREATE INDEX IF NOT EXISTS idx_jobs_qa ON jobs(is_qa);
     """)
@@ -2497,12 +2498,20 @@ def save_jobs(jobs):
         if existing:
             continue
         
-        # Skip if this job was previously dismissed by the user
+        # Skip if this job was previously dismissed by any user
         dismissed = cursor.execute(
-            "SELECT id FROM dismissed_jobs WHERE LOWER(TRIM(title)) = ? AND LOWER(TRIM(company)) = ?",
+            "SELECT id FROM dismissed_jobs WHERE LOWER(TRIM(title)) = ? AND LOWER(TRIM(company)) = ? AND user_id != ''",
             (norm_title, norm_company)
         ).fetchone()
         if dismissed:
+            continue
+        
+        # Also skip if any existing row has pipeline_stage='dismissed' for this match
+        stage_dismissed = cursor.execute(
+            "SELECT id FROM jobs WHERE LOWER(TRIM(title)) = ? AND LOWER(TRIM(company)) = ? AND pipeline_stage = 'dismissed'",
+            (norm_title, norm_company)
+        ).fetchone()
+        if stage_dismissed:
             continue
         
         url_hash = hashlib.md5(job["url"].encode()).hexdigest()
