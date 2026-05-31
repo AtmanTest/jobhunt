@@ -2164,7 +2164,6 @@ def init_db():
             user_id TEXT NOT NULL DEFAULT '',
             dismissed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        CREATE INDEX IF NOT EXISTS idx_dismissed_user ON dismissed_jobs(user_id, title, company);
         CREATE INDEX IF NOT EXISTS idx_jobs_url ON jobs(url);
         CREATE INDEX IF NOT EXISTS idx_jobs_qa ON jobs(is_qa);
     """)
@@ -2200,6 +2199,17 @@ def init_db():
             conn.execute(f"ALTER TABLE applications ADD COLUMN {col_name} {col_type}")
         except sqlite3.OperationalError:
             pass
+
+    # Add user_id to dismissed_jobs if missing (v2 migration)
+    try:
+        conn.execute("ALTER TABLE dismissed_jobs ADD COLUMN user_id TEXT NOT NULL DEFAULT ''")
+    except sqlite3.OperationalError:
+        pass
+    # Create index (safe after migration)
+    try:
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_dismissed_user ON dismissed_jobs(user_id, title, company)")
+    except sqlite3.OperationalError:
+        pass
 
     conn.commit()
     conn.close()

@@ -602,20 +602,91 @@
   .footer a:hover { text-decoration: underline; }
 
   /* ── Responsive ── */
-  @media (max-width: 768px) {
-    .header { padding: 0 16px; }
-    .main { padding: 16px; }
-    .hero { grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 900px) {
+    .header { padding: 0 14px; height: 52px; }
+    .header-nav a { padding: 6px 10px; font-size: 12px; }
+    .header-logo { font-size: 14px; }
+    .header-logo a span { font-size: 16px !important; }
+    .user-name { display: none; }
+    .refresh-btn { width: 30px; height: 30px; font-size: 14px; }
+    .nav-more-btn { font-size: 12px !important; padding: 5px 8px !important; }
+    #balance-header { font-size: 10px !important; }
+    .main { padding: 16px 14px; }
+    .hero { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+    .hero-card { padding: 14px 16px; }
     .hero-card .value { font-size: 22px; }
     .featured-grid { grid-template-columns: 1fr; }
-    .filter-bar { gap: 4px; }
-    .filter-group { flex-wrap: wrap; }
+    .featured-card { padding: 14px 16px; padding-right: 44px; }
+    .section-label { font-size: 10px; letter-spacing: 1.5px; margin-bottom: 10px; }
+    .top-match-card { flex: 0 0 160px; }
+    .filter-bar { gap: 6px; }
+    .filter-btn { padding: 5px 10px; font-size: 11px; }
     .market-info { flex-direction: column; align-items: flex-start; gap: 8px; }
     .market-info .divider { display: none; }
     .market-info .platforms-btn { margin-left: 0; }
-    .job-card { flex-direction: column; }
+    .job-card { flex-direction: column; gap: 10px; padding: 14px 16px; padding-right: 44px; }
     .job-card .jc-right { width: 100%; justify-content: flex-end; }
+    .job-card .jc-title { font-size: 13px; }
     .platforms-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+    .page-btn { min-width: 28px; height: 28px; font-size: 11px; }
+    .page-info { font-size: 10px; }
+    .footer { padding: 18px 16px; font-size: 10px; }
+  }
+  @media (max-width: 620px) {
+    .header-nav a:not(.active) { display: none; }
+    .header-nav .nav-more { display: block !important; }
+    .header-nav a.active { display: inline-flex; }
+    .welcome-section { margin-bottom: 14px !important; }
+    .welcome-section > div { flex-direction: column; gap: 8px; }
+    .country-btn { padding: 6px 10px; font-size: 11px; }
+    .country-btn .badge { font-size: 9px; padding: 0 5px; }
+    .hero-card .value { font-size: 20px; }
+    .hero-card .sub { font-size: 10px; }
+    .hero-card .label { font-size: 9px; letter-spacing: 1px; }
+    .job-card .jc-meta { gap: 6px; font-size: 10px; }
+    .job-card .jc-company { font-size: 11px; }
+    .filter-group { flex-wrap: wrap; }
+    .filter-btn { padding: 4px 8px; font-size: 10px; }
+    .filter-bar { gap: 4px; }
+    .featured-card .fc-title { font-size: 13px; }
+    .featured-card .rank { font-size: 9px; }
+    .featured-card .fc-meta { font-size: 10px; }
+    .platforms-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+    .platform-item { padding: 8px 10px; }
+    .platform-item a { font-size: 11px; }
+    .platform-item .p-desc { font-size: 9px; }
+    .badge-source-orange { font-size: 8px; padding: 1px 6px; }
+  }
+  @media (max-width: 480px) {
+    .header { padding: 0 10px; height: 48px; }
+    .header-logo a span { font-size: 14px !important; }
+    .header-right { gap: 6px; }
+    .refresh-btn { width: 28px; height: 28px; font-size: 13px; }
+    #balance-header { display: none; }
+    .main { padding: 12px 10px; }
+    .hero { grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+    .hero-card { padding: 10px 12px; }
+    .hero-card .value { font-size: 18px; }
+    .hero-card .sub { font-size: 9px; }
+    .country-btn { padding: 5px 8px; font-size: 10px; }
+    .country-btn .badge { font-size: 8px; padding: 0 4px; min-width: 14px; }
+    .filter-btn { padding: 3px 7px; font-size: 9px; }
+    .filter-group { padding: 2px; }
+    .job-card { padding: 12px 14px; padding-right: 44px; }
+    .job-card .jc-title { font-size: 12px; }
+    .btn-apply { padding: 4px 10px; font-size: 10px; }
+    .btn-letter { padding: 4px 7px; font-size: 9px; }
+    .btn-dismiss { width: 26px; height: 26px; top: 6px; right: 8px; font-size: 13px; }
+    .featured-card { padding: 12px 14px; padding-right: 44px; }
+    .top-match-card { flex: 0 0 140px; padding: 10px 12px; }
+    .top-match-card .tm-score { font-size: 18px; }
+    .top-match-card .tm-title { font-size: 11px; }
+    .page-btn { min-width: 24px; height: 24px; font-size: 10px; padding: 0 5px; }
+    .page-info { font-size: 9px; margin: 0 4px; }
+    .market-info { padding: 10px 14px; }
+    .market-info .tjm { font-size: 15px; }
+    .market-info .tip { font-size: 10px; }
+    .welcome-section > div > div:first-child .welcome-name { font-size: 17px !important; }
   }
 </style>
 </head>

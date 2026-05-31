@@ -106,10 +106,37 @@
     .cv-wrap { box-shadow: none; margin: 0; border-radius: 0; padding: 32px 36px 24px; max-width: 100%; }
     @page { margin: 0; size: A4; }
   }
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
     .cv-wrap { padding: 28px 20px 24px; }
     .certs-list { columns: 1; }
-    .hdr-contact { gap: 8px; }
+    .hdr { flex-direction: column; align-items: center; text-align: center; gap: 14px; }
+    .hdr-contact { justify-content: center; gap: 12px; font-size: 11px; }
+    .hdr-name { font-size: 22px; }
+    .hdr-photo { flex: 0 0 90px; }
+    .hdr-photo img { width: 90px; height: 90px; }
+    .top-nav { padding: 0 14px; height: 40px; }
+    .top-nav a { font-size: 11px; padding: 3px 8px; }
+    .lang-toggle button { font-size: 9px; padding: 1px 7px; }
+    .pdf-btn { font-size: 10px; padding: 3px 10px; }
+  }
+  @media (max-width: 480px) {
+    .cv-wrap { padding: 20px 14px 18px; margin: 12px 8px 24px; }
+    .hdr-name { font-size: 20px; }
+    .hdr-title { font-size: 13px; }
+    .hdr-photo { flex: 0 0 80px; }
+    .hdr-photo img { width: 80px; height: 80px; }
+    .hdr-contact { flex-direction: column; gap: 4px; align-items: center; }
+    .hdr-contact .dot { display: none; }
+    .sec-title { font-size: 11px; letter-spacing: 1px; }
+    .exp-co { font-size: 13px; }
+    .exp-ro { font-size: 12px; }
+    .exp-date { font-size: 11px; }
+    .exp-desc { font-size: 11.5px; }
+    .summary { font-size: 12px; }
+    .skill-tag { font-size: 10.5px; padding: 2px 8px; }
+    .lang-row { gap: 14px; }
+    .lang-row span { font-size: 11.5px; }
+    .cert { font-size: 11px; }
   }
 </style>
 </head>
