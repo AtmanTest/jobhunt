@@ -337,7 +337,7 @@ def api_profile():
     if request.method == "GET":
         try:
             r = requests.get(
-                f"{SUPABASE_REST}/profiles?user_id=eq.{uid}",
+                f"{SUPABASE_REST}/profiles?id=eq.{uid}",
                 headers=_supabase_headers(),
                 timeout=5,
             )
@@ -356,11 +356,11 @@ def api_profile():
 
     try:
         # Upsert — update if exists, insert if not
-        update["user_id"] = uid
+        update["id"] = uid
         update["email"] = session.get("email")
         r = requests.post(
             f"{SUPABASE_REST}/profiles",
-            headers={**_supabase_headers(), "Prefer": "resolution=merge-duplicates"},
+            headers={**_supabase_headers(), "Prefer": "resolution=merge-duplicates,return=representation"},
             json=update,
             timeout=5,
         )
@@ -395,8 +395,8 @@ def api_profile_avatar():
         avatar_url = f"data:image/jpeg;base64,{avatar_b64}" if not avatar_b64.startswith("data:") else avatar_b64
         r = requests.post(
             f"{SUPABASE_REST}/profiles",
-            headers={**_supabase_headers(), "Prefer": "resolution=merge-duplicates"},
-            json={"user_id": uid, "avatar_url": avatar_url},
+            headers={**_supabase_headers(), "Prefer": "resolution=merge-duplicates,return=representation"},
+            json={"id": uid, "avatar_url": avatar_url},
             timeout=10,
         )
         if r.status_code in (200, 201):

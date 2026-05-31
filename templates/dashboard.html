@@ -1255,9 +1255,10 @@ function updateStage(jobId, stage) {
     var ddName = document.getElementById('dd-name');
     if (!avatar) return;
     if (d.authenticated) {
-      var initial = d.full_name ? d.full_name.charAt(0).toUpperCase() : (d.email || 'U').charAt(0).toUpperCase();
-      name.textContent = d.full_name || d.email || '—';
-      ddName.textContent = d.full_name || d.email || '—';
+      var displayName = d.full_name || '';
+      var initial = displayName ? displayName.charAt(0).toUpperCase() : (d.email || 'U').charAt(0).toUpperCase();
+      name.textContent = displayName || initial;
+      ddName.textContent = displayName || initial;
       if (d.avatar_url && d.avatar_url.startsWith('data:')) {
         avatar.innerHTML = '<img src="' + d.avatar_url + '" alt="">';
       } else {
@@ -1267,7 +1268,7 @@ function updateStage(jobId, stage) {
       var ws = document.getElementById('welcome-section');
       if (ws) { ws.style.display = ''; }
       var wn = document.getElementById('welcome-name');
-      if (wn) { wn.textContent = (d.full_name || d.email || '').split(' ')[0] + ' 👋'; }
+      if (wn) { wn.textContent = (d.full_name || '').split(' ')[0] + ' 👋' || '👋'; }
       var wh = document.getElementById('welcome-headline');
       if (wh) { wh.textContent = d.headline || 'Bienvenue sur ton tableau de bord'; }
     } else {

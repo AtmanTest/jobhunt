@@ -375,10 +375,10 @@ function init() {
 }
 
 function renderUserMenu(d) {
-  var initial = d.full_name ? d.full_name.charAt(0).toUpperCase() : (d.email || '—').charAt(0).toUpperCase();
-  document.getElementById('nav-name').textContent = d.full_name || d.email || '—';
-  document.getElementById('dd-name').textContent = d.full_name || d.email || '—';
-  document.getElementById('dd-email').textContent = d.email || '—';
+  var displayName = d.full_name || '';
+  var initial = displayName ? displayName.charAt(0).toUpperCase() : (d.email || '—').charAt(0).toUpperCase();
+  document.getElementById('nav-name').textContent = displayName || initial;
+  document.getElementById('dd-name').textContent = displayName || initial;
   var avatarEl = document.getElementById('nav-avatar');
   if (d.avatar_url) {
     avatarEl.innerHTML = '<img src="' + d.avatar_url + '" alt="">';
