@@ -332,8 +332,62 @@
       "url": "https://www.linkedin.com/jobs/view/4417216345/",
       "source": "LinkedIn",
       "scraped_at": "2026-05-31T14:03:23.766540"
+    },
+    {
+      "title": "Senior Software Engineer",
+      "company": "Aircall",
+      "location": "Paris, Île-de-France, France",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4346771263/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-31T14:07:15.046384"
+    },
+    {
+      "title": "Principal Software Engineer - XTM Integration",
+      "company": "Filigran",
+      "location": "France",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4381446592/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-31T14:07:15.046389"
+    },
+    {
+      "title": "Senior Software Engineer, JAX",
+      "company": "NVIDIA",
+      "location": "France",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4402762684/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-31T14:07:15.046390"
+    },
+    {
+      "title": "Software Engineer - Developer",
+      "company": "Scaleway",
+      "location": "Paris, Île-de-France, France",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4418359605/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-31T14:07:15.046392"
+    },
+    {
+      "title": "Software Engineer",
+      "company": "Scaleway",
+      "location": "Paris, Île-de-France, France",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4418371516/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-31T14:07:15.046393"
+    },
+    {
+      "title": "Software Engineer",
+      "company": "CoderPad",
+      "location": "Montpellier, Occitanie, France",
+      "country": "France",
+      "url": "https://www.linkedin.com/jobs/view/4421319155/",
+      "source": "LinkedIn",
+      "scraped_at": "2026-05-31T14:07:15.046394"
     }
   ],
-  "scraped_at": "2026-05-31T14:03:39.842127",
-  "count": 37
+  "scraped_at": "2026-05-31T14:07:15.046528",
+  "count": 43
 }

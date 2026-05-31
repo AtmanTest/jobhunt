@@ -414,6 +414,10 @@
     font-size: 14px; font-weight: 600; color: var(--text);
     margin-bottom: 2px;
   }
+  .job-card .jc-title-link {
+    color: var(--text); text-decoration: none; transition: color 0.15s;
+  }
+  .job-card .jc-title-link:hover { color: var(--accent); }
   .job-card .jc-company { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
   .job-card .jc-meta {
     display: flex; gap: 10px; flex-wrap: wrap;
@@ -824,7 +828,7 @@
           <button class="btn-dismiss" onclick="dismissJob({{ job.id }}, this);event.stopPropagation();" title="Masquer">✕</button>
           <div class="jc-left">
             <div class="jc-title">
-              {{ job.title }}
+              <a href="{{ job.url | clean_url }}" target="_blank" class="jc-title-link">{{ job.title }}</a>
               {% if not job.viewed %}<span class="badge badge-new">Nouveau</span>{% endif %}
               <span class="badge badge-fresh-{{ job.freshness_score or 'D' }}">
                 {% if job.freshness_score == 'A' %}🔥 Neuf{% elif job.freshness_score == 'B' %}📆 Récents{% elif job.freshness_score == 'C' %}📅 Semaine{% else %}Ancien{% endif %}
@@ -896,7 +900,7 @@
           <button class="btn-dismiss" onclick="dismissJob({{ job.id }}, this);event.stopPropagation();" title="Masquer">✕</button>
           <div class="jc-left">
             <div class="jc-title">
-              {{ job.title }}
+              <a href="{{ job.url | clean_url }}" target="_blank" class="jc-title-link">{{ job.title }}</a>
               {% if not job.viewed %}<span class="badge badge-new">Nouveau</span>{% endif %}
               <span class="badge badge-fresh-{{ job.freshness_score or 'D' }}">
                 {% if job.freshness_score == 'A' %}🔥 Neuf{% elif job.freshness_score == 'B' %}📆 Récents{% elif job.freshness_score == 'C' %}📅 Semaine{% else %}Ancien{% endif %}
