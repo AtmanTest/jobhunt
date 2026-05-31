@@ -147,7 +147,6 @@
   .user-dropdown.open { display: block; }
   .user-dropdown .dd-header { padding: 10px 12px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
   .user-dropdown .dd-header .name { font-weight: 600; font-size: 13px; }
-  .user-dropdown .dd-header .email { font-size: 11px; color: var(--text-muted); }
   .user-dropdown a {
     display: flex; align-items: center; gap: 10px;
     padding: 8px 12px; border-radius: 8px;
@@ -635,7 +634,6 @@
         <div class="user-dropdown" id="user-dropdown">
           <div class="dd-header">
             <div class="name" id="dd-name">—</div>
-            <div class="email" id="dd-email">—</div>
           </div>
           <a href="/settings">👤 Mon Profil</a>
           <a href="/settings">⚙️ Paramètres</a>
@@ -1255,13 +1253,11 @@ function updateStage(jobId, stage) {
     var avatar = document.getElementById('nav-avatar');
     var name = document.getElementById('nav-name');
     var ddName = document.getElementById('dd-name');
-    var ddEmail = document.getElementById('dd-email');
     if (!avatar) return;
     if (d.authenticated) {
       var initial = d.full_name ? d.full_name.charAt(0).toUpperCase() : (d.email || 'U').charAt(0).toUpperCase();
       name.textContent = d.full_name || d.email || '—';
       ddName.textContent = d.full_name || d.email || '—';
-      ddEmail.textContent = d.email || '—';
       if (d.avatar_url && d.avatar_url.startsWith('data:')) {
         avatar.innerHTML = '<img src="' + d.avatar_url + '" alt="">';
       } else {
