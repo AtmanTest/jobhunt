@@ -61,8 +61,12 @@ def main():
     print(f"JobHunt Auto-Update — {now}")
     print("=" * 50)
     
-    # 1. Scrape
-    print("\n1️⃣ Scraping jobs...")
+    # 0. Google Jobs (Chrome) — source principale, scan tout
+    print("\n0️⃣ Google Jobs (Chrome)...")
+    run('python3 -c "from google_jobs_scraper import scrape_google_all; from scraper import save_jobs; j=scrape_google_all(); n=save_jobs(j); print(f\'✅ {n} nouveaux de Google Jobs\')"', timeout=180)
+    
+    # 1. Scrape (sources directes: WTTJ, WWR, etc.)
+    print("\n1️⃣ Scraping sources directes...")
     run("python3 scraper.py")
     
     # 2. Export static JSON + write timestamp
