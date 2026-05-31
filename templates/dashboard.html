@@ -111,6 +111,59 @@
   }
   .header-nav .refresh-btn:hover { background: var(--accent-dim); transform: scale(1.02); }
   .header-right { display: flex; align-items: center; gap: 14px; }
+
+  /* ── User Menu ── */
+  .user-menu { position: relative; }
+  .user-trigger {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 8px 4px 4px;
+    border-radius: 8px; border: 1px solid var(--border);
+    background: var(--card); cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit; font-size: 13px; color: var(--text);
+  }
+  .user-trigger:hover { border-color: var(--accent); background: var(--card-hover); }
+  .user-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--accent-dim);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    overflow: hidden; flex-shrink: 0;
+  }
+  .user-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .user-name { font-weight: 500; font-size: 12px; }
+  .user-chevron { font-size: 10px; color: var(--text-muted); transition: transform 0.2s; }
+  .user-chevron.open { transform: rotate(180deg); }
+  .user-dropdown {
+    position: absolute; top: calc(100% + 6px); right: 0;
+    min-width: 200px; background: var(--card);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 6px; display: none; z-index: 200;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .user-dropdown.open { display: block; }
+  .user-dropdown .dd-header { padding: 10px 12px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+  .user-dropdown .dd-header .name { font-weight: 600; font-size: 13px; }
+  .user-dropdown .dd-header .email { font-size: 11px; color: var(--text-muted); }
+  .user-dropdown a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; border-radius: 8px;
+    text-decoration: none; color: var(--text-dim);
+    font-size: 13px; font-weight: 500; transition: all 0.15s;
+  }
+  .user-dropdown a:hover { background: var(--card-hover); color: var(--text); }
+  .user-dropdown .dd-divider { height: 1px; background: var(--border); margin: 4px 12px; }
+  .user-dropdown .dd-danger { color: var(--red); }
+  .user-dropdown .dd-danger:hover { background: rgba(255,107,107,0.1); color: var(--red); }
+  .user-login-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 8px;
+    background: var(--accent); color: #fff !important;
+    font-size: 12px; font-weight: 600; text-decoration: none;
+    transition: all 0.2s;
+  }
+  .user-login-btn:hover { background: var(--accent-dim); }
+
   .live-dot {
     display: inline-flex; align-items: center; gap: 6px;
     font-size: 11px; color: var(--text-muted);
@@ -561,11 +614,42 @@
     <div class="header-right">
       <span class="live-dot"><span class="time">{{ last_update }}</span></span>
       <button class="refresh-btn" onclick="window.location.href='{{ url_for('refresh') }}';this.textContent='⏳';">↻ Refresh</button>
+      <div class="user-menu" id="user-menu">
+        <button class="user-trigger" id="user-trigger" onclick="toggleDropdown()">
+          <div class="user-avatar" id="nav-avatar">—</div>
+          <span class="user-name" id="nav-name">—</span>
+          <span class="user-chevron" id="nav-chevron">▼</span>
+        </button>
+        <div class="user-dropdown" id="user-dropdown">
+          <div class="dd-header">
+            <div class="name" id="dd-name">—</div>
+            <div class="email" id="dd-email">—</div>
+          </div>
+          <a href="/settings">👤 Mon Profil</a>
+          <a href="/settings">⚙️ Paramètres</a>
+          <div class="dd-divider"></div>
+          <a href="#" class="dd-danger" onclick="logout();return false;">🚪 Déconnexion</a>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- ─── MAIN ─── -->
   <div class="main">
+
+    <!-- Welcome -->
+    <div class="welcome-section" id="welcome-section" style="margin-bottom: 20px; display: none;">
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <div style="font-size:20px; font-weight:800; letter-spacing:-0.5px;">
+            Bonjour <span id="welcome-name">👋</span>
+          </div>
+          <div style="font-size:12px; color:var(--text-dim); margin-top:2px;">
+            <span id="welcome-headline"></span>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Hero Stats -->
     <div class="hero">
@@ -872,7 +956,6 @@
   <div class="footer">
     JobHunt · v{{ version }} · <a href="{{ url_for('changelog') }}">Changelog</a> · <a href="{{ url_for('about') }}">À propos</a>
     <span id="supabase-badge" style="font-size:11px;opacity:0.6;margin-left:8px;">☁️ ...</span>
-    <span id="user-badge" style="font-size:11px;margin-left:8px;"></span>
   </div>
 
 </div><!-- /app -->
@@ -1153,18 +1236,56 @@ function updateStage(jobId, stage) {
       if (badge) badge.textContent = '☁️ Supabase ❌';
     });
 
-  // Check auth status
+  // Check auth status → user menu
+  window.renderUserMenu = function(d) {
+    var avatar = document.getElementById('nav-avatar');
+    var name = document.getElementById('nav-name');
+    var ddName = document.getElementById('dd-name');
+    var ddEmail = document.getElementById('dd-email');
+    if (!avatar) return;
+    if (d.authenticated) {
+      var initial = d.full_name ? d.full_name.charAt(0).toUpperCase() : (d.email || 'U').charAt(0).toUpperCase();
+      name.textContent = d.full_name || d.email || '—';
+      ddName.textContent = d.full_name || d.email || '—';
+      ddEmail.textContent = d.email || '—';
+      if (d.avatar_url && d.avatar_url.startsWith('data:')) {
+        avatar.innerHTML = '<img src="' + d.avatar_url + '" alt="">';
+      } else {
+        avatar.textContent = initial;
+      }
+      // Show welcome section
+      var ws = document.getElementById('welcome-section');
+      if (ws) { ws.style.display = ''; }
+      var wn = document.getElementById('welcome-name');
+      if (wn) { wn.textContent = (d.full_name || d.email || '').split(' ')[0] + ' 👋'; }
+      var wh = document.getElementById('welcome-headline');
+      if (wh) { wh.textContent = d.headline || 'Bienvenue sur ton tableau de bord'; }
+    } else {
+      // Not logged in — show login button
+      var trigger = document.getElementById('user-trigger');
+      var dropdown = document.getElementById('user-dropdown');
+      trigger.outerHTML = '<a href="/login" class="user-login-btn">🔑 Connexion</a>';
+      if (dropdown) dropdown.remove();
+    }
+  };
+
   fetch('/api/auth/me')
     .then(r => r.json())
-    .then(d => {
-      const badge = document.getElementById('user-badge');
-      if (!badge) return;
-      if (d.authenticated) {
-        badge.innerHTML = '👤 ' + d.email + ' <a href="#" onclick="logout();return false;" style="color:#888;font-size:11px;">déconnexion</a>';
-      } else {
-        badge.innerHTML = '<a href="/login" style="color:#4f46e5;font-size:11px;">🔑 connexion</a>';
-      }
-    });
+    .then(d => { window.renderUserMenu(d); });
+
+  window.toggleDropdown = function() {
+    document.getElementById('user-dropdown').classList.toggle('open');
+    document.getElementById('nav-chevron').classList.toggle('open');
+  };
+  document.addEventListener('click', function(e) {
+    var menu = document.getElementById('user-menu');
+    if (menu && !menu.contains(e.target)) {
+      var dd = document.getElementById('user-dropdown');
+      var ch = document.getElementById('nav-chevron');
+      if (dd) dd.classList.remove('open');
+      if (ch) ch.classList.remove('open');
+    }
+  });
 
   // Logout
   window.logout = function() {

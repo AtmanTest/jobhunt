@@ -300,7 +300,7 @@ def api_auth_logout():
 
 @app.route("/api/auth/me")
 def api_auth_me():
-    """Return current user info."""
+    """Return current user info + profile data."""
     uid = get_user_id()
     if not uid:
         return jsonify({"authenticated": False})
@@ -308,7 +308,114 @@ def api_auth_me():
         "authenticated": True,
         "user_id": uid,
         "email": session.get("email"),
+        "full_name": session.get("full_name", ""),
+        "avatar_url": session.get("avatar_url", ""),
+        "headline": session.get("headline", ""),
     })
+
+
+# ─── Profile Routes ─────────────────────────────────────────────
+
+SUPABASE_REST = f"{SUPABASE_URL}/rest/v1"
+
+def _supabase_headers():
+    return {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "return=representation",
+    }
+
+
+@app.route("/api/profile", methods=["GET", "PUT"])
+def api_profile():
+    """Get or update current user's profile."""
+    uid = get_user_id()
+    if not uid:
+        return jsonify({"error": "Non authentifié"}), 401
+
+    if request.method == "GET":
+        try:
+            r = requests.get(
+                f"{SUPABASE_REST}/profiles?user_id=eq.{uid}",
+                headers=_supabase_headers(),
+                timeout=5,
+            )
+            if r.status_code == 200 and r.json():
+                return jsonify(r.json()[0])
+            return jsonify({"user_id": uid, "email": session.get("email")})
+        except Exception as e:
+            return jsonify({"error": str(e)[:100]}), 500
+
+    # PUT — update profile
+    data = request.get_json() or {}
+    allowed = ["full_name", "headline", "location", "phone", "bio", "preferences"]
+    update = {k: v for k, v in data.items() if k in allowed and v}
+    if not update:
+        return jsonify({"error": "Aucune donnée valide"}), 400
+
+    try:
+        # Upsert — update if exists, insert if not
+        update["user_id"] = uid
+        update["email"] = session.get("email")
+        r = requests.post(
+            f"{SUPABASE_REST}/profiles",
+            headers={**_supabase_headers(), "Prefer": "resolution=merge-duplicates"},
+            json=update,
+            timeout=5,
+        )
+        if r.status_code in (200, 201):
+            result = r.json()
+            if isinstance(result, list) and result:
+                result = result[0]
+            # Update session cache
+            for k in ["full_name", "avatar_url", "headline"]:
+                if k in result:
+                    session[k] = result[k]
+            return jsonify(result)
+        return jsonify({"error": r.text[:100]}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)[:100]}), 500
+
+
+@app.route("/api/profile/avatar", methods=["POST"])
+def api_profile_avatar():
+    """Upload avatar image (base64) and store URL in profile."""
+    uid = get_user_id()
+    if not uid:
+        return jsonify({"error": "Non authentifié"}), 401
+
+    data = request.get_json() or {}
+    avatar_b64 = data.get("avatar")
+    if not avatar_b64:
+        return jsonify({"error": "Image requise"}), 400
+
+    try:
+        # Store as data URL directly in the profile
+        avatar_url = f"data:image/jpeg;base64,{avatar_b64}" if not avatar_b64.startswith("data:") else avatar_b64
+        r = requests.post(
+            f"{SUPABASE_REST}/profiles",
+            headers={**_supabase_headers(), "Prefer": "resolution=merge-duplicates"},
+            json={"user_id": uid, "avatar_url": avatar_url},
+            timeout=10,
+        )
+        if r.status_code in (200, 201):
+            session["avatar_url"] = avatar_url
+            return jsonify({"ok": True, "avatar_url": avatar_url})
+        return jsonify({"error": r.text[:100]}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)[:100]}), 500
+
+
+@app.route("/settings")
+def settings_page():
+    """Settings page for authenticated users."""
+    if not require_auth():
+        return redirect(url_for("login_page"))
+    return render_template("settings.html")
+
+
+# ─── DB / Data Setup ──────────────────────────────────────────
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "jobs.db")
 GITHUB_JOBS_URL = "https://raw.githubusercontent.com/AtmanTest/jobhunt/main/docs/jobs.json"
