@@ -61,6 +61,34 @@ if not GITHUB_TOKEN:
                 GITHUB_TOKEN = f.read().strip()
             break
 
+def _sync_dismissed_to_github():
+    """Push dismissed job to GitHub so it survives Render restarts."""
+    if not GITHUB_TOKEN:
+        return
+    import base64
+    try:
+        conn = get_db()
+        rows = conn.execute("SELECT title, company, url FROM dismissed_jobs").fetchall()
+        conn.close()
+    except:
+        return
+    dismissed_data = [{"title": r["title"], "company": r.get("company",""), "url": r.get("url","")} for r in rows]
+    payload = json.dumps({"dismissed": dismissed_data, "exported_at": datetime.now().isoformat()}, indent=2)
+    repo = "AtmanTest/jobhunt"
+    gh_url = f"https://api.github.com/repos/{repo}/contents/docs/dismissed_jobs.json"
+    headers = {"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"}
+    try:
+        get_r = requests.get(gh_url, headers=headers, timeout=10)
+        sha = get_r.json().get("sha") if get_r.status_code == 200 else None
+        put_data = {"message": "sync dismissed [auto]", "content": base64.b64encode(payload.encode()).decode()}
+        if sha:
+            put_data["sha"] = sha
+        r = requests.put(gh_url, json=put_data, headers=headers, timeout=15)
+        if r.status_code in (200, 201):
+            print(f"[GitHub] Dismissal synced ({len(dismissed_data)} entries)")
+    except Exception as e:
+        print(f"[GitHub] Sync failed: {e}")
+
 FEATURES_DIR = os.path.join(os.path.dirname(__file__), "tests", "features")
 
 
@@ -435,14 +463,28 @@ def _populate_from_github():
         for job in jobs:
             conn.execute("""INSERT OR IGNORE INTO jobs
                 (title, company, source, url, location, salary, tags,
-                 description, date, raw_date, is_qa, freelance_status, freelance_score)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                 description, date, raw_date, is_qa, freelance_status, freelance_score,
+                 pipeline_stage)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (job.get("title",""), job.get("company",""), job.get("source",""),
                  job.get("url",""), job.get("location",""), job.get("salary",""),
                  job.get("tags",""), "", job.get("date",""), job.get("raw_date",0),
                  job.get("is_qa",1), job.get("freelance_status","VALIDÉE"),
-                 job.get("freelance_score",30)))
+                 job.get("freelance_score",30),
+                 job.get("pipeline_stage","new")))
         conn.commit()
+        # Also restore dismissed_jobs from GitHub
+        try:
+            dj_resp = requests.get("https://raw.githubusercontent.com/AtmanTest/jobhunt/main/docs/dismissed_jobs.json", timeout=15)
+            if dj_resp.status_code == 200:
+                dj_data = dj_resp.json()
+                for d in dj_data.get("dismissed", []):
+                    conn.execute("INSERT OR IGNORE INTO dismissed_jobs (title, company, url) VALUES (?, ?, ?)",
+                        (d["title"], d.get("company",""), d.get("url","")))
+                conn.commit()
+                print(f"[Render] Restored {len(dj_data.get('dismissed',[]))} dismissed entries")
+        except Exception as e:
+            print(f"[Render] dismissed_jobs restore skipped: {e}")
         conn.close()
         print(f"[Render] Loaded {len(jobs)} jobs from GitHub")
     except Exception as e:
@@ -824,6 +866,7 @@ def api_job_stage(job_id):
             if job:
                 norm_title = job["title"].strip().lower()[:100]
                 norm_company = (job["company"] or "").strip().lower()[:100]
+                dj_url = job["url"]
                 # Check if already exists
                 existing = conn.execute(
                     "SELECT id FROM dismissed_jobs WHERE LOWER(TRIM(title)) = ? AND LOWER(TRIM(company)) = ?",
@@ -832,13 +875,20 @@ def api_job_stage(job_id):
                 if not existing:
                     conn.execute(
                         "INSERT INTO dismissed_jobs (title, company, url) VALUES (?, ?, ?)",
-                        (norm_title, norm_company, job["url"])
+                        (norm_title, norm_company, dj_url)
                     )
         except Exception:
             pass  # dismissed_jobs is bonus; pipeline_stage is the primary filter
     
     conn.commit()
     conn.close()
+    
+    # Sync to GitHub after commit so the new entry is visible
+    if stage == "dismissed":
+        try:
+            _sync_dismissed_to_github()
+        except Exception:
+            pass
     return jsonify({"status": "ok"})
 
 

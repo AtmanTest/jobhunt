@@ -2651,6 +2651,18 @@ def export_static_json(output_path="docs/jobs.json"):
         json.dump({"jobs": jobs, "exported_at": datetime.now().isoformat()}, f, indent=2)
     print(f"✓ Exported {len(jobs)} jobs to {output_path}")
     
+    # Export dismissed_jobs table as separate file (for Render restore)
+    dismissed_path = os.path.join(os.path.dirname(output_path), "dismissed_jobs.json")
+    try:
+        conn = get_db()
+        dismissed = [dict(r) for r in conn.execute("SELECT title, company, url FROM dismissed_jobs").fetchall()]
+        conn.close()
+        with open(dismissed_path, "w") as f:
+            json.dump({"dismissed": dismissed, "exported_at": datetime.now().isoformat()}, f, indent=2)
+        print(f"✓ Exported {len(dismissed)} dismissed entries to {dismissed_path}")
+    except Exception as e:
+        print(f"  dismissed_jobs export skipped: {e}")
+    
     # Also sync full dataset to Supabase
     if _supabase_reachable():
         try:
