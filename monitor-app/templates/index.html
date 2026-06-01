@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATMAN Monitor — Surveillance de sites web</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#07070d; --bg-alt:#0c0c16; --card:#12121e;
+    --card-hover:#181828; --border:#1e1e32; --border-light:#2a2a44;
+    --text:#e8e8f0; --text-dim:#8888a8; --text-muted:#55557a;
+    --accent:#7c6cf0; --accent-dim:#5a4bc0;
+    --accent-glow:rgba(124,108,240,0.12);
+    --green:#00d68f; --green-dim:rgba(0,214,143,0.12);
+    --orange:#ff9f43; --red:#ff6b6b; --blue:#54a0ff;
+    --glass:rgba(18,18,30,0.85);
+    --radius:12px; --radius-lg:16px;
+  }
+  body { font-family:'Inter',-apple-system,sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
+  ::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+  /* ── BG ── */
+  .bg-grid { position:fixed; inset:0; z-index:0; background-image:linear-gradient(rgba(124,108,240,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(124,108,240,0.03) 1px,transparent 1px); background-size:60px 60px; pointer-events:none; }
+  .bg-glow { position:fixed; top:-30vh; left:-10vw; width:60vw; height:60vh; background:radial-gradient(ellipse,rgba(124,108,240,0.07) 0%,transparent 70%); pointer-events:none; z-index:0; animation:drift 15s ease-in-out infinite alternate; }
+  @keyframes drift { 0%{transform:translate(0,0)} 100%{transform:translate(8vw,4vh)} }
+
+  .app { position:relative; z-index:1; }
+
+  /* ── Header ── */
+  .header { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; max-width:1100px; margin:0 auto; }
+  .logo { font-size:18px; font-weight:800; letter-spacing:-.5px; background:linear-gradient(135deg,var(--accent),var(--blue)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .logo span { font-weight:400; -webkit-text-fill-color:var(--text-dim); }
+  .header nav a { font-size:12px; font-weight:500; color:var(--text-muted); text-decoration:none; padding:6px 12px; border-radius:8px; transition:all .15s; }
+  .header nav a:hover { color:var(--text); background:var(--card); }
+
+  /* ── Hero ── */
+  .hero { text-align:center; padding:56px 24px 40px; }
+  .hero-badge { display:inline-flex; align-items:center; gap:6px; padding:5px 14px; border-radius:20px; background:var(--accent-glow); border:1px solid rgba(124,108,240,0.2); font-size:11px; color:var(--accent); font-weight:600; margin-bottom:16px; }
+  .hero-badge .dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .hero h1 { font-size:40px; font-weight:800; letter-spacing:-1.2px; background:linear-gradient(135deg,#fff 30%,var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .hero p { color:var(--text-dim); font-size:15px; margin-top:10px; max-width:520px; margin-left:auto; margin-right:auto; line-height:1.6; }
+  .hero-actions { margin-top:20px; display:flex; gap:10px; justify-content:center; }
+
+  .btn { padding:10px 24px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .15s; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+  .btn.primary { background:var(--accent); color:#fff; border:none; }
+  .btn.primary:hover { background:var(--accent-dim); }
+  .btn.outline { background:transparent; border:1px solid var(--border); color:var(--text-dim); }
+  .btn.outline:hover { border-color:var(--accent); color:var(--accent); }
+
+  .main { max-width:1100px; margin:0 auto; padding:0 24px 48px; }
+
+  /* ── Stats ── */
+  .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+  .stat-box { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; }
+  .stat-box .lbl { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
+  .stat-box .val { font-size:28px; font-weight:800; margin-top:4px; }
+  .stat-box .val.green { color:var(--green); }
+  .stat-box .val.purple { color:var(--accent); }
+  .stat-box .val.orange { color:var(--orange); }
+  .stat-box .sub { font-size:11px; color:var(--text-dim); margin-top:2px; }
+
+  /* ── Add form ── */
+  .add-form { display:flex; gap:8px; flex-wrap:wrap; padding:16px 18px; background:rgba(255,255,255,0.02); border:1px dashed var(--border); border-radius:var(--radius); margin-bottom:24px; }
+  .add-form input { flex:1; min-width:180px; padding:8px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-alt); color:var(--text); font-size:12px; font-family:inherit; outline:none; }
+  .add-form input:focus { border-color:var(--accent); }
+  .add-form button { padding:8px 18px; border-radius:8px; border:none; background:var(--accent); color:#fff; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .add-form button:hover { background:var(--accent-dim); }
+
+  /* ── Sites grid ── */
+  .sites-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:12px; margin-bottom:24px; }
+  .site-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px; position:relative; overflow:hidden; transition:all .15s; }
+  .site-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+  .site-card.up::before { background:var(--green); }
+  .site-card.down::before { background:var(--red); }
+  .site-card:hover { border-color:var(--border-light); }
+  .sc-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .sc-name { font-size:13px; font-weight:700; }
+  .sc-name .url { font-size:10px; color:var(--text-muted); font-weight:400; margin-left:6px; }
+  .sc-status { font-size:10px; font-weight:600; padding:3px 10px; border-radius:20px; }
+  .sc-status.up { background:var(--green-dim); color:var(--green); }
+  .sc-status.down { background:rgba(255,107,107,0.12); color:var(--red); }
+  .sc-meta { display:flex; gap:16px; font-size:11px; color:var(--text-dim); margin-bottom:8px; }
+  .sc-bar { display:flex; gap:2px; min-height:20px; align-items:flex-end; }
+  .sc-bar .b { width:6px; border-radius:2px 2px 0 0; }
+  .sc-bar .b.up { background:var(--green); }
+  .sc-bar .b.down { background:var(--red); }
+  .sc-uptime { font-size:24px; font-weight:800; margin:6px 0 2px; }
+  .sc-uptime.green { color:var(--green); }
+  .sc-uptime.red { color:var(--red); }
+  .sc-uptime-label { font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; }
+  .sc-actions { display:flex; gap:6px; margin-top:10px; }
+
+  .btn-sm { padding:4px 10px; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--text-dim); font-size:10px; font-weight:500; cursor:pointer; font-family:inherit; transition:all .15s; }
+  .btn-sm:hover { border-color:var(--accent); color:var(--accent); }
+  .btn-sm.danger:hover { border-color:var(--red); color:var(--red); }
+
+  /* ── Alerts ── */
+  .section { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; margin-bottom:24px; }
+  .section-head { padding:14px 18px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); }
+  .section-head h2 { font-size:13px; font-weight:700; }
+  .section-body { padding:4px 18px 8px; }
+  .alert-item { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:12px; }
+  .alert-item:last-child { border-bottom:none; }
+  .alert-item .icon { font-size:16px; width:20px; text-align:center; }
+  .alert-item .info { flex:1; }
+  .alert-item .info strong { font-weight:600; }
+  .alert-item .info .msg { color:var(--text-dim); }
+  .alert-item .time { font-size:10px; color:var(--text-muted); flex-shrink:0; }
+
+  /* ── Pricing ── */
+  .pricing { margin-top:48px; }
+  .pricing h2 { text-align:center; font-size:24px; font-weight:800; letter-spacing:-.5px; margin-bottom:6px; }
+  .pricing p { text-align:center; color:var(--text-dim); font-size:13px; margin-bottom:24px; }
+  .price-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .price-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:28px 24px; text-align:center; transition:all .15s; }
+  .price-card.featured { border-color:var(--accent); position:relative; }
+  .price-card.featured::after { content:'POPULAIRE'; position:absolute; top:-9px; left:50%; transform:translateX(-50%); font-size:9px; font-weight:700; background:var(--accent); color:#fff; padding:2px 14px; border-radius:10px; letter-spacing:1px; }
+  .price-card:hover { border-color:var(--border-light); }
+  .pc-name { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); }
+  .pc-price { font-size:36px; font-weight:800; margin:8px 0; letter-spacing:-1px; }
+  .pc-price span { font-size:14px; font-weight:500; color:var(--text-dim); }
+  .pc-feats { font-size:11px; color:var(--text-dim); line-height:2.2; }
+  .pc-btn { display:inline-block; margin-top:16px; padding:10px 28px; border-radius:10px; border:none; background:var(--accent); color:#fff; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .15s; width:100%; }
+  .pc-btn:hover { background:var(--accent-dim); }
+  .pc-btn.outline { background:transparent; border:1px solid var(--border); color:var(--text-dim); }
+  .pc-btn.outline:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* ── Footer ── */
+  .footer { text-align:center; padding:32px 24px; color:var(--text-muted); font-size:11px; border-top:1px solid var(--border); margin-top:48px; }
+
+  .empty-state { text-align:center; padding:40px; color:var(--text-muted); }
+  .empty-state .e-icon { font-size:40px; margin-bottom:8px; opacity:.5; }
+  .empty-state .e-t { font-size:14px; font-weight:600; margin-bottom:4px; }
+
+  .toast { position:fixed; bottom:24px; right:24px; padding:10px 20px; border-radius:10px; font-size:12px; font-weight:600; opacity:0; transform:translateY(24px); transition:all .3s cubic-bezier(.4,0,.2,1); z-index:2000; box-shadow:0 4px 24px rgba(0,0,0,.4); }
+  .toast.show { opacity:1; transform:translateY(0); }
+  .toast.ok { background:var(--green-dim); color:var(--green); border:1px solid rgba(0,214,143,0.3); }
+  .toast.err { background:rgba(255,107,107,0.15); color:var(--red); border:1px solid rgba(255,107,107,0.3); }
+
+  @media(max-width:768px) { .stats-row{grid-template-columns:repeat(2,1fr)} .price-grid{grid-template-columns:1fr} .hero h1{font-size:28px} .header{flex-direction:column;gap:12px} }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<div class="app">
+
+  <div class="header">
+    <div class="logo">ATMAN <span>· Monitor</span></div>
+    <nav>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#pricing">Tarifs</a>
+      <a href="mailto:contact@atman.tech">Contact</a>
+    </nav>
+  </div>
+
+  <div class="hero">
+    <div class="hero-badge"><span class="dot"></span> Surveillance en temps réel</div>
+    <h1>Vos sites sous surveillance 24/7</h1>
+    <p>Vérification automatique toutes les 5 minutes · Alertes instantanées · Historique 30 jours</p>
+    <div class="hero-actions">
+      <a href="#dashboard" class="btn primary">Essayer gratuitement</a>
+      <a href="#pricing" class="btn outline">Voir les offres</a>
+    </div>
+  </div>
+
+  <div class="main" id="dashboard">
+
+    <!-- Stats -->
+    <div class="stats-row" id="stats-row">
+      <div class="stat-box"><div class="lbl">Sites surveillés</div><div class="val purple" id="stat-sites">0</div><div class="sub">en ligne / hors ligne</div></div>
+      <div class="stat-box"><div class="lbl">Uptime global</div><div class="val green" id="stat-uptime">—</div><div class="sub">moyenne 30 jours</div></div>
+      <div class="stat-box"><div class="lbl">Vérifications</div><div class="val" id="stat-checks" style="color:var(--blue)">0</div><div class="sub">aujourd'hui</div></div>
+      <div class="stat-box"><div class="lbl">Alertes</div><div class="val orange" id="stat-alerts">0</div><div class="sub">7 derniers jours</div></div>
+    </div>
+
+    <!-- Add site -->
+    <div class="add-form">
+      <input type="url" id="new-url" placeholder="https://exemple.com" value="https://">
+      <input type="text" id="new-name" placeholder="Nom du site">
+      <button onclick="addSite()">+ Ajouter un site</button>
+    </div>
+
+    <!-- Sites -->
+    <div id="sites-grid" class="sites-grid">
+      <div class="empty-state"><div class="e-icon">📡</div><div class="e-t">Aucun site surveillé</div><div class="e-d">Ajoutez un site pour commencer la surveillance</div></div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="section">
+      <div class="section-head"><h2>🔔 Dernières alertes</h2></div>
+      <div class="section-body" id="alerts-list"><div class="empty-state" style="padding:16px">Aucune alerte</div></div>
+    </div>
+
+    <!-- Pricing -->
+    <div class="pricing" id="pricing">
+      <h2>Tarifs simples & transparents</h2>
+      <p>Pas d'engagement · Résilie à tout moment · Paiement sécurisé Stripe</p>
+      <div class="price-grid" id="price-grid"></div>
+    </div>
+
+  </div>
+
+  <div class="footer">ATMAN Monitor © 2026 · Propulsé par Hermes Agent · Tous droits réservés</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PLANS = {{ plans | tojson }};
+const STRIPE_KEY = '{{ stripe_key }}';
+
+function toast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + (err ? 'err' : 'ok');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Render pricing
+const grid = document.getElementById('price-grid');
+Object.entries(PLANS).forEach(([id, p]) => {
+  const featured = id === 'pro';
+  grid.innerHTML += `<div class="price-card${featured?' featured':''}">
+    <div class="pc-name">${p.name}</div>
+    <div class="pc-price">${p.price}<span>€/mois</span></div>
+    <div class="pc-feats">${p.sites === 999 ? 'Sites illimités' : p.sites + ' sites'}<br>Vérification ${p.interval}<br>${p.alerts}<br>Historique ${p.history} jours</div>
+    <button class="pc-btn${featured?'':' outline'}" onclick="subscribe('${id}')">Choisir</button>
+  </div>`;
+});
+
+function subscribe(planId) {
+  const p = PLANS[planId];
+  if (!p) return;
+  if (!STRIPE_KEY || STRIPE_KEY.startsWith('pk_test')) {
+    toast('🔧 Stripe en cours de configuration — contacte-moi pour souscrire', false);
+    return;
+  }
+  fetch('/api/create-checkout', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({plan: planId})
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.url) window.location.href = d.url;
+    else toast('❌ ' + (d.error || ''), true);
+  })
+  .catch(e => toast('❌ ' + e, true));
+}
+
+function addSite() {
+  const url = document.getElementById('new-url').value.trim();
+  const name = document.getElementById('new-name').value.trim() || url;
+  if (!url || url === 'https://') { toast('Entre une URL valide', true); return; }
+  fetch('/api/sites', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({url,name})})
+    .then(r=>r.json()).then(d => {
+      if (d.status==='ok') { toast('✅ Site ajouté'); document.getElementById('new-url').value='https://'; document.getElementById('new-name').value=''; loadSites(); }
+      else toast('❌ '+(d.error||''), true);
+    });
+}
+
+function deleteSite(url) {
+  if (!confirm('Supprimer ?')) return;
+  fetch('/api/sites', {method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({url})})
+    .then(r=>r.json()).then(d => { if(d.status==='ok'){toast('🗑️ Supprimé');loadSites();} });
+}
+
+function checkAll() {
+  fetch('/api/check-all', {method:'POST'}).then(() => setTimeout(loadSites, 2000));
+  toast('↻ Vérification...');
+}
+
+function loadSites() {
+  fetch('/api/sites').then(r=>r.json()).then(data => {
+    const sites = data.sites || [];
+    const grid = document.getElementById('sites-grid');
+    if (!sites.length) {
+      grid.innerHTML = '<div class="empty-state"><div class="e-icon">📡</div><div class="e-t">Aucun site surveillé</div><div class="e-d">Ajoutez un site pour commencer</div></div>';
+      updateStats(sites, data.alerts||[]);
+      return;
+    }
+    grid.innerHTML = sites.map(s => {
+      const cls = s.status==='up'?'up':(s.status==='down'?'down':'warn');
+      const lbl = s.status==='up'?'✅ En ligne':(s.status==='down'?'❌ Hors ligne':'⚠ Instable');
+      const up = s.uptime_30d||100;
+      const bars = (s.last_20||[]).slice(-20).map(c => {
+        const h = c==='up'?16:(c==='down'?3:8);
+        return `<div class="b ${c}" style="height:${h}px"></div>`;
+      }).join('');
+      return `<div class="site-card ${cls}"><div class="sc-head"><div class="sc-name">${s.name} <span class="url">${s.url}</span></div><span class="sc-status ${cls}">${lbl}</span></div>
+      <div class="sc-meta"><span>⏱ ${s.last_response||'—'} ms</span><span>📊 ${s.total_checks||0} vérifs</span><span>🕐 ${s.last_check?new Date(s.last_check).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'—'}</span></div>
+      <div class="sc-bar">${bars}</div><div class="sc-uptime ${up>=99?'green':'red'}">${up.toFixed(1)}%</div><div class="sc-uptime-label">Uptime 30 jours</div>
+      <div class="sc-actions"><button class="btn-sm" onclick="fetch('/api/check-one',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:'${s.url}'})}).then(()=>setTimeout(loadSites,2000))">↻ Vérifier</button><button class="btn-sm danger" onclick="deleteSite('${s.url}')">🗑 Supprimer</button></div></div>`;
+    }).join('');
+    updateStats(sites, data.alerts||[]);
+    renderAlerts(data.alerts||[]);
+  });
+}
+
+function updateStats(sites, alerts) {
+  const up = sites.filter(s=>s.status==='up').length;
+  const down = sites.filter(s=>s.status==='down').length;
+  const total = sites.length;
+  document.getElementById('stat-sites').innerHTML = `${up}<span style="font-size:14px;color:var(--green)">✓</span>/${down}<span style="font-size:14px;color:var(--red)">✗</span>`;
+  document.getElementById('stat-checks').textContent = sites.reduce((a,s)=>a+(s.total_checks||0),0);
+  const wa = alerts.filter(a=>(Date.now()-new Date(a.time))<7*86400000).length;
+  document.getElementById('stat-alerts').textContent = wa;
+  document.getElementById('stat-alerts').style.color = wa>0?'var(--orange)':'var(--green)';
+  const avg = sites.length ? sites.reduce((a,s)=>a+(s.uptime_30d||100),0)/sites.length : 100;
+  document.getElementById('stat-uptime').textContent = avg.toFixed(1)+'%';
+  document.getElementById('stat-uptime').className = 'val '+(avg>=99?'green':(avg>=95?'':'red'));
+}
+
+function renderAlerts(alerts) {
+  const el = document.getElementById('alerts-list');
+  if (!alerts||!alerts.length) { el.innerHTML='<div class="empty-state" style="padding:16px">Aucune alerte</div>'; return; }
+  el.innerHTML = alerts.slice(0,20).map(a => {
+    const t = new Date(a.time);
+    return `<div class="alert-item"><span class="icon">${a.type==='up'?'🟢':'🔴'}</span><div class="info"><strong>${a.name}</strong> <span class="msg">${a.message}</span></div><span class="time">${t.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</span></div>`;
+  }).join('');
+}
+
+loadSites();
+setInterval(loadSites, 15000);
+</script>
+</body>
+</html>

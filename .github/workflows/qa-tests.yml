@@ -1,0 +1,59 @@
+name: QA Tests (Playwright + API)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'URL cible du dashboard'
+        required: true
+        default: 'https://jobhunt-1-ar3w.onrender.com'
+      suites:
+        description: 'Suites à exécuter (playwright,api)'
+        required: true
+        default: 'playwright,api'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install requests
+
+      - name: Install Playwright + Chromium
+        run: |
+          pip install pytest-playwright
+          python -m playwright install chromium
+          echo "PW_INSTALLED=1" >> $GITHUB_ENV
+
+      - name: Run QA suites (per-test-case results)
+        env:
+          PW_PYTHON: python
+        run: |
+          python tests/github_qa_runner.py \
+            --url "${{ inputs.target_url }}" \
+            --suites "${{ inputs.suites }}"
+
+      - name: Upload detailed per-test-case results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa-results-${{ github.run_id }}
+          path: .qa_runs/
+          include-hidden-files: true
+          retention-days: 7
+
+      - name: Upload Playwright screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: screenshots-${{ github.run_id }}
+          path: tests/playwright/screenshots/
+          retention-days: 7
