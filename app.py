@@ -280,7 +280,7 @@ def filter_jobs_by_country(country_id):
     query = f"""
         SELECT * FROM jobs 
         WHERE ({placeholders})
-        AND (contract_type IS NULL OR contract_type IN ('contract', 'freelance', 'contracting'))
+        AND (contract_type IS NULL OR contract_type IN ('contract', 'freelance', 'contracting', 'mission/freelance', 'ambigüe'))
         ORDER BY raw_date DESC, date DESC LIMIT 50
     """
     cursor = conn.execute(query, params)
