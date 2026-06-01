@@ -33,6 +33,12 @@
   .log-entry .msg{color:var(--t2);flex:1}
   .log-entry .date{font-size:10px;color:var(--t3);white-space:nowrap}
   .empty{text-align:center;padding:30px;color:var(--t3);font-size:12px}
+  .pagination{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:12px}
+  .page-btn{min-width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--t2);font-family:inherit;font-size:11px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 6px;transition:all .15s}
+  .page-btn:hover{border-color:var(--blue);color:var(--blue)}
+  .page-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+  .page-btn:disabled{opacity:.25;cursor:default;pointer-events:none}
+  .page-info{font-size:10px;color:var(--t3);margin:0 4px}
   @media(max-width:640px){.main{padding:0 8px}}
 </style>
 </head>
@@ -66,13 +72,75 @@
   <div class="card">
     <div class="section-title">Historique des versions (git log)</div>
     {% if log_entries %}
-    {% for entry in log_entries %}
-    <div class="log-entry">
-      <span class="hash">{{ entry.hash[:7] }}</span>
-      <span class="msg">{{ entry.msg }}</span>
-      <span class="date">{{ entry.date }}</span>
+    <div id="git-log-container">
+      <div id="git-log-entries">
+        {% for entry in log_entries %}
+        <div class="log-entry git-entry" data-idx="{{ loop.index0 }}">
+          <span class="hash">{{ entry.hash[:7] }}</span>
+          <span class="msg">{{ entry.msg }}</span>
+          <span class="date">{{ entry.date }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="pagination" id="git-log-pagination"></div>
     </div>
-    {% endfor %}
+    <script>
+    (function() {
+      var entries = document.querySelectorAll('#git-log-entries .git-entry');
+      var perPage = 10;
+      var total = entries.length;
+      var totalPages = Math.max(1, Math.ceil(total / perPage));
+      var currentPage = 1;
+      function showPage(p) {
+        currentPage = p;
+        entries.forEach(function(e, i) {
+          e.style.display = (i >= (p-1)*perPage && i < p*perPage) ? '' : 'none';
+        });
+        renderPagination();
+      }
+      function renderPagination() {
+        var c = document.getElementById('git-log-pagination');
+        if (!c) return;
+        c.innerHTML = '';
+        if (totalPages <= 1) return;
+        var prev = document.createElement('button');
+        prev.className = 'page-btn'; prev.textContent = '‹';
+        prev.disabled = currentPage <= 1;
+        prev.onclick = function(){ showPage(currentPage - 1); };
+        c.appendChild(prev);
+        var start = Math.max(1, currentPage - 2);
+        var end = Math.min(totalPages, start + 4);
+        if (end - start < 4) start = Math.max(1, end - 4);
+        if (start > 1) {
+          var f = document.createElement('button');
+          f.className = 'page-btn'; f.textContent = '1';
+          f.onclick = function(){ showPage(1); };
+          c.appendChild(f);
+          if (start > 2) { var d = document.createElement('span'); d.className = 'page-info'; d.textContent = '…'; c.appendChild(d); }
+        }
+        for (var i = start; i <= end; i++) {
+          var b = document.createElement('button');
+          b.className = 'page-btn' + (i === currentPage ? ' active' : '');
+          b.textContent = i;
+          b.onclick = (function(p){ return function(){ showPage(p); }; })(i);
+          c.appendChild(b);
+        }
+        if (end < totalPages) {
+          if (end < totalPages - 1) { var d2 = document.createElement('span'); d2.className = 'page-info'; d2.textContent = '…'; c.appendChild(d2); }
+          var l = document.createElement('button');
+          l.className = 'page-btn'; l.textContent = totalPages;
+          l.onclick = function(){ showPage(totalPages); };
+          c.appendChild(l);
+        }
+        var next = document.createElement('button');
+        next.className = 'page-btn'; next.textContent = '›';
+        next.disabled = currentPage >= totalPages;
+        next.onclick = function(){ showPage(currentPage + 1); };
+        c.appendChild(next);
+      }
+      showPage(1);
+    })();
+    </script>
     {% else %}
     <div class="empty">Aucun historique</div>
     {% endif %}
