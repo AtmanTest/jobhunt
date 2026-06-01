@@ -8,7 +8,7 @@ CV = {
     "title": "Consultant QA Senior - Test Manager",
     "status": "Freelance SASU",
     "location": "Bagnolet (93170), Paris · Remote & Présentiel",
-    "phone": "07 56 92 01 03",
+    "phone": "07 69 78 72 13",
     "email": "thasin@live.com",
     "linkedin": "linkedin.com/in/thasin-j-47582635",
     "website": "",
@@ -88,7 +88,7 @@ CV = {
                 "Recette fonctionnelle sur applications web SAP BPC, validation de la conformité "
                 "et de l'intégrité des données."
             ),
-            "keywords": ["Redmine", "SAP", "SAP HANA"],
+            "keywords": ["Redmine", "TestRail", "SAP", "SAP HANA"],
         },
         {
             "period": "Jan 2011 – Sept 2016",
