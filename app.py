@@ -410,8 +410,7 @@ def api_profile_avatar():
 @app.route("/settings")
 def settings_page():
     """Settings page for authenticated users."""
-    if not require_auth():
-        return redirect(url_for("login_page"))
+
     return render_template("settings.html")
 
 
@@ -661,8 +660,7 @@ def filter_jobs_by_country(country_id):
 
 @app.route("/debug")
 def debug_info():
-    if not require_auth():
-        return redirect(url_for("login_page"))
+
     """Debug endpoint to check app state."""
     lines = []
     lines.append(f"Python: {sys.version}")
@@ -695,8 +693,6 @@ def debug_info():
 
 @app.route("/")
 def index():
-    if not require_auth():
-        return redirect(url_for("login_page"))
     _ensure_db_populated()
     stats = get_stats()
 
@@ -798,8 +794,7 @@ def index():
 
 @app.route("/refresh")
 def refresh():
-    if not require_auth():
-        return redirect(url_for("login_page"))
+
     """Manual refresh of job listings."""
     def do_scrape():
         jobs = fetch_all()
@@ -940,8 +935,7 @@ Senior QA Consultant - SASU"""
 
 @app.route("/stats")
 def stats_page():
-    if not require_auth():
-        return redirect(url_for("login_page"))
+
     """Page des statistiques : sources, skills gap, top matches."""
     conn = get_db()
     rows = conn.execute("SELECT * FROM jobs WHERE freelance_status IN ('VALIDÉE', 'AMBIGUË') ORDER BY raw_date DESC").fetchall()
@@ -1395,8 +1389,7 @@ def generate_cover(job_id):
 
 @app.route("/cv")
 def cv_page():
-    if not require_auth():
-        return redirect(url_for("login_page"))
+
     return render_template("cv.html", cv=CV)
 
 
@@ -1407,8 +1400,7 @@ def api_cv():
 
 @app.route("/about")
 def about():
-    if not require_auth():
-        return redirect(url_for("login_page"))
+
     import subprocess, json
     log_entries = []
     cv_tags = []
@@ -1479,8 +1471,7 @@ def about():
 
 @app.route("/changelog")
 def changelog():
-    if not require_auth():
-        return redirect(url_for("login_page"))
+
     import markdown
     try:
         with open("CHANGELOG.md") as f:
@@ -1494,8 +1485,7 @@ def changelog():
 
 @app.route("/marche-qa")
 def marche_qa():
-    if not require_auth():
-        return redirect(url_for("login_page"))
+
     return render_template("marche_qa.html")
 
 
@@ -1503,8 +1493,7 @@ def marche_qa():
 
 @app.route("/qa")
 def qa_dashboard():
-    if not require_auth():
-        return redirect(url_for("login_page"))
+
     return render_template("qa.html")
 
 
@@ -1837,8 +1826,7 @@ def _save_monitor(data):
 
 @app.route("/monitoring")
 def monitoring_page():
-    if not require_auth():
-        return redirect(url_for("login_page"))
+
     return render_template("monitoring.html", version=get_version())
 
 
