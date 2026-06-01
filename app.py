@@ -215,6 +215,20 @@ app.secret_key = "jobhunt-secret-2026"
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
+# ─── Environment detection (Recette / Prod) ──────────────────
+def get_env_label():
+    svc = os.environ.get('RENDER_SERVICE_NAME', '')
+    branch = os.environ.get('RENDER_GIT_BRANCH', '')
+    if 'recette' in svc or branch == 'staging':
+        return 'Recette'
+    if os.environ.get('RENDER'):
+        return 'Prod'
+    return ''  # local dev
+
+@app.context_processor
+def inject_env_label():
+    return dict(env_label=get_env_label())
+
 # ─── Auth helpers ──────────────────────────────────────────────
 
 def get_user_id():

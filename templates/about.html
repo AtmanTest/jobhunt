@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JobHunt — À propos</title>
+    <title>JobHunt — À propos{% if env_label %} · {{ env_label }}{% endif %}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -59,7 +59,7 @@
 
   <div style="text-align:center;margin-bottom:20px;">
     <div class="version-big">v{{ version }}</div>
-    <div style="font-size:13px;color:var(--t2);margin-top:4px;">JobHunt Dashboard — Chasse d'emploi QA automatisée</div>
+    <div style="font-size:13px;color:var(--t2);margin-top:4px;">JobHunt Dashboard{% if env_label %} · {{ env_label }}{% endif %} — Chasse d'emploi QA automatisée</div>
   </div>
 
   <div class="card">

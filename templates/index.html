@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JobHunt Dashboard</title>
+    <title>JobHunt Dashboard{% if env_label %} · {{ env_label }}{% endif %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -333,7 +333,7 @@
 </head>
 <body>
 <div class="header">
-    <h1>⚡ JobHunt</h1>
+    <h1>⚡ JobHunt{% if env_label %} · {{ env_label }}{% endif %}</h1>
     <div class="header-actions">
         <a href="{{ url_for('cv_page') }}" class="btn-secondary">📄 Mon CV</a>
         <a href="{{ url_for('marche_qa') }}" class="btn-outline">🌍 Marché QA</a>

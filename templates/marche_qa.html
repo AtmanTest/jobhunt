@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marché QA Freelance — JobHunt</title>
+<title>Marché QA Freelance — JobHunt{% if env_label %} · {{ env_label }}{% endif %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -292,7 +292,7 @@
 <body>
     <div class="header">
         <div class="header-left">
-            <span class="header-logo">JobHunt</span>
+            <span class="header-logo">JobHunt{% if env_label %} · {{ env_label }}{% endif %}</span>
         </div>
         <div class="header-nav">
             <a href="./">Dashboard</a>

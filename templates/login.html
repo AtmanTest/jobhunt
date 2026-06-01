@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JobHunt · Connexion</title>
+<title>JobHunt{% if env_label %} · {{ env_label }}{% endif %} · Connexion</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
@@ -59,7 +59,7 @@
 <body>
 <div class="auth-box">
   <div class="logo">🔍</div>
-  <h1>JobHunt</h1>
+  <h1>JobHunt{% if env_label %} · {{ env_label }}{% endif %}</h1>
   <p id="subtitle">Connecte-toi pour accéder à tes offres</p>
 
   <div class="error" id="error-msg"></div>

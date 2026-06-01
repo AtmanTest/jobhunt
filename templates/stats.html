@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Stats — JobHunt</title>
+<title>Stats — JobHunt{% if env_label %} · {{ env_label }}{% endif %}</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0f0f13;--card:#1a1a24;--border:#2a2a3a;--text:#e4e4ef;--text-dim:#8888a0;--accent:#6c5ce7;--green:#00d68f;--orange:#ff9f43}
@@ -38,7 +38,7 @@ h1{font-size:22px;margin-bottom:4px}
 </head>
 <body>
 <div class="header">
-  <span class="header-logo">⚡ JobHunt</span>
+  <span class="header-logo">⚡ JobHunt{% if env_label %} · {{ env_label }}{% endif %}</span>
   <div class="header-nav">
     <a href="/">Dashboard</a>
     <a href="/stats" class="active">📊 Stats</a>

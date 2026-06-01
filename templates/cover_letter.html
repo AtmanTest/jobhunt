@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Cover Letter — JobHunt</title>
+<title>Cover Letter — JobHunt{% if env_label %} · {{ env_label }}{% endif %}</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0f0f13;--card:#1a1a24;--border:#2a2a3a;--text:#e4e4ef;--text-dim:#8888a0;--accent:#6c5ce7;--green:#00d68f}
@@ -24,7 +24,7 @@ h1{font-size:20px;margin-bottom:4px}
 </style>
 </head>
 <body>
-<div class="header"><span class="header-logo">⚡ JobHunt</span></div>
+<div class="header"><span class="header-logo">⚡ JobHunt{% if env_label %} · {{ env_label }}{% endif %}</span></div>
 <div class="container">
   <div class="card">
     <h1>✉️ Cover Letter</h1>

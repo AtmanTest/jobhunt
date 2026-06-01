@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paramètres — JobHunt</title>
+<title>Paramètres — JobHunt{% if env_label %} · {{ env_label }}{% endif %}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -241,7 +241,7 @@
 
 <header class="header">
   <div style="display:flex;align-items:center;gap:24px;">
-    <a href="/" class="header-logo" style="text-decoration:none;">JobHunt <span>· Paramètres</span></a>
+    <a href="/" class="header-logo" style="text-decoration:none;">JobHunt{% if env_label %} <span style="font-size:11px;opacity:0.6;">· {{ env_label }}</span>{% endif %} <span>· Paramètres</span></a>
     <nav class="header-nav">
       <a href="/">Dashboard</a>
       <a href="/cv">CV</a>

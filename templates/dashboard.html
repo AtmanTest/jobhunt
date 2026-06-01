@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JobHunt — Marché QA Freelance</title>
+<title>JobHunt{% if env_label %} · {{ env_label }}{% endif %} — Marché QA Freelance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -794,7 +794,7 @@
   <div class="header">
     <div class="header-logo">
       <a href="/" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
-        <span style="font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--accent),#a89bff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px;">JobHunt</span>
+        <span style="font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--accent),#a89bff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px;">JobHunt{% if env_label %}<span style="font-size:12px;font-weight:600;opacity:0.7;margin-left:6px;background:var(--bg2);padding:2px 8px;border-radius:20px;border:1px solid var(--border);-webkit-text-fill-color:var(--t2);"> {{ env_label }}</span>{% endif %}</span>
       </a>
     </div>
     <nav class="header-nav">
@@ -1152,7 +1152,7 @@
 
   <!-- Footer -->
   <div class="footer">
-    JobHunt · v{{ version }} · <a href="{{ url_for('changelog') }}">Changelog</a> · <a href="{{ url_for('about') }}">À propos</a>
+    JobHunt{% if env_label %} · {{ env_label }}{% endif %} · v{{ version }} · <a href="{{ url_for('changelog') }}">Changelog</a> · <a href="{{ url_for('about') }}">À propos</a>
     <span id="supabase-badge" style="font-size:11px;opacity:0.6;margin-left:8px;">☁️ ...</span>
   </div>
 

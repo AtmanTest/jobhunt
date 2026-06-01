@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JobHunt — Changelog</title>
+    <title>JobHunt — Changelog{% if env_label %} · {{ env_label }}{% endif %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -26,7 +26,7 @@
 </head>
 <body>
 <div class="header">
-    <span class="header-logo">⚡ JobHunt — Changelog v{{ version }}</span>
+    <span class="header-logo">⚡ JobHunt{% if env_label %} · {{ env_label }}{% endif %} — Changelog v{{ version }}</span>
 </div>
 <div class="container">
     <h1>📋 Changelog</h1>
