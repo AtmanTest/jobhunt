@@ -4,33 +4,34 @@ Données du CV pour le générateur de cover letters et la page profil.
 """
 
 CV = {
-    "name": "Jahangir",
-    "title": "Senior QA Consultant - Test Manager",
+    "name": "Thasin Jahangir",
+    "title": "Consultant QA Senior - Test Manager",
     "status": "Freelance SASU",
-    "location": "Remote / France",
-    "phone": "",
-    "email": "",
-    "linkedin": "",
+    "location": "Bagnolet (93170), Paris · Remote & Présentiel",
+    "phone": "07 56 92 01 03",
+    "email": "thasin@live.com",
+    "linkedin": "linkedin.com/in/thasin-j-47582635",
     "website": "",
+    "company": "ATMAN · SASU",
+    "siren": "SIREN 921 464 210",
     "summary": (
-        "12+ years of experience in QA engineering across banking, hospitality, "
-        "healthcare, cloud, and construction. Certified PSPO and ISTQB-trained. "
-        "Expert in test strategy, regulatory compliance, automation, and Agile "
-        "methodologies. Currently expanding into AI, prompt engineering, and "
-        "conversational bots during a sabbatical year in Southeast Asia."
+        "Quadrilingue, expert QA avec 12 ans d'expérience en recette fonctionnelle, tests web et mobile chez "
+        "des grands comptes (BRED, Accor, Oodrive). Spécialiste de la définition de stratégies de test, du "
+        "pilotage de campagnes complexes et du defect management sur l'ensemble du SDLC. Secteurs : "
+        "Banque/Finance, Hôtellerie, SaaS, Santé et BTP."
     ),
     "experience": [
         {
-            "period": "2025-2026",
-            "company": "Sabbatical Year",
-            "role": "Skills Development & Technology Watch",
+            "period": "Avril 2025 – Présent",
+            "company": "Année Sabbatique",
+            "role": "Montée en compétences & Veille technologique",
             "description": (
-                "Ongoing courses in Generative AI, Prompt Engineering (Google), "
-                "and Digital Product Management. Building side projects related "
-                "to AI, automation, and conversational bots. Traveling across "
-                "Southeast Asia."
+                "Formations continues (Coursera) : IA générative, Prompt Engineering (Google), "
+                "Digital Product Management. "
+                "Développer des projets personnels liés à l'IA, l'automatisation et les bots conversationnels. "
+                "Explorer l'Asie du Sud-Est : Thaïlande, Malaisie, Cambodge, Indonésie, Philippines, Vietnam et Laos."
             ),
-            "keywords": ["AI", "Python", "Automation", "LLM"],
+            "keywords": ["IA", "Python", "Automatisation", "LLM", "Prompt Engineering"],
         },
         {
             "period": "2 yrs",
