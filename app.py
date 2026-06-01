@@ -326,6 +326,43 @@ def _supabase_headers():
         "Prefer": "return=representation",
     }
 
+# Ensure dismissed_jobs table exists in Supabase (required for per-user persistence)
+def _ensure_supabase_dismissed_table():
+    """Create dismissed_jobs table in Supabase if it doesn't exist."""
+    import os
+    pat = os.environ.get("SUPABASE_PAT")
+    if not pat:
+        # Try local .env
+        env_path = os.path.expanduser("~/.hermes/.env")
+        if os.path.exists(env_path):
+            with open(env_path) as f:
+                for line in f:
+                    if line.startswith("SUPABASE_PAT="):
+                        pat = line.split("=", 1)[1].strip().strip("'\"")
+                        break
+    if not pat:
+        print("[Supabase] No SUPABASE_PAT, skipped dismissed_jobs table creation")
+        return
+    try:
+        ref = SUPABASE_URL.replace("https://", "").split(".")[0] if SUPABASE_URL else ""
+        if not ref:
+            return
+        sql = "CREATE TABLE IF NOT EXISTS dismissed_jobs (id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, title TEXT NOT NULL, company TEXT DEFAULT '', url TEXT DEFAULT '', user_id TEXT NOT NULL DEFAULT '', dismissed_at TIMESTAMPTZ DEFAULT NOW()); CREATE INDEX IF NOT EXISTS idx_dismissed_user ON dismissed_jobs(user_id, title, company);"
+        r = requests.post(
+            f"https://api.supabase.com/v1/projects/{ref}/database/query",
+            headers={"Authorization": f"Bearer {pat}", "Content-Type": "application/json"},
+            json={"query": sql},
+            timeout=10
+        )
+        if r.status_code == 201:
+            print("[Supabase] dismissed_jobs table ready")
+        else:
+            print(f"[Supabase] dismissed_jobs table creation: HTTP {r.status_code}")
+    except Exception as e:
+        print(f"[Supabase] dismissed_jobs table setup failed: {e}")
+
+_ensure_supabase_dismissed_table()
+
 
 @app.route("/api/profile", methods=["GET", "PUT"])
 def api_profile():
