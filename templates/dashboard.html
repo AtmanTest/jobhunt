@@ -1,1447 +1,557 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JobHunt — Marché QA Freelance</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-  :root {
-    --bg: #07070d;
-    --bg-alt: #0c0c16;
-    --card: #12121e;
-    --card-hover: #181828;
-    --border: #1e1e32;
-    --border-light: #2a2a44;
-    --text: #e8e8f0;
-    --text-dim: #8888a8;
-    --text-muted: #55557a;
-    --accent: #7c6cf0;
-    --accent-dim: #5a4bc0;
-    --accent-glow: rgba(124,108,240,0.12);
-    --accent-glow-strong: rgba(124,108,240,0.2);
-    --green: #00d68f;
-    --green-dim: rgba(0,214,143,0.12);
-    --orange: #ff9f43;
-    --red: #ff6b6b;
-    --gold: #ffd93d;
-    --blue: #54a0ff;
-    --glass: rgba(18,18,30,0.8);
-    --radius: 12px;
-    --radius-lg: 16px;
-  }
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobHunt — Marché QA Freelance</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f0f13;
+            --card: #1a1a24;
+            --card-hover: #22222f;
+            --border: #2a2a3a;
+            --border-subtle: rgba(42,42,58,0.5);
+            --text: #e4e4ef;
+            --text-dim: #8888a0;
+            --text-muted: #5a5a72;
+            --accent: #6c5ce7;
+            --accent-dim: #4a3db5;
+            --accent-glow: rgba(108,92,231,0.12);
+            --green: #00d68f;
+            --orange: #ff9f43;
+            --red: #ff6b6b;
+            --gold: #ffd93d;
+            --blue: #54a0ff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-  /* ── Animated Background ── */
-  .bg-grid {
-    position: fixed; inset: 0; z-index: 0;
-    background-image:
-      linear-gradient(rgba(124,108,240,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(124,108,240,0.03) 1px, transparent 1px);
-    background-size: 60px 60px;
-    pointer-events: none;
-  }
-  .bg-glow {
-    position: fixed; top: -40vh; left: -20vw;
-    width: 80vw; height: 80vh;
-    background: radial-gradient(ellipse, rgba(124,108,240,0.06) 0%, transparent 70%);
-    pointer-events: none; z-index: 0;
-    animation: glow-drift 12s ease-in-out infinite alternate;
-  }
-  .bg-glow-2 {
-    position: fixed; bottom: -30vh; right: -10vw;
-    width: 60vw; height: 60vh;
-    background: radial-gradient(ellipse, rgba(0,214,143,0.04) 0%, transparent 70%);
-    pointer-events: none; z-index: 0;
-    animation: glow-drift-2 15s ease-in-out infinite alternate;
-  }
-  @keyframes glow-drift {
-    0% { transform: translate(0,0) scale(1); }
-    100% { transform: translate(10vw,5vh) scale(1.2); }
-  }
-  @keyframes glow-drift-2 {
-    0% { transform: translate(0,0) scale(1); }
-    100% { transform: translate(-8vw,-5vh) scale(1.15); }
-  }
+        /* Header */
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding: 14px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15,15,19,0.95);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .header-logo {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-nav { display: flex; gap: 6px; }
+        .header-nav a {
+            padding: 6px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-dim);
+            transition: all 0.2s;
+        }
+        .header-nav a:hover { color: var(--text); background: var(--card); }
+        .header-nav a.active { color: var(--accent); background: var(--accent-glow); }
+        .btn-primary {
+            background: var(--accent);
+            color: white !important;
+        }
+        .btn-primary:hover { background: #5f4dd0; }
+        .btn-outline {
+            border: 1px solid var(--border);
+            color: var(--text-dim) !important;
+        }
+        .btn-outline:hover { border-color: var(--accent); color: var(--text) !important; }
 
-  /* ── Layout ── */
-  .app { position:relative; z-index:1; min-height:100vh; }
+        /* Container */
+        .container { max-width: 1200px; margin: 0 auto; padding: 24px 32px; }
 
-  /* ── Header ── */
-  .header {
-    position: sticky; top:0; z-index:100;
-    padding: 0 32px; height: 60px;
-    display: flex; align-items: center; justify-content: space-between;
-    background: rgba(7,7,13,0.85);
-    backdrop-filter: blur(20px) saturate(1.4);
-    border-bottom: 1px solid var(--border);
-  }
-  .header-logo {
-    font-size: 16px; font-weight: 800;
-    background: linear-gradient(135deg, var(--accent), #a89bff);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    letter-spacing: -0.5px;
-  }
-  .header-logo span { font-weight: 400; -webkit-text-fill-color: var(--text-dim); }
-  .header-nav { display: flex; gap: 4px; align-items: center; }
-  .header-nav a {
-    padding: 6px 14px; border-radius: 8px; text-decoration: none;
-    font-size: 13px; font-weight: 500; color: var(--text-dim);
-    transition: all 0.2s;
-  }
-  .header-nav a:hover { color: var(--text); background: var(--card); }
-  .header-nav a.active { color: var(--accent); background: var(--accent-glow); }
-  .header-nav .nav-more-btn:hover { color: var(--text); background: var(--card); }
-  .nav-more-drop a:hover { background: var(--card-hover) !important; color: var(--text) !important; }
+        /* Stats row */
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-chip {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+        .stat-chip .num {
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent);
+        }
+        .stat-chip .num.green { color: var(--green); }
+        .stat-chip .num.orange { color: var(--orange); }
 
-  .header-right { display: flex; align-items: center; gap: 10px; }
-  .refresh-btn {
-    width: 32px; height: 32px; border-radius: 8px;
-    border: 1px solid var(--border); background: var(--card);
-    color: var(--text-dim); font-size: 15px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.2s; font-family: inherit;
-  }
-  .refresh-btn:hover { border-color: var(--accent); color: var(--text); background: var(--card-hover); transform: scale(1.05); }
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            margin-bottom: 0;
+        }
+        .tab-btn {
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .tab-btn:hover { color: var(--text); background: var(--card-hover); }
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            background: var(--accent-glow);
+        }
+        .tab-btn .badge {
+            font-size: 10px;
+            background: var(--accent-glow);
+            color: var(--accent);
+            padding: 1px 7px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .tab-btn.active .badge { background: var(--accent); color: white; }
 
-  /* ── User Menu ── */
-  .user-menu { position: relative; }
-  .user-trigger {
-    display: flex; align-items: center; gap: 8px;
-    padding: 4px 8px 4px 4px;
-    border-radius: 8px; border: 1px solid var(--border);
-    background: var(--card); cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit; font-size: 13px; color: var(--text);
-  }
-  .user-trigger:hover { border-color: var(--accent); background: var(--card-hover); }
-  .user-avatar {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: #0088ff;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700; color: #fff;
-    overflow: hidden; flex-shrink: 0;
-  }
-  .user-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .user-name { font-weight: 500; font-size: 12px; }
-  .user-dropdown {
-    position: absolute; top: calc(100% + 6px); right: 0;
-    min-width: 200px; background: var(--card);
-    border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 6px; display: none; z-index: 200;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  }
-  .user-dropdown.open { display: block; }
-  .user-dropdown .dd-header { padding: 10px 12px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
-  .user-dropdown .dd-header .name { font-weight: 600; font-size: 13px; }
-  .user-dropdown a {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 12px; border-radius: 8px;
-    text-decoration: none; color: var(--text-dim);
-    font-size: 13px; font-weight: 500; transition: all 0.15s;
-  }
-  .user-dropdown a:hover { background: var(--card-hover); color: var(--text); }
-  .user-dropdown .dd-divider { height: 1px; background: var(--border); margin: 4px 12px; }
-  .user-dropdown .dd-danger { color: var(--red); }
-  .user-dropdown .dd-danger:hover { background: rgba(255,107,107,0.1); color: var(--red); }
-  .user-login-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 6px 14px; border-radius: 8px;
-    background: var(--accent); color: #fff !important;
-    font-size: 12px; font-weight: 600; text-decoration: none;
-    transition: all 0.2s;
-  }
-  .user-login-btn:hover { background: var(--accent-dim); }
+        /* Tab content */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; animation: fadeIn 0.25s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-  .live-dot {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: 11px; color: var(--text-muted);
-  }
-  .live-dot::before {
-    content: ''; display: inline-block; width: 6px; height: 6px;
-    border-radius: 50%; background: var(--green);
-    animation: pulse-dot 2s ease-in-out infinite;
-  }
-  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
-  .live-dot .time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); }
+        /* Platform cards row */
+        .platforms-row {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            padding-bottom: 4px;
+        }
+        .platform-card {
+            flex: 0 0 200px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            transition: all 0.2s;
+            cursor: default;
+        }
+        .platform-card:hover { border-color: var(--accent); background: var(--card-hover); }
+        .platform-card .p-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .platform-card .p-name a { color: var(--accent); text-decoration: none; }
+        .platform-card .p-name a:hover { text-decoration: underline; }
+        .platform-card .p-desc {
+            font-size: 11px;
+            color: var(--text-dim);
+            line-height: 1.4;
+        }
+        .platform-card .p-tag {
+            display: inline-block;
+            font-size: 9px;
+            padding: 1px 7px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+        .tag-local { background: rgba(84,160,255,0.15); color: var(--blue); }
+        .tag-intl { background: rgba(108,92,231,0.15); color: var(--accent); }
 
-  /* ── Main Container ── */
-  .main { max-width: 1240px; margin: 0 auto; padding: 24px 32px; }
+        /* TJM indicator */
+        .tjm-box {
+            background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(162,155,254,0.05));
+            border: 1px solid rgba(108,92,231,0.25);
+            border-radius: 10px;
+            padding: 12px 18px;
+            margin: 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 13px;
+        }
+        .tjm-box .rate {
+            color: var(--green);
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+        }
+        .tjm-box .label { color: var(--text-dim); }
 
-  /* ── Hero Stats ── */
-  .hero {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 28px;
-  }
-  .hero-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 20px;
-    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-    position: relative; overflow: hidden;
-  }
-  .hero-card:hover {
-    border-color: var(--border-light);
-    background: var(--card-hover);
-    transform: translateY(-2px);
-  }
-  .hero-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    opacity: 0; transition: opacity 0.3s;
-  }
-  .hero-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent), #a89bff); }
-  .hero-card:nth-child(2)::before { background: linear-gradient(90deg, var(--green), #00f0a0); }
-  .hero-card:nth-child(3)::before { background: linear-gradient(90deg, var(--blue), #7fb8ff); }
-  .hero-card:nth-child(4)::before { background: linear-gradient(90deg, var(--orange), #ffb870); }
-  .hero-card:hover::before { opacity: 1; }
-  .hero-card .label {
-    font-size: 10px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 6px;
-  }
-  .hero-card .value {
-    font-size: 28px; font-weight: 800;
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: -1px;
-  }
-  .hero-card .value.purple { color: var(--accent); }
-  .hero-card .value.green { color: var(--green); }
-  .hero-card .value.blue { color: var(--blue); }
-  .hero-card .value.orange { color: var(--orange); }
-  .hero-card .sub {
-    font-size: 11px; color: var(--text-dim); margin-top: 4px;
-  }
+        /* Job cards */
+        .job-list { margin-top: 16px; }
+        .job-card {
+            background: var(--card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .job-card:hover {
+            background: var(--card-hover);
+            border-color: rgba(108,92,231,0.3);
+            transform: translateX(3px);
+        }
+        .job-card.applied { opacity: 0.5; }
+        .job-card.applied:hover { opacity: 0.7; }
+        .job-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+        .job-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .job-title .qa-badge {
+            display: inline-block;
+            background: var(--accent-glow);
+            color: var(--accent);
+            font-size: 9px;
+            font-weight: 600;
+            padding: 1px 7px;
+            border-radius: 4px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .job-company { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+        .job-meta {
+            display: flex;
+            gap: 12px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .job-meta span { display: flex; align-items: center; gap: 3px; }
+        .job-source {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 1px 7px;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+        }
+        .job-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+        .job-actions a, .job-actions button {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: all 0.15s;
+        }
+        .btn-apply {
+            background: var(--accent);
+            color: white !important;
+            border: none !important;
+        }
+        .btn-apply:hover { background: #5f4dd0; }
+        .applied-label {
+            font-size: 10px;
+            color: var(--green);
+            background: rgba(0,214,143,0.1);
+            padding: 3px 8px;
+            border-radius: 5px;
+        }
 
-  /* ── Balance Chip ── */
-  .balance { font-family: 'JetBrains Mono', monospace !important; }
-  .balance .num { font-family: 'JetBrains Mono', monospace; font-size: 14px; }
-  .balance.green .num { color: var(--green); }
-  .balance.orange .num { color: var(--orange); }
-  .balance.red .num { color: var(--red); }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+        }
+        .empty-state .icon { font-size: 36px; margin-bottom: 10px; }
+        .empty-state h3 { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+        .empty-state p { font-size: 13px; }
+        .empty-state .platform-suggest {
+            margin-top: 16px;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .empty-state .platform-suggest a {
+            padding: 6px 14px;
+            border-radius: 8px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .empty-state .platform-suggest a:hover { background: var(--accent-glow); }
 
-  /* ── Section Color Gradients ── */
-  .card-blue {
-    background: linear-gradient(135deg, rgba(84,160,255,0.40), var(--card) 65%) !important;
-    border-color: rgba(84,160,255,0.45) !important;
-  }
-  .card-purple {
-    background: linear-gradient(135deg, rgba(124,108,240,0.40), var(--card) 65%) !important;
-    border-color: rgba(124,108,240,0.45) !important;
-  }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--green);
+            color: #0f0f13;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 12px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+            z-index: 2000;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
 
-  /* ── Featured / Top Matches ── */
-  .featured-section { margin-bottom: 28px; }
-  .section-label {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 11px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 2px; color: var(--text-muted); margin-bottom: 12px;
-  }
-  .section-label .bar {
-    width: 20px; height: 2px; border-radius: 1px;
-  }
-  .section-label .bar.purple { background: var(--accent); }
-  .section-label .bar.green { background: var(--green); }
-
-  .featured-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
-  .featured-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px 18px;
-    padding-right: 44px;
-    text-decoration: none; color: var(--text);
-    display: flex; flex-direction: column; gap: 8px;
-    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-    position: relative; overflow: hidden;
-  }
-  .featured-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, var(--accent), #a89bff);
-    opacity: 0; transition: opacity 0.3s;
-  }
-  .featured-card:hover { border-color: var(--accent); background: var(--card-hover); transform: translateY(-2px); }
-  .featured-card:hover::before { opacity: 1; }
-  .featured-card .rank { font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: 1px; }
-  .featured-card .fc-title { font-size: 14px; font-weight: 600; line-height: 1.3; }
-  .featured-card .fc-meta { font-size: 11px; color: var(--text-dim); }
-  .featured-card .fc-score {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-size: 11px; font-weight: 600;
-  }
-  .featured-card .fc-score .num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 20px; font-weight: 800; color: var(--blue);
-  }
-  .featured-card .fc-skills {
-    display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px;
-  }
-  .featured-card .fc-skills span {
-    font-size: 9px; font-weight: 500;
-    background: var(--green-dim); color: var(--green);
-    padding: 2px 8px; border-radius: 6px;
-  }
-
-  .top-matches-row {
-    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;
-  }
-  .top-match-card {
-    flex: 0 0 190px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    text-decoration: none; color: var(--text);
-    transition: all 0.25s;
-  }
-  .top-match-card:hover { border-color: var(--accent); background: var(--card-hover); transform: translateY(-2px); }
-  .top-match-card .tm-score {
-    font-size: 22px; font-weight: 800;
-    font-family: 'JetBrains Mono', monospace; color: var(--blue);
-  }
-  .top-match-card .tm-title { font-size: 12px; font-weight: 600; margin-top: 6px; line-height: 1.3; }
-  .top-match-card .tm-company { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
-  .top-match-card .tm-source {
-    font-size: 9px; text-transform: uppercase; letter-spacing: 1px;
-    color: var(--orange); margin-top: 6px;
-  }
-
-  /* ── Main Filter Bar ── */
-  .filter-bar {
-    display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
-    margin-bottom: 18px;
-  }
-  .filter-group {
-    display: flex; gap: 3px;
-    padding: 3px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-  }
-  .filter-btn {
-    padding: 6px 13px; border: none; border-radius: 7px;
-    background: transparent; color: var(--text-dim);
-    font-family: inherit; font-size: 12px; font-weight: 500;
-    cursor: pointer; transition: all 0.2s; white-space: nowrap;
-  }
-  .filter-btn:hover { color: var(--text); background: rgba(255,255,255,0.04); }
-  .filter-btn.active { background: var(--accent); color: #fff; box-shadow: 0 2px 12px rgba(124,108,240,0.3); }
-  .filter-group .filter-btn:first-child.active { border-radius: 7px; }
-  .filter-spacer { width: 6px; }
-
-  /* ── Country Tabs ── */
-  .country-tabs {
-    display: flex; gap: 4px; overflow-x: auto; margin-bottom: 18px;
-  }
-  .country-btn {
-    padding: 8px 16px; border: 1px solid var(--border); border-radius: 10px;
-    background: var(--card); color: var(--text-dim);
-    font-family: inherit; font-size: 13px; font-weight: 500;
-    cursor: pointer; transition: all 0.25s; white-space: nowrap;
-    display: flex; align-items: center; gap: 5px;
-  }
-  .country-btn:hover { border-color: var(--border-light); color: var(--text); background: var(--card-hover); }
-  .country-btn.active { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-  .country-btn .badge {
-    font-size: 10px; font-weight: 700;
-    background: var(--accent-glow); color: var(--accent);
-    padding: 1px 7px; border-radius: 6px;
-  }
-  .country-btn.active .badge { background: var(--accent); color: #fff; }
-
-  /* ── Panels ── */
-  .tab-panel { display: none; animation: fadeSlide 0.25s ease; }
-  .tab-panel.active { display: block; }
-  @keyframes fadeSlide {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* ── TJM + Market Info ── */
-  .market-info {
-    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    margin-bottom: 16px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 18px;
-  }
-  .market-info .tjm {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 18px; font-weight: 700; color: var(--accent);
-  }
-  .market-info .label { font-size: 11px; color: var(--text-muted); margin-right: 2px; }
-  .market-info .tip { font-size: 12px; color: var(--text-dim); }
-  .market-info .divider { width: 1px; height: 24px; background: var(--border); }
-  .market-info .platforms-btn {
-    margin-left: auto; padding: 5px 12px; border-radius: 8px;
-    background: var(--accent-glow); color: var(--accent); border: 1px solid var(--accent-glow-strong);
-    font-size: 11px; font-weight: 600; cursor: pointer;
-    transition: all 0.2s; text-decoration: none;
-  }
-  .market-info .platforms-btn:hover { background: var(--accent); color: #fff; }
-  .market-info .tip-icon { font-size: 13px; }
-
-  /* ── Job Cards ── */
-  .job-list { margin-bottom: 14px; }
-  .job-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px 20px;
-    margin-bottom: 6px;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
-    display: flex; justify-content: space-between; align-items: flex-start; gap: 14px;
-    position: relative;
-    padding-right: 44px;
-  }
-  .job-card:hover {
-    background: var(--card-hover);
-    border-color: rgba(124,108,240,0.25);
-    transform: translateX(3px);
-  }
-  .job-card.applied { opacity: 0.4; }
-  .job-card.filtered-out { display: none !important; }
-  .job-card.filtered-in { animation: fadeSlide 0.3s ease; }
-  .job-card .jc-left { flex: 1; min-width: 0; }
-  .job-card .jc-title {
-    font-size: 14px; font-weight: 600; color: var(--text);
-    margin-bottom: 2px;
-  }
-  .job-card .jc-title-link {
-    color: var(--text); text-decoration: none; transition: color 0.15s;
-  }
-  .job-card .jc-title-link:hover { color: var(--accent); }
-  .job-card .jc-company { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
-  .job-card .jc-meta {
-    display: flex; gap: 10px; flex-wrap: wrap;
-    font-size: 11px; color: var(--text-muted);
-  }
-  .job-card .jc-meta span { display: flex; align-items: center; gap: 3px; }
-  .job-card .jc-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; padding-right: 4px; }
-  .job-card .jc-tags {
-    display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px;
-  }
-  .job-card .jc-tags span {
-    font-size: 9px; font-weight: 500;
-    background: var(--accent-glow); color: var(--accent);
-    padding: 2px 8px; border-radius: 6px;
-  }
-  .job-card .jc-tags .skill-tag {
-    background: var(--green-dim); color: var(--green);
-  }
-
-  /* Badges */
-  .badge {
-    display: inline-block; font-size: 9px; font-weight: 700;
-    padding: 2px 8px; border-radius: 5px; margin-left: 4px; vertical-align: middle;
-  }
-  .badge-new { background: var(--green-dim); color: var(--green); }
-  .badge-fresh-A { background: var(--green-dim); color: var(--green); }
-  .badge-fresh-B { background: rgba(84,160,255,0.15); color: var(--blue); }
-  .badge-fresh-C { background: rgba(255,159,67,0.15); color: var(--orange); }
-  .badge-fresh-D { background: rgba(85,85,122,0.2); color: var(--text-muted); }
-  .badge-score { background: rgba(84,160,255,0.15); color: var(--blue); font-size: 10px; }
-  .badge-score-low { background: rgba(255,107,107,0.15); color: var(--red); }
-  .badge-source {
-    font-size: 8px; text-transform: uppercase; letter-spacing: 1px;
-    padding: 1px 6px; border-radius: 3px;
-    border: 1px solid var(--border); color: var(--orange);
-  }
-  .badge-status-VALIDÉE { background: var(--green-dim); color: var(--green); }
-  .badge-status-AMBIGUË { background: rgba(255,159,67,0.15); color: var(--orange); }
-  .badge-status-REJETÉE { background: rgba(255,107,107,0.15); color: var(--red); }
-
-  .badge-source-orange {
-    font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-    padding: 2px 8px; border-radius: 4px;
-    background: rgba(255,159,67,0.18); color: #ffb84d; border: 1px solid rgba(255,159,67,0.3);
-  }
-  .loc-idf {
-    background: linear-gradient(135deg, rgba(255,107,107,0.12), rgba(255,159,67,0.12));
-    padding: 1px 6px; border-radius: 4px;
-    color: #ff8a5c; font-weight: 500;
-  }
-
-  .btn-apply {
-    padding: 5px 12px; border-radius: 7px;
-    background: var(--accent); color: #fff !important;
-    border: none; font-size: 11px; font-weight: 600;
-    cursor: pointer; text-decoration: none; white-space: nowrap;
-    transition: all 0.2s;
-  }
-  .btn-apply:hover { background: var(--accent-dim); }
-  .btn-dismiss {
-    position: absolute; top: 8px; right: 10px;
-    width: 28px; height: 28px; border-radius: 50%;
-    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-    color: rgba(255,255,255,0.7); font-size: 15px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s; z-index: 2; line-height: 1;
-  }
-  .btn-dismiss:hover { background: rgba(255,107,107,0.25); border-color: rgba(255,107,107,0.5); color: #ff6b6b; }
-  .btn-letter {
-    padding: 5px 8px; border-radius: 7px;
-    border: 1px solid var(--border); color: var(--text-dim);
-    font-size: 10px; cursor: pointer; text-decoration: none;
-    transition: all 0.2s;
-  }
-  .btn-letter:hover { border-color: var(--accent); color: var(--accent); }
-  .applied-label {
-    font-size: 10px; color: var(--green);
-    background: var(--green-dim); padding: 3px 8px; border-radius: 5px;
-  }
-
-  /* ── Pagination ── */
-  .pagination {
-    display: flex; align-items: center; justify-content: center;
-    gap: 4px; margin-top: 12px;
-  }
-  .page-btn {
-    min-width: 30px; height: 30px;
-    border: 1px solid var(--border); border-radius: 7px;
-    background: var(--card); color: var(--text-dim);
-    font-family: inherit; font-size: 12px; font-weight: 500;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: all 0.2s; padding: 0 7px;
-  }
-  .page-btn:hover { border-color: var(--accent); color: var(--text); }
-  .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .page-btn:disabled { opacity: 0.25; cursor: default; pointer-events: none; }
-  .page-info {
-    font-size: 11px; color: var(--text-muted); margin: 0 6px;
-  }
-
-  /* ── Empty ── */
-  .empty-state {
-    text-align: center; padding: 60px 20px; color: var(--text-dim);
-  }
-  .empty-state .icon { font-size: 36px; margin-bottom: 10px; }
-  .empty-state h3 { font-size: 16px; color: var(--text); margin-bottom: 6px; }
-  .empty-state .platform-links {
-    margin-top: 14px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
-  }
-  .empty-state .platform-links a {
-    padding: 6px 14px; border-radius: 8px;
-    background: var(--card); border: 1px solid var(--border);
-    color: var(--accent); text-decoration: none;
-    font-size: 12px; font-weight: 500;
-  }
-  .empty-state .platform-links a:hover { background: var(--accent-glow); }
-
-  /* ── Toast ── */
-  .toast {
-    position: fixed; bottom: 24px; right: 24px;
-    background: var(--green); color: #07070d;
-    padding: 10px 18px; border-radius: 10px;
-    font-weight: 600; font-size: 12px;
-    opacity: 0; transform: translateY(20px);
-    transition: all 0.3s; z-index: 2000;
-  }
-  .toast.show { opacity: 1; transform: translateY(0); }
-
-  /* ── Platforms Panel ── */
-  .platforms-panel {
-    display: none;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 18px 20px;
-    margin-bottom: 16px;
-    animation: fadeSlide 0.2s ease;
-  }
-  .platforms-panel.open { display: block; }
-  .platforms-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 8px;
-  }
-  .platform-item {
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    transition: all 0.2s;
-  }
-  .platform-item:hover { border-color: var(--border-light); background: var(--card-hover); }
-  .platform-item a {
-    font-size: 12px; font-weight: 600; color: var(--accent); text-decoration: none;
-  }
-  .platform-item a:hover { text-decoration: underline; }
-  .platform-item .p-desc { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
-  .platform-item .p-tag {
-    display: inline-block; font-size: 8px; padding: 1px 6px;
-    border-radius: 6px; font-weight: 600; margin-top: 4px;
-  }
-  .p-tag-local { background: rgba(84,160,255,0.15); color: var(--blue); }
-  .p-tag-intl { background: var(--accent-glow); color: var(--accent); }
-
-  /* ── Footer ── */
-  .footer {
-    text-align: center; padding: 24px 32px;
-    font-size: 11px; color: var(--text-muted);
-    border-top: 1px solid var(--border);
-  }
-  .footer a { color: var(--accent); text-decoration: none; }
-  .footer a:hover { text-decoration: underline; }
-
-  /* ── Responsive ── */
-  @media (max-width: 900px) {
-    .header { padding: 0 14px; height: 52px; }
-    .header-nav a { padding: 6px 10px; font-size: 12px; }
-    .header-logo { font-size: 14px; }
-    .header-logo a span { font-size: 16px !important; }
-    .user-name { display: none; }
-    .refresh-btn { width: 30px; height: 30px; font-size: 14px; }
-    .nav-more-btn { font-size: 12px !important; padding: 5px 8px !important; }
-    #balance-header { font-size: 10px !important; }
-    .main { padding: 16px 14px; }
-    .hero { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
-    .hero-card { padding: 14px 16px; }
-    .hero-card .value { font-size: 22px; }
-    .featured-grid { grid-template-columns: 1fr; }
-    .featured-card { padding: 14px 16px; padding-right: 44px; }
-    .section-label { font-size: 10px; letter-spacing: 1.5px; margin-bottom: 10px; }
-    .top-match-card { flex: 0 0 160px; }
-    .filter-bar { gap: 6px; }
-    .filter-btn { padding: 5px 10px; font-size: 11px; }
-    .market-info { flex-direction: column; align-items: flex-start; gap: 8px; }
-    .market-info .divider { display: none; }
-    .market-info .platforms-btn { margin-left: 0; }
-    .job-card { flex-direction: column; gap: 10px; padding: 14px 16px; padding-right: 44px; }
-    .job-card .jc-right { width: 100%; justify-content: flex-end; }
-    .job-card .jc-title { font-size: 13px; }
-    .platforms-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
-    .page-btn { min-width: 28px; height: 28px; font-size: 11px; }
-    .page-info { font-size: 10px; }
-    .footer { padding: 18px 16px; font-size: 10px; }
-  }
-  @media (max-width: 620px) {
-    .header-nav a:not(.active) { display: none; }
-    .header-nav .nav-more { display: block !important; }
-    .header-nav a.active { display: inline-flex; }
-    .welcome-section { margin-bottom: 14px !important; }
-    .welcome-section > div { flex-direction: column; gap: 8px; }
-    .country-btn { padding: 6px 10px; font-size: 11px; }
-    .country-btn .badge { font-size: 9px; padding: 0 5px; }
-    .hero-card .value { font-size: 20px; }
-    .hero-card .sub { font-size: 10px; }
-    .hero-card .label { font-size: 9px; letter-spacing: 1px; }
-    .job-card .jc-meta { gap: 6px; font-size: 10px; }
-    .job-card .jc-company { font-size: 11px; }
-    .filter-group { flex-wrap: wrap; }
-    .filter-btn { padding: 4px 8px; font-size: 10px; }
-    .filter-bar { gap: 4px; }
-    .featured-card .fc-title { font-size: 13px; }
-    .featured-card .rank { font-size: 9px; }
-    .featured-card .fc-meta { font-size: 10px; }
-    .platforms-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
-    .platform-item { padding: 8px 10px; }
-    .platform-item a { font-size: 11px; }
-    .platform-item .p-desc { font-size: 9px; }
-    .badge-source-orange { font-size: 8px; padding: 1px 6px; }
-  }
-  @media (max-width: 480px) {
-    .header { padding: 0 10px; height: 48px; }
-    .header-logo a span { font-size: 14px !important; }
-    .header-right { gap: 6px; }
-    .refresh-btn { width: 28px; height: 28px; font-size: 13px; }
-    #balance-header { display: none; }
-    .main { padding: 12px 10px; }
-    .hero { grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
-    .hero-card { padding: 10px 12px; }
-    .hero-card .value { font-size: 18px; }
-    .hero-card .sub { font-size: 9px; }
-    .country-btn { padding: 5px 8px; font-size: 10px; }
-    .country-btn .badge { font-size: 8px; padding: 0 4px; min-width: 14px; }
-    .filter-btn { padding: 3px 7px; font-size: 9px; }
-    .filter-group { padding: 2px; }
-    .job-card { padding: 12px 14px; padding-right: 44px; }
-    .job-card .jc-title { font-size: 12px; }
-    .btn-apply { padding: 4px 10px; font-size: 10px; }
-    .btn-letter { padding: 4px 7px; font-size: 9px; }
-    .btn-dismiss { width: 26px; height: 26px; top: 6px; right: 8px; font-size: 13px; }
-    .featured-card { padding: 12px 14px; padding-right: 44px; }
-    .top-match-card { flex: 0 0 140px; padding: 10px 12px; }
-    .top-match-card .tm-score { font-size: 18px; }
-    .top-match-card .tm-title { font-size: 11px; }
-    .page-btn { min-width: 24px; height: 24px; font-size: 10px; padding: 0 5px; }
-    .page-info { font-size: 9px; margin: 0 4px; }
-    .market-info { padding: 10px 14px; }
-    .market-info .tjm { font-size: 15px; }
-    .market-info .tip { font-size: 10px; }
-    .welcome-section > div > div:first-child .welcome-name { font-size: 17px !important; }
-  }
-</style>
+        @media (max-width: 768px) {
+            .container { padding: 12px 16px; }
+            .header { padding: 10px 16px; }
+            .tabs { gap: 0; }
+            .tab-btn { padding: 10px 12px; font-size: 12px; }
+            .platforms-row { gap: 8px; }
+            .platform-card { flex: 0 0 160px; }
+            .job-header { flex-direction: column; }
+            .job-actions { width: 100%; justify-content: flex-end; }
+        }
+    </style>
 </head>
 <body>
-<div class="bg-grid"></div>
-<div class="bg-glow"></div>
-<div class="bg-glow-2"></div>
-
-<div class="app">
-
-  <!-- ─── HEADER ─── -->
-  <div class="header">
-    <div class="header-logo">
-      <a href="/" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
-        <span style="font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--accent),#a89bff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px;">JobHunt</span>
-      </a>
+<div class="header">
+    <div class="header-left">
+        <span class="header-logo">⚡ JobHunt</span>
     </div>
-    <nav class="header-nav">
-      <a href="{{ url_for('index') }}" class="active">Dashboard</a>
-      <a href="{{ url_for('cv_page') }}">CV</a>
-      <a href="{{ url_for('marche_qa') }}">Marché</a>
-      <div class="nav-more" style="position:relative;">
-        <button class="nav-more-btn" onclick="toggleMore()" style="background:none;border:none;padding:6px 10px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text-dim);cursor:pointer;font-family:inherit;transition:all 0.2s;">Plus ▾</button>
-        <div class="nav-more-drop" id="nav-more-drop" style="display:none;position:absolute;top:100%;left:0;min-width:160px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:4px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
-          <a href="{{ url_for('qa_dashboard') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">🧪 QA Test</a>
-          <a href="{{ url_for('monitoring_page') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">📊 Monitor</a>
-          <a href="{{ url_for('stats_page') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">📈 Stats</a>
-          <a href="{{ url_for('about') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">ℹ️ À propos</a>
+    <div class="header-nav">
+        <a href="{{ url_for('index') }}" class="active">Dashboard</a>
+        <a href="{{ url_for('cv_page') }}">📄 CV</a>
+        <a href="{{ url_for('qa_dashboard') }}">🧪 QA</a>
+        <a href="{{ url_for('marche_qa') }}">🌍 Marché</a>
+        <a href="{{ url_for('about') }}">À propos</a>
+        <a href="{{ url_for('refresh') }}" class="btn-primary" onclick="this.textContent='⏳...'">↻</a>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Stats row -->
+    <div class="stats-row">
+        <div class="stat-chip">
+            <span class="num">{{ stats.qa }}</span>
+            <span>Offres QA</span>
         </div>
-      </div>
-      <span id="balance-header" style="font-size:11px;font-weight:500;color:var(--text-dim);font-family:'JetBrains Mono',monospace;margin-left:4px;white-space:nowrap;">API AI ⟳</span>
-    </nav>
-    <div class="header-right">
-      <button class="refresh-btn" onclick="window.location.href='{{ url_for('refresh') }}';this.textContent='⏳';" title="Rafraîchir les offres">↻</button>
-      <div class="user-menu" id="user-menu">
-        <button class="user-trigger" id="user-trigger">
-          <div class="user-avatar" id="nav-avatar">?</div>
-          <span class="user-name" id="nav-name">Connexion</span>
-        </button>
-        <div class="user-dropdown" id="user-dropdown">
-          <div class="dd-header">
-            <div class="name" id="dd-name">—</div>
-          </div>
-          <a href="/settings">👤 Mon Profil</a>
-          <a href="/settings">⚙️ Paramètres</a>
-          <div class="dd-divider"></div>
-          <a href="#" class="dd-danger" onclick="logout();return false;">🚪 Déconnexion</a>
+        <div class="stat-chip">
+            <span class="num {% if stats.this_week > 0 %}green{% endif %}">{{ stats.this_week }}</span>
+            <span>Cette semaine</span>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ─── MAIN ─── -->
-  <div class="main">
-
-    <!-- Welcome -->
-    <div class="welcome-section" id="welcome-section" style="margin-bottom: 20px; display: none;">
-      <div style="display:flex; align-items:center; justify-content:space-between;">
-        <div>
-          <div style="font-size:20px; font-weight:800; letter-spacing:-0.5px;">
-            Bonjour <span id="welcome-name">👋</span>
-          </div>
-          <div style="font-size:12px; color:var(--text-dim); margin-top:2px;">
-            <span id="welcome-headline"></span>
-          </div>
+        <div class="stat-chip">
+            <span class="num orange">{{ country_counts|sum(attribute='count') }}</span>
+            <span>dans nos marchés</span>
         </div>
-      </div>
     </div>
 
-    <!-- Hero Stats -->
-    <div class="hero">
-      <div class="hero-card">
-        <div class="label">Offres QA</div>
-        <div class="value purple">{{ stats.qa }}</div>
-        <div class="sub">dans tous les pays</div>
-      </div>
-      <div class="hero-card">
-        <div class="label">Cette semaine</div>
-        <div class="value green">{{ stats.this_week }}</div>
-        <div class="sub">nouvelles annonces</div>
-      </div>
-      <div class="hero-card">
-        <div class="label">Marchés actifs</div>
-        <div class="value blue" id="total-markets">{{ country_counts|sum(attribute='count') }}</div>
-        <div class="sub">France · Suisse · Lux · Dubaï · SG</div>
-      </div>
+    <!-- Country tabs -->
+    <div class="tabs" id="tabs">
+        <button class="tab-btn active" data-tab="france">🇫🇷 France <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'france')|map(attribute='count')|first }}</span></button>
+        <button class="tab-btn" data-tab="suisse">🇨🇭 Suisse <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'suisse')|map(attribute='count')|first }}</span></button>
+        <button class="tab-btn" data-tab="luxembourg">🇱🇺 Luxembourg <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'luxembourg')|map(attribute='count')|first }}</span></button>
+        <button class="tab-btn" data-tab="dubai">🇦🇪 Dubaï / EAU <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'dubai')|map(attribute='count')|first }}</span></button>
+        <button class="tab-btn" data-tab="singapour">🇸🇬 Singapour <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'singapour')|map(attribute='count')|first }}</span></button>
+        <button class="tab-btn" data-tab="tous">🌐 Tous <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'tous')|map(attribute='count')|first }}</span></button>
     </div>
 
-    <!-- Jobs du Jour (featured) -->
-    {% if jobs_of_day %}
-    <div class="featured-section">
-      <div class="section-label"><span class="bar purple"></span> ✦ Jobs du Jour</div>
-      <div class="featured-grid">
-      {% for job in jobs_of_day %}
-        <div class="featured-card card-blue" onclick="window.open('{{ job.url | clean_url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;">
-          <button class="btn-dismiss" onclick="event.stopPropagation();dismissJob({{ job.id }}, this);" title="Masquer">✕</button>
-          <div class="rank">#{{ loop.index }} · {{ job.match_score }}% match</div>
-          <div class="fc-title">{{ job.title }}</div>
-          {% set loc = job.location | lower %}
-          {% set is_idf = 'paris' in loc or 'boulogne' in loc or 'nanterre' in loc or 'courbevoie' in loc or 'levallois' in loc or 'issy' in loc or 'montreuil' in loc or 'vincennes' in loc or 'puteaux' in loc or 'clichy' in loc or 'neuilly' in loc or 'suresnes' in loc or 'rueil' in loc or 'noisy' in loc or 'saint-denis' in loc or 'vitry' in loc or 'créteil' in loc %}
-          <div class="fc-meta">{{ job.company }} · <span{% if is_idf %} class="loc-idf"{% endif %}>{{ job.location }}</span> · {{ job.date }}</div>
-          <div style="margin-top:4px;">
-            <a href="{% if 'Jean-Michel' in job.source %}https://jean-michel.io{% elif 'RemoteOK' in job.source %}https://remoteok.com{% elif 'WTTJ' in job.source %}https://wttj.com{% elif 'LinkedIn' in job.source %}https://linkedin.com{% elif 'WWR' in job.source %}https://weworkremotely.com{% elif 'Free-Work' in job.source %}https://free-work.com{% elif 'Indeed' in job.source %}https://indeed.com{% endif %}" target="_blank" class="badge-source-orange" style="text-decoration:none;display:inline-block;">{{ job.source }}</a>
-          </div>
-          {% if job.matched_skills %}
-          <div class="fc-skills">{% for s in job.matched_skills %}<span>{{ s }}</span>{% endfor %}</div>
-          {% endif %}
-          <div style="display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:4px;border-top:1px solid var(--border);">
-            <span class="fc-score"><span class="num">{{ job.match_score }}%</span> match</span>
-            <span style="font-size:11px;color:var(--accent);margin-left:auto;">Postuler →</span>
-          </div>
-        </div>
-      {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-
-    <!-- 🔥 Hot Picks: meilleurs jobs classés par priorité -->
-    {% if hot_picks %}
-    <div class="featured-section">
-      <div class="section-label"><span class="bar orange"></span> 🔥 Hot Picks — Priorité Max</div>
-      <div class="featured-grid">
-      {% for job in hot_picks %}
-        <div class="featured-card card-purple" onclick="window.open('{{ job.url | clean_url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;">
-          <button class="btn-dismiss" onclick="event.stopPropagation();dismissJob({{ job.id }}, this);" title="Masquer">✕</button>
-          <div class="rank">#{{ loop.index }} · {{ job.match_score }}% match</div>
-          <div class="fc-title">{{ job.title }}</div>
-          {% set loc = job.location | lower %}
-          {% set is_idf = 'paris' in loc or 'boulogne' in loc or 'nanterre' in loc or 'courbevoie' in loc or 'levallois' in loc or 'issy' in loc or 'montreuil' in loc or 'vincennes' in loc or 'puteaux' in loc or 'clichy' in loc or 'neuilly' in loc or 'suresnes' in loc or 'rueil' in loc or 'noisy' in loc or 'saint-denis' in loc or 'vitry' in loc or 'créteil' in loc %}
-          <div class="fc-meta">{{ job.company }} · <span{% if is_idf %} class="loc-idf"{% endif %}>{{ job.location }}</span> · {{ job.date }}</div>
-          <div style="margin-top:4px;">
-            <a href="{% if 'Jean-Michel' in job.source %}https://jean-michel.io{% elif 'RemoteOK' in job.source %}https://remoteok.com{% elif 'WTTJ' in job.source %}https://wttj.com{% elif 'LinkedIn' in job.source %}https://linkedin.com{% elif 'WWR' in job.source %}https://weworkremotely.com{% elif 'Free-Work' in job.source %}https://free-work.com{% elif 'Indeed' in job.source %}https://indeed.com{% endif %}" target="_blank" class="badge-source-orange" style="text-decoration:none;display:inline-block;">{{ job.source }}</a>
-          </div>
-          {% if job.matched_skills %}
-          <div class="fc-skills">{% for s in job.matched_skills %}<span>{{ s }}</span>{% endfor %}</div>
-          {% endif %}
-          <div style="display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:4px;">
-            <span class="fc-score"><span class="num">{{ job.match_score }}%</span> match</span>
-            <span style="font-size:11px;color:var(--accent);margin-left:auto;">Postuler →</span>
-          </div>
-        </div>
-      {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-
-    <!-- Top Matches (horizontal scroll) -->
-    {% if top_matches %}
-    <div class="featured-section">
-      <div class="section-label"><span class="bar green"></span> 🎯 Top Matches</div>
-      <div class="top-matches-row">
-      {% for j in top_matches[:6] %}
-        <a href="/cover-letter/{{ j.id }}" class="top-match-card">
-          <div class="tm-score">{{ j.match_score }}%</div>
-          <div class="tm-title">{{ j.title[:50] }}{% if j.title|length > 50 %}…{% endif %}</div>
-          <div class="tm-company">{{ j.company }}</div>
-          <div class="tm-source">{{ j.source }}</div>
-        </a>
-      {% endfor %}
-        <a href="{{ url_for('stats_page') }}" style="flex:0 0 50px;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);text-decoration:none;color:var(--text-dim);font-size:18px;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">→</a>
-      </div>
-    </div>
-    {% endif %}
-
-    <!-- Country Tabs -->
-    <div class="country-tabs">
-      <button class="country-btn active" data-tab="france">🇫🇷 France <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'france')|map(attribute='count')|first }}</span></button>
-      <button class="country-btn" data-tab="suisse">🇨🇭 Suisse <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'suisse')|map(attribute='count')|first }}</span></button>
-      <button class="country-btn" data-tab="luxembourg">🇱🇺 Luxembourg <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'luxembourg')|map(attribute='count')|first }}</span></button>
-      <button class="country-btn" data-tab="dubai">🇦🇪 Dubaï / EAU <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'dubai')|map(attribute='count')|first }}</span></button>
-      <button class="country-btn" data-tab="singapour">🇸🇬 Singapour <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'singapour')|map(attribute='count')|first }}</span></button>
-      <button class="country-btn" data-tab="linkedin">🔗 LinkedIn <span class="badge" id="linkedin-count">{{ linkedin_jobs|default(0) }}</span></button>
-      <button class="country-btn" data-tab="tous">🌐 Tous <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'tous')|map(attribute='count')|first }}</span></button>
-    </div>
-
-    <!-- Filter Bar -->
-    <div class="filter-bar">
-      <div class="filter-group" data-type="remote">
-        <button class="filter-btn active" data-val="all">🌐 Tous</button>
-        <button class="filter-btn" data-val="remote">🌍 Remote</button>
-        <button class="filter-btn" data-val="hybrid">🔄 Hybride</button>
-        <button class="filter-btn" data-val="onsite">🏢 Sur site</button>
-      </div>
-      <div class="filter-spacer"></div>
-      <div class="filter-group" data-type="freshness">
-        <button class="filter-btn active" data-val="all">📅 Toute date</button>
-        <button class="filter-btn" data-val="A">🔥 Aujourd'hui</button>
-        <button class="filter-btn" data-val="B">📆 &lt;3j</button>
-        <button class="filter-btn" data-val="C">📅 &lt;7j</button>
-      </div>
-      <div class="filter-spacer"></div>
-      {% if country_counts|selectattr('key', 'equalto', 'france')|map(attribute='count')|first > 0 %}
-      <div class="filter-group" data-type="location">
-        <button class="filter-btn active" data-val="all">🇫🇷 France entière</button>
-        <button class="filter-btn" data-val="idf">🏙️ IDF</button>
-        <button class="filter-btn" data-val="province">🌿 Province</button>
-      </div>
-      {% endif %}
-    </div>
-
-    <!-- Panels -->
     {% for country_id, country_data in countries.items() %}
     <div class="tab-panel {% if loop.first %}active{% endif %}" id="panel-{{ country_id }}">
-      <!-- Market Info -->
-      <div class="market-info">
-        <span class="label">{{ country_data.flag }} TJM</span>
-        <span class="tjm">{{ country_data.tjm }}</span>
-        <div class="divider"></div>
-        <span class="tip-icon">💡</span>
-        <span class="tip">{{ country_data.tip }}</span>
-        <button class="platforms-btn" onclick="togglePlatforms('panel-{{ country_id }}')">📌 Plateformes ({{ country_data.platforms|length }})</button>
-      </div>
-
-      <!-- Platform Cards (hidden by default) -->
-      <div class="platforms-panel" id="platforms-{{ country_id }}">
-        <div class="platforms-grid">
-          {% for platform in country_data.platforms %}
-          <div class="platform-item">
-            <a href="{{ platform.url }}" target="_blank">{{ platform.name }}</a>
-            <div class="p-desc">{{ platform.desc }}</div>
-            {% if platform.tag %}<span class="p-tag p-tag-{{ platform.tag }}">{{ 'Local' if platform.tag == 'local' else 'Intl' }}</span>{% endif %}
-          </div>
-          {% endfor %}
+        <!-- TJM indicator + hack -->
+        <div class="tjm-box">
+            <span class="label">💶 TJM indicatif {{ country_data.flag }}</span>
+            <span class="rate">{{ country_data.tjm }}</span>
+            <span style="color:var(--text-dim);margin-left:4px;">—</span>
+            <span style="color:var(--text-dim);font-size:12px;">{{ country_data.tip }}</span>
         </div>
-      </div>
 
-
-
-      <!-- Job List -->
-      <div class="job-list paginated-list" data-per-page="3">
-      {% if country_data.jobs %}
-      {% for job in country_data.jobs %}
-        <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}">
-          <button class="btn-dismiss" onclick="dismissJob({{ job.id }}, this);event.stopPropagation();" title="Masquer">✕</button>
-          <div class="jc-left">
-            <div class="jc-title">
-              <a href="{{ job.url | clean_url }}" target="_blank" class="jc-title-link">{{ job.title }}</a>
-              {% if not job.viewed %}<span class="badge badge-new">Nouveau</span>{% endif %}
-              <span class="badge badge-fresh-{{ job.freshness_score or 'D' }}">
-                {% if job.freshness_score == 'A' %}🔥 Neuf{% elif job.freshness_score == 'B' %}📆 Récents{% elif job.freshness_score == 'C' %}📅 Semaine{% else %}Ancien{% endif %}
-              </span>
-              {% if job.match_score and job.match_score >= 70 %}
-              <span class="badge badge-score">{{ job.match_score }}%</span>
-              {% endif %}
+        <!-- Platform cards -->
+        <div style="font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:8px;">📌 Plateformes QA recommandées</div>
+        <div class="platforms-row">
+            {% for platform in country_data.platforms %}
+            <div class="platform-card">
+                <div class="p-name">
+                    {% if platform.url %}<a href="{{ platform.url }}" target="_blank">{{ platform.name }}</a>{% else %}{{ platform.name }}{% endif %}
+                    {% if platform.tag %}<span class="p-tag {{ 'tag-local' if platform.tag == 'local' else 'tag-intl' }}">{{ platform.tag == 'local' and 'Local' or 'Intl' }}</span>{% endif %}
+                </div>
+                <div class="p-desc">{{ platform.desc }}</div>
             </div>
-            <div class="jc-company">{{ job.company }}</div>
-            <div class="jc-meta">
-{% set loc = job.location | lower %}
-{% set is_idf = 'paris' in loc or 'boulogne' in loc or 'nanterre' in loc or 'courbevoie' in loc or 'levallois' in loc or 'issy' in loc or 'montreuil' in loc or 'vincennes' in loc or 'puteaux' in loc or 'clichy' in loc or 'neuilly' in loc or 'suresnes' in loc or 'rueil' in loc or 'noisy' in loc or 'saint-denis' in loc or 'vitry' in loc or 'créteil' in loc %}
-              <span>📍 {% if is_idf %}<span class="loc-idf">{{ job.location }}</span>{% else %}{{ job.location }}{% endif %}</span>
-              {% if job.salary %}<span>💰 {{ job.salary }}</span>{% endif %}
-              <span>📅 {{ job.date }}</span>
-              <a href="{% if 'Jean-Michel' in job.source %}https://jean-michel.io{% elif 'RemoteOK' in job.source %}https://remoteok.com{% elif 'WTTJ' in job.source %}https://wttj.com{% elif 'LinkedIn' in job.source %}https://linkedin.com{% elif 'WWR' in job.source %}https://weworkremotely.com{% elif 'Free-Work' in job.source %}https://free-work.com{% elif 'Indeed' in job.source %}https://indeed.com{% elif 'Malt' in job.source %}https://malt.fr{% elif 'Comet' in job.source %}https://comet.co{% elif 'Otta' in job.source %}https://otta.com{% endif %}" target="_blank" class="badge-source" style="text-decoration:none;">{{ job.source }}</a>
-            </div>
-            {% if job.matched_skills %}
-            <div class="jc-tags">
-              {% for s in job.matched_skills %}<span class="skill-tag">{{ s }}</span>{% endfor %}
-            </div>
-            {% endif %}
-            {% if job.tags %}
-            <div class="jc-tags">
-              {% for tag in job.tags.split(', ')[:4] %}<span>{{ tag }}</span>{% endfor %}
-            </div>
-            {% endif %}
-          </div>
-          <div class="jc-right">
-            {% if job.applied %}
-            <span class="applied-label">✓ Postulé</span>
-            {% else %}
-            <a href="{{ job.url | clean_url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
-            {% endif %}
-            <a href="/cover-letter/{{ job.id }}" class="btn-letter" onclick="event.stopPropagation();">✉️</a>
-          </div>
-        </div>
-      {% endfor %}
-      {% else %}
-        <div class="empty-state">
-          <div class="icon">🔍</div>
-          <h3>Aucune offre en {{ country_data.name }}</h3>
-          <p>Les scrapers ne couvrent pas encore ce marché.</p>
-          <div class="platform-links">
-            {% for platform in country_data.platforms[:4] %}
-            {% if platform.url %}<a href="{{ platform.url }}" target="_blank">{{ platform.name }}</a>{% endif %}
             {% endfor %}
-          </div>
         </div>
-      {% endif %}
-      </div>
-      <div class="pagination" data-panel="{{ country_id }}"></div>
+
+        {% if country_data.tips %}
+        <div style="background:rgba(255,217,61,0.06);border:1px solid rgba(255,217,61,0.2);border-radius:10px;padding:12px 16px;margin:12px 0 16px;font-size:12px;color:var(--gold);">
+            💡 {{ country_data.tips }}
+        </div>
+        {% endif %}
+
+        <!-- Job listings -->
+        <div style="font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:10px;">
+            📋 Offres freelance QA — {{ country_data.flag }}
+            {% if country_data.jobs|length > 0 %}
+            <span style="color:var(--green);font-weight:400;">({{ country_data.jobs|length }})</span>
+            {% endif %}
+        </div>
+
+        <div class="job-list">
+            {% if country_data.jobs %}
+            {% for job in country_data.jobs %}
+            <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}">
+                <div class="job-header">
+                    <div>
+                        <div class="job-title">
+                            {{ job.title }}
+                            {% if job.is_qa %}<span class="qa-badge">QA</span>{% endif %}
+                        </div>
+                        <div class="job-company">{{ job.company }}</div>
+                        <div class="job-meta">
+                            <span>📍 {{ job.location }}</span>
+                            {% if job.salary %}<span>💰 {{ job.salary }}</span>{% endif %}
+                            <span>📅 {{ job.date }}</span>
+                            <span class="job-source">{{ job.source }}</span>
+                        </div>
+                    </div>
+                    <div class="job-actions">
+                        {% if job.applied %}
+                        <span class="applied-label">✓ Postulé</span>
+                        {% else %}
+                        <a href="{{ job.url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if job.tags %}
+                <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">
+                    {% for tag in job.tags.split(', ')[:5] %}
+                    <span style="background:var(--accent-glow);color:var(--accent);padding:1px 7px;border-radius:10px;font-size:10px;">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <div class="icon">🔍</div>
+                <h3>Aucune offre trouvée en {{ country_data.name }}</h3>
+                <p>Les scrapers actuels ne couvrent pas encore ce marché.</p>
+                <div class="platform-suggest">
+                    {% for platform in country_data.platforms[:4] %}
+                    {% if platform.url %}<a href="{{ platform.url }}" target="_blank">{{ platform.name }}</a>{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
     </div>
     {% endfor %}
-
-    <!-- Tous Panel -->
-    <div class="tab-panel" id="panel-tous">
-      <div class="job-list paginated-list" data-per-page="3">
-      {% if tous_jobs %}
-      {% for job in tous_jobs %}
-        <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}">
-          <button class="btn-dismiss" onclick="dismissJob({{ job.id }}, this);event.stopPropagation();" title="Masquer">✕</button>
-          <div class="jc-left">
-            <div class="jc-title">
-              <a href="{{ job.url | clean_url }}" target="_blank" class="jc-title-link">{{ job.title }}</a>
-              {% if not job.viewed %}<span class="badge badge-new">Nouveau</span>{% endif %}
-              <span class="badge badge-fresh-{{ job.freshness_score or 'D' }}">
-                {% if job.freshness_score == 'A' %}🔥 Neuf{% elif job.freshness_score == 'B' %}📆 Récents{% elif job.freshness_score == 'C' %}📅 Semaine{% else %}Ancien{% endif %}
-              </span>
-              {% if job.match_score and job.match_score >= 70 %}
-              <span class="badge badge-score">{{ job.match_score }}%</span>
-              {% endif %}
+    <!-- Tous panel -->
+    <div class="tab-panel {% if countries|length == 0 %}active{% endif %}" id="panel-tous">
+        <div class="job-list">
+            {% if tous_jobs %}
+            {% for job in tous_jobs %}
+            <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}">
+                <div class="job-header">
+                    <div>
+                        <div class="job-title">
+                            {{ job.title }}
+                            {% if job.is_qa %}<span class="qa-badge">QA</span>{% endif %}
+                        </div>
+                        <div class="job-company">{{ job.company }}</div>
+                        <div class="job-meta">
+                            <span>📍 {{ job.location }}</span>
+                            {% if job.salary %}<span>💰 {{ job.salary }}</span>{% endif %}
+                            <span>📅 {{ job.date }}</span>
+                            <span class="job-source">{{ job.source }}</span>
+                        </div>
+                    </div>
+                    <div class="job-actions">
+                        {% if job.applied %}
+                        <span class="applied-label">✓ Postulé</span>
+                        {% else %}
+                        <a href="{{ job.url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if job.tags %}
+                <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">
+                    {% for tag in job.tags.split(', ')[:5] %}
+                    <span style="background:var(--accent-glow);color:var(--accent);padding:1px 7px;border-radius:10px;font-size:10px;">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
-            <div class="jc-company">{{ job.company }}</div>
-            <div class="jc-meta">
-{% set loc = job.location | lower %}
-{% set is_idf = 'paris' in loc or 'boulogne' in loc or 'nanterre' in loc or 'courbevoie' in loc or 'levallois' in loc or 'issy' in loc or 'montreuil' in loc or 'vincennes' in loc or 'puteaux' in loc or 'clichy' in loc or 'neuilly' in loc or 'suresnes' in loc or 'rueil' in loc or 'noisy' in loc or 'saint-denis' in loc or 'vitry' in loc or 'créteil' in loc %}
-              <span>📍 {% if is_idf %}<span class="loc-idf">{{ job.location }}</span>{% else %}{{ job.location }}{% endif %}</span>
-              {% if job.salary %}<span>💰 {{ job.salary }}</span>{% endif %}
-              <span>📅 {{ job.date }}</span>
-              <a href="{% if 'Jean-Michel' in job.source %}https://jean-michel.io{% elif 'RemoteOK' in job.source %}https://remoteok.com{% elif 'WTTJ' in job.source %}https://wttj.com{% elif 'LinkedIn' in job.source %}https://linkedin.com{% elif 'WWR' in job.source %}https://weworkremotely.com{% elif 'Free-Work' in job.source %}https://free-work.com{% elif 'Indeed' in job.source %}https://indeed.com{% elif 'Malt' in job.source %}https://malt.fr{% elif 'Comet' in job.source %}https://comet.co{% elif 'Otta' in job.source %}https://otta.com{% endif %}" target="_blank" class="badge-source" style="text-decoration:none;">{{ job.source }}</a>
-            </div>
-            {% if job.matched_skills %}
-            <div class="jc-tags">
-              {% for s in job.matched_skills %}<span class="skill-tag">{{ s }}</span>{% endfor %}
-            </div>
-            {% endif %}
-          </div>
-          <div class="jc-right">
-            {% if job.applied %}
-            <span class="applied-label">✓ Postulé</span>
+            {% endfor %}
             {% else %}
-            <a href="{{ job.url | clean_url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
+            <div class="empty-state">
+                <div class="icon">🔍</div>
+                <h3>Aucune offre trouvée</h3>
+                <p>Les scrapers n'ont pas encore trouvé d'offres dans ces pays.</p>
+            </div>
             {% endif %}
-            <a href="/cover-letter/{{ job.id }}" class="btn-letter" onclick="event.stopPropagation();">✉️</a>
-          </div>
         </div>
-      {% endfor %}
-      {% else %}
-        <div class="empty-state">
-          <div class="icon">🔍</div>
-          <h3>Aucune offre trouvée</h3>
-          <p>Les scrapers n'ont pas encore trouvé d'offres.</p>
-        </div>
-      {% endif %}
-      </div>
-      <div class="pagination" data-panel="tous"></div>
     </div>
-
-    <!-- LinkedIn Panel -->
-    <div class="tab-panel" id="panel-linkedin">
-      <div class="market-info">
-        <span style="font-size:15px;font-weight:600;">🔗 LinkedIn</span>
-        <span class="tip">Offres scrapées via Chrome</span>
-        <button class="platforms-btn" onclick="refreshLinkedIn()" id="btn-refresh-li">↻ Rafraîchir</button>
-      </div>
-      <div id="linkedin-jobs-container">
-        <div style="text-align:center;padding:40px;color:var(--text-dim);">Chargement...</div>
-      </div>
-    </div>
-
-  </div><!-- /main -->
-
-  <!-- Footer -->
-  <div class="footer">
-    JobHunt · v{{ version }} · <a href="{{ url_for('changelog') }}">Changelog</a> · <a href="{{ url_for('about') }}">À propos</a>
-    <span id="supabase-badge" style="font-size:11px;opacity:0.6;margin-left:8px;">☁️ ...</span>
-  </div>
-
-</div><!-- /app -->
+</div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── Tab Switching ───
-document.querySelectorAll('.country-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.country-btn').forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    const panel = document.getElementById('panel-' + this.dataset.tab);
-    if (panel) panel.classList.add('active');
-    // Show location filter only for France
-    const locGroup = document.querySelector('.filter-group[data-type="location"]');
-    if (locGroup) locGroup.style.display = (this.dataset.tab === 'france') ? '' : 'none';
-    if (this.dataset.tab === 'linkedin') loadLinkedInJobs();
-    setTimeout(() => initPagination('panel-' + this.dataset.tab), 60);
-  });
-});
-
-// ─── Platform Toggle ───
-function togglePlatforms(panelId) {
-  const panel = document.getElementById('platforms-' + panelId.replace('panel-', ''));
-  if (panel) panel.classList.toggle('open');
-}
-
-// ─── Filter Logic ───
-const IDF_KEYWORDS = ['paris','île-de-france','ile-de-france','idf','boulogne','nanterre','courbevoie','levallois','neuilly','puteaux','issy','montreuil','vincennes','saint-denis','saint-ouen','clichy','asnières','colombes','rueil','suresnes','meudon','boulogne-billancourt','versailles','cergy','pontoise','evry','créteil','bobigny','noisy','chelles','meaux','melun','poissy','sartrouville','argenteuil','gennevilliers','fontenay','montrouge','malakoff','bagneux','châtillon','châtenay','sèvres','saint-cloud','garches','vaucresson','champigny','saint-maur','maisons-alfort','thon','vitry','ivry','choisy','thiais','orly','villeneuve','aubervilliers','la courneuve','stains','drancy','livry','pantin','bondy','rosny','gagny','villemomble','aulnay','le blanc-mesnil','le bourget','dugny','la défense','porte de','banlieue'];
-
-function detectRemoteType(card) {
-  const t = card.textContent.toLowerCase();
-  const r = /remote|télétravail|distance|full remote|100%|home|anywhere|worldwide/.test(t);
-  const o = /sur site|onsite|présentiel|site|bureau/.test(t);
-  const h = /hybride|hybrid|flexible|mixte/.test(t);
-  if (h && !o) return 'hybrid';
-  if (r && o) return 'hybrid';
-  if (r) return 'remote';
-  return 'onsite';
-}
-
-function detectLocationZone(card) {
-  const t = (card.querySelector('.jc-meta')?.textContent || card.textContent).toLowerCase();
-  for (const kw of IDF_KEYWORDS) { if (t.includes(kw)) return 'idf'; }
-  return 'province';
-}
-
-function runFilters() {
-  const activePanel = document.querySelector('.tab-panel.active');
-  if (!activePanel) return;
-  const rm = document.querySelector('[data-type="remote"] .filter-btn.active')?.dataset.val || 'all';
-  const fresh = document.querySelector('[data-type="freshness"] .filter-btn.active')?.dataset.val || 'all';
-  const loc = document.querySelector('[data-type="location"] .filter-btn.active')?.dataset.val || 'all';
-  activePanel.querySelectorAll('.job-card').forEach(card => {
-    const rmMatch = rm === 'all' || detectRemoteType(card) === rm;
-    const f = card.dataset.freshness || 'D';
-    const freshMatch = fresh === 'all' || fresh === f;
-    const z = detectLocationZone(card);
-    const locMatch = loc === 'all' || loc === z;
-    const match = rmMatch && freshMatch && locMatch;
-    card.classList.toggle('filtered-out', !match);
-    card.classList.toggle('filtered-in', match);
-  });
-  if (activePanel.id) initPagination(activePanel.id);
-}
-
-document.querySelectorAll('.filter-group .filter-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
-    const group = this.closest('.filter-group');
-    group.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
-    runFilters();
-  });
-});
-
-// ─── Job Click ───
-document.querySelectorAll('.job-card').forEach(card => {
-  card.addEventListener('click', function(e) {
-    const link = this.querySelector('.btn-apply');
-    const jobId = this.dataset.id;
-    if (link && !e.target.closest('.btn-letter')) window.open(link.href, '_blank');
-    if (jobId && !this.classList.contains('applied')) {
-      fetch('/api/job/' + jobId + '/click');
-    }
-  });
-});
-
-// ─── Pagination ───
-const PER_PAGE = 3;
-function initPagination(panelId) {
-  const panel = document.getElementById(panelId);
-  if (!panel) return;
-  const list = panel.querySelector('.paginated-list');
-  const pag = panel.querySelector('.pagination');
-  if (!list || !pag) return;
-  const allCards = Array.from(list.querySelectorAll('.job-card'));
-  let currentPage = 1;
-  function visible() { return allCards.filter(c => !c.classList.contains('filtered-out')); }
-  function showPage(page) {
-    const vis = visible();
-    const tp = Math.max(1, Math.ceil(vis.length / PER_PAGE));
-    if (page > tp) page = tp;
-    if (page < 1) page = 1;
-    currentPage = page;
-    pag.dataset.page = page;
-    allCards.forEach(c => { c.style.display = 'none'; });
-    const start = (page - 1) * PER_PAGE;
-    vis.slice(start, start + PER_PAGE).forEach(c => { c.style.display = ''; });
-    renderPag(tp);
-  }
-  function renderPag(tp) {
-    pag.innerHTML = '';
-    if (tp <= 1) return;
-    const maxVis = 5;
-    let start = Math.max(1, currentPage - Math.floor(maxVis / 2));
-    let end = Math.min(tp, start + maxVis - 1);
-    if (end - start < maxVis - 1) start = Math.max(1, end - maxVis + 1);
-    // Prev
-    const prev = document.createElement('button');
-    prev.className = 'page-btn'; prev.textContent = '‹';
-    prev.disabled = currentPage <= 1;
-    prev.onclick = () => showPage(currentPage - 1);
-    pag.appendChild(prev);
-    if (start > 1) {
-      const first = document.createElement('button');
-      first.className = 'page-btn'; first.textContent = '1';
-      first.onclick = () => showPage(1);
-      pag.appendChild(first);
-      if (start > 2) { const d = document.createElement('span'); d.className = 'page-info'; d.textContent = '…'; pag.appendChild(d); }
-    }
-    for (let i = start; i <= end; i++) {
-      const b = document.createElement('button');
-      b.className = 'page-btn' + (i === currentPage ? ' active' : '');
-      b.textContent = i;
-      b.onclick = () => showPage(i);
-      pag.appendChild(b);
-    }
-    if (end < tp) {
-      if (end < tp - 1) { const d = document.createElement('span'); d.className = 'page-info'; d.textContent = '…'; pag.appendChild(d); }
-      const last = document.createElement('button');
-      last.className = 'page-btn'; last.textContent = tp;
-      last.onclick = () => showPage(tp);
-      pag.appendChild(last);
-    }
-    const next = document.createElement('button');
-    next.className = 'page-btn'; next.textContent = '›';
-    next.disabled = currentPage >= tp;
-    next.onclick = () => showPage(currentPage + 1);
-    pag.appendChild(next);
-    const info = document.createElement('span');
-    info.className = 'page-info';
-    const vis = visible();
-    const sn = (currentPage - 1) * PER_PAGE + 1;
-    const en = Math.min(currentPage * PER_PAGE, vis.length);
-    info.textContent = sn + '-' + en + ' / ' + vis.length;
-    pag.appendChild(info);
-  }
-  showPage(currentPage);
-}
-
-// Init pagination on all panels
-document.querySelectorAll('.tab-panel[id^="panel-"]').forEach(p => {
-  if (p.id !== 'panel-linkedin') initPagination(p.id);
-});
-
-// ─── Balance Widget ───
-function fetchBalance() {
-  const val = document.getElementById('balance-header');
-  if (!val) return;
-  fetch('/api/deepseek/balance')
-    .then(r => r.json())
-    .then(data => {
-      if (data.live && data.balance > 0) {
-        val.textContent = 'API AI $' + data.balance.toFixed(2);
-        val.style.color = data.balance < 2 ? 'var(--red)' : data.balance < 5 ? 'var(--orange)' : 'var(--green)';
-      } else if (data.live) {
-        val.textContent = 'API AI $0.00';
-        val.style.color = 'var(--red)';
-      } else {
-        val.textContent = 'API AI —';
-        val.style.color = 'var(--text-dim)';
-      }
-    })
-    .catch(() => { val.textContent = 'API AI —'; });
-}
-fetchBalance();
-setInterval(fetchBalance, 60000);
-
-// ─── LinkedIn ───
-function loadLinkedInJobs() {
-  const container = document.getElementById('linkedin-jobs-container');
-  const btn = document.getElementById('btn-refresh-li');
-  if (btn) btn.disabled = true;
-  container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim);">⏳ Chargement...</div>';
-  fetch('/api/linkedin/jobs')
-    .then(r => r.json())
-    .then(data => {
-      const jobs = data.qa_jobs || data.jobs || [];
-      document.getElementById('linkedin-count').textContent = jobs.length;
-      if (jobs.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="icon">🔗</div><h3>Aucune offre LinkedIn</h3><p>Lance un scrap depuis le bouton Rafraîchir.</p></div>';
-        return;
-      }
-      let html = '<div class="job-list">';
-      const esc = t => { if(!t) return ''; return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
-      jobs.forEach(j => {
-        const u = j.url || '#';
-        html += '<div class="job-card" style="cursor:pointer;" onclick="window.open(\'' + u + '\',\'_blank\')">';
-        html += '<div class="jc-left">';
-        html += '<div class="jc-title">' + esc(j.title) + '</div>';
-        if (j.company) html += '<div class="jc-company">' + esc(j.company) + '</div>';
-        html += '<div class="jc-meta">';
-        if (j.location) html += '<span>📍 ' + esc(j.location) + '</span>';
-        if (j.country) html += '<span class="badge-source">' + esc(j.country) + '</span>';
-        html += '</div></div>';
-        html += '<div class="jc-right"><a href="' + u + '" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a></div>';
-        html += '</div>';
-      });
-      html += '</div>';
-      html += '<div style="margin-top:8px;font-size:11px;color:var(--text-dim);text-align:center;">🔄 ' + jobs.length + ' offres · ' + (data.scraped_at || '').substring(0,16).replace('T',' ') + '</div>';
-      container.innerHTML = html;
-    })
-    .catch(() => {
-      container.innerHTML = '<div class="empty-state"><div class="icon">❌</div><h3>Erreur</h3><p>Impossible de charger les offres LinkedIn.</p></div>';
-    })
-    .finally(() => { if (btn) btn.disabled = false; });
-}
-function refreshLinkedIn() {
-  const btn = document.getElementById('btn-refresh-li');
-  btn.textContent = '⟳ Scraping...';
-  btn.disabled = true;
-  fetch('/api/linkedin/refresh', {method:'POST'})
-    .then(r => r.json())
-    .then(() => {
-      btn.textContent = '⏳ Attente...';
-      setTimeout(() => { loadLinkedInJobs(); btn.textContent = '↻ Rafraîchir'; btn.disabled = false; }, 15000);
-    })
-    .catch(() => { btn.textContent = '↻ Rafraîchir'; btn.disabled = false; });
-}
-// Preload LinkedIn count
-fetch('/api/linkedin/jobs').then(r=>r.json()).then(d => {
-  document.getElementById('linkedin-count').textContent = (d.qa_jobs||d.jobs||[]).length;
-});
-
-// ── Pipeline stage update ──
-function updateStage(jobId, stage) {
-  fetch('/api/job/' + jobId + '/stage', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({stage: stage})
-  }).then(r => r.json()).then(d => {
-    var sel = document.querySelector('select[onchange*="updateStage(' + jobId + '"]');
-    if (sel) {
-      sel.className = 'pipeline-select stage-' + stage;
-      sel.style.borderColor = 'var(--green)';
-      setTimeout(function() { sel.style.borderColor = ''; }, 1000);
-    }
-  });
-
-}
-
-  // Check Supabase status
-  fetch('/api/supabase/status')
-    .then(r => r.json())
-    .then(d => {
-      const badge = document.getElementById('supabase-badge');
-      if (badge) {
-        badge.textContent = d.connected ? '☁️ Supabase ✅' : '☁️ Supabase ❌';
-        badge.style.color = d.connected ? 'var(--green)' : 'var(--red)';
-        badge.style.opacity = d.connected ? '0.5' : '0.7';
-      }
-    })
-    .catch(() => {
-      const badge = document.getElementById('supabase-badge');
-      if (badge) badge.textContent = '☁️ Supabase ❌';
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            const panel = document.getElementById('panel-' + this.dataset.tab);
+            if (panel) panel.classList.add('active');
+        });
     });
 
-  // Check auth status → user menu
-  window.renderUserMenu = function(d) {
-    var avatar = document.getElementById('nav-avatar');
-    var name = document.getElementById('nav-name');
-    var ddName = document.getElementById('dd-name');
-    if (!avatar) return;
-    if (d.authenticated) {
-      var displayName = d.full_name || '';
-      var initial = displayName ? displayName.charAt(0).toUpperCase() : (d.email || 'U').charAt(0).toUpperCase();
-      name.textContent = displayName;
-      ddName.textContent = displayName || initial;
-      if (d.avatar_url && d.avatar_url.startsWith('data:')) {
-        avatar.innerHTML = '<img src="' + d.avatar_url + '" alt="">';
-      } else {
-        avatar.textContent = initial;
-      }
-      // Show welcome section
-      var ws = document.getElementById('welcome-section');
-      if (ws) { ws.style.display = ''; }
-      var wn = document.getElementById('welcome-name');
-      if (wn) {
-        var first = (d.full_name || d.email || '').split(' ')[0].split('@')[0];
-        wn.textContent = first ? first.charAt(0).toUpperCase() + first.slice(1) + ' 👋' : '👋';
-      }
-      var wh = document.getElementById('welcome-headline');
-      if (wh) { wh.textContent = d.headline || 'Bienvenue sur ton tableau de bord'; }
-    } else {
-      // Not logged in — show login button
-      var trigger = document.getElementById('user-trigger');
-      var dropdown = document.getElementById('user-dropdown');
-      trigger.outerHTML = '<a href="/login" class="user-login-btn">🔑 Connexion</a>';
-      if (dropdown) dropdown.remove();
-    }
-  };
-
-  fetch('/api/auth/me')
-    .then(r => r.json())
-    .then(d => { window.renderUserMenu(d); });
-
-  // User menu toggle
-  var trigger = document.getElementById('user-trigger');
-  if (trigger) {
-    trigger.addEventListener('click', function(e) {
-      e.stopPropagation();
-      document.getElementById('user-dropdown').classList.toggle('open');
+    // Job card click → open URL
+    document.querySelectorAll('.job-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const link = this.querySelector('.btn-apply');
+            if (link) window.open(link.href, '_blank');
+        });
     });
-  }
-
-  // Close dropdowns on outside click
-  document.addEventListener('click', function(e) {
-    var menu = document.getElementById('user-menu');
-    if (menu && !menu.contains(e.target)) {
-      var dd = document.getElementById('user-dropdown');
-      if (dd) dd.classList.remove('open');
-    }
-    var more = document.getElementById('nav-more-drop');
-    if (more && !e.target.closest('.nav-more')) {
-      more.style.display = 'none';
-    }
-  });
-
-  window.toggleMore = function() {
-    var dd = document.getElementById('nav-more-drop');
-    dd.style.display = dd.style.display === 'none' ? '' : 'none';
-  };
-
-  window.logout = function() {
-    fetch('/api/auth/logout', {method:'POST'}).then(() => location.reload());
-  };
-
-// ── Dismiss job ──
-function updateAllCounts() {
-  var total = 0;
-  document.querySelectorAll('.country-btn').forEach(function(btn) {
-    var tab = btn.dataset.tab;
-    if (tab === 'linkedin') return;
-    var panel = document.getElementById('panel-' + tab);
-    var badge = btn.querySelector('.badge');
-    var count = 0;
-    if (panel) {
-      count = panel.querySelectorAll('.job-card:not(.filtered-out)').length;
-    }
-    if (badge) badge.textContent = count;
-    if (tab !== 'tous') total += count;
-  });
-  // Update Marchés actifs hero
-  var mkt = document.getElementById('total-markets');
-  if (mkt) mkt.textContent = total;
-}
-
-function dismissJob(jobId, btn) {
-  fetch('/api/job/' + jobId + '/stage', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({stage: 'dismissed'})
-  }).then(r => r.json()).then(d => {
-    var card = btn.closest('.job-card, .featured-card');
-    if (card) {
-      card.style.opacity = '0';
-      card.style.transform = 'translateX(20px)';
-      card.style.transition = 'all 0.25s';
-      setTimeout(function() {
-        card.remove();
-        updateAllCounts();
-      }, 250);
-      // Also hide same job in other panels
-      document.querySelectorAll('.job-card[data-id="' + jobId + '"]').forEach(function(c) {
-        if (c !== card) c.remove();
-      });
-    }
-  });
-}
 </script>
 </body>
 </html>

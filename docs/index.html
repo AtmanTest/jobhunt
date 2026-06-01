@@ -470,8 +470,6 @@
         .tag-pill.amber { background: oklch(from var(--amber) l c h / 0.1); color: var(--amber); border-color: oklch(from var(--amber) l c h / 0.15); }
         .tag-pill.blue { background: oklch(from var(--blue) l c h / 0.1); color: var(--blue); border-color: oklch(from var(--blue) l c h / 0.15); }
         .tag-pill.red { background: oklch(from var(--red) l c h / 0.1); color: var(--red); border-color: oklch(from var(--red) l c h / 0.15); }
-        .tag-pill.orange { background: oklch(from #ff9f43 l c h / 0.12); color: #ffb84d; border-color: oklch(from #ff9f43 l c h / 0.2); }
-        .loc-idf { background: linear-gradient(135deg, rgba(255,107,107,0.10), rgba(255,159,67,0.10)); padding: 1px 5px; border-radius: 4px; color: #ff8a5c; font-weight: 500; }
 
         .seniority-badge {
             display: inline-block;
@@ -1271,29 +1269,6 @@ function getFlag(location) {
     return '📍';
 }
 
-function isIdf(location) {
-    if (!location) return false;
-    var loc = location.toLowerCase();
-    var idfCities = ['paris','boulogne','nanterre','courbevoie','levallois','issy','montreuil','vincennes','puteaux','clichy','neuilly','suresnes','rueil','noisy','saint-denis','vitry','créteil','aulnay','versailles','saint-germain','colombes','asnières','gennevilliers','argenteuil','champigny','fontenay','rosny','bagnolet','malakoff','châtillon','bagneux','cachan','villejuif','ivry','savigny','limeil','villiers','chesnay','boulogne-billancourt'];
-    return idfCities.some(function(city) { return loc.includes(city); });
-}
-
-function getSourceUrl(source) {
-    if (!source) return '#';
-    var s = source.toLowerCase();
-    if (s.includes('jean-michel')) return 'https://jean-michel.io';
-    if (s.includes('remoteok')) return 'https://remoteok.com';
-    if (s.includes('wttj') || s.includes('welcome to the jungle')) return 'https://wttj.com';
-    if (s.includes('linkedin')) return 'https://linkedin.com';
-    if (s.includes('wwr') || s.includes('weworkremotely')) return 'https://weworkremotely.com';
-    if (s.includes('free-work')) return 'https://free-work.com';
-    if (s.includes('indeed')) return 'https://indeed.com';
-    if (s.includes('malt')) return 'https://malt.fr';
-    if (s.includes('comet')) return 'https://comet.co';
-    if (s.includes('otta')) return 'https://otta.com';
-    return '#';
-}
-
 function renderActiveFilters() {
     var container = document.getElementById('activeFilterChips');
     var chips = [];
@@ -1378,11 +1353,11 @@ function renderAllJobs() {
             '</div>' +
             '<div class="job-card-tags">' +
                 (j.tags ? j.tags.split(',').filter(Boolean).map(function(t) { return '<span class="tag-pill">' + escHtml(t.trim()) + '</span>'; }).join('') : '') +
-                (j.source ? '<a href="' + getSourceUrl(j.source) + '" target="_blank" class="tag-pill orange" style="text-decoration:none;" onclick="event.stopPropagation();">' + j.source + '</a>' : '') +
+                (j.source ? '<span class="tag-pill blue">' + j.source + '</span>' : '') +
             '</div>' +
             '<div class="job-card-footer">' +
                 '<div class="job-card-meta">' +
-                    '<span>' + flag + ' ' + (isIdf(j.location) ? '<span class="loc-idf">' + escHtml(j.location) + '</span>' : escHtml(j.location || 'Remote')) + '</span>' +
+                    '<span>' + flag + ' ' + escHtml(j.location || 'Remote') + '</span>' +
                     (salDisplay ? '<span class="salary-display">' + salDisplay + '</span>' : '') +
                     '<span class="date-relative">' + relativeDate(j.date) + '</span>' +
                 '</div>' +
@@ -1433,7 +1408,7 @@ function renderSavedJobs() {
             '<div class="job-card-company"><span class="flag">' + flag + '</span> ' + escHtml(j.company||'') + '</div>' +
             '<div class="job-card-footer">' +
                 '<div class="job-card-meta">' +
-                    '<span>' + flag + ' ' + (isIdf(j.location) ? '<span class="loc-idf">' + escHtml(j.location) + '</span>' : escHtml(j.location||'Remote')) + '</span>' +
+                    '<span>' + flag + ' ' + escHtml(j.location||'Remote') + '</span>' +
                     (salDisplay ? '<span>' + salDisplay + '</span>' : '') +
                     '<span class="date-relative">' + relativeDate(j.date) + '</span>' +
                 '</div>' +

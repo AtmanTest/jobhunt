@@ -10,58 +10,6 @@ import time
 import json
 import os
 import re
-import urllib.request
-import urllib.error
-
-
-# ─── Supabase integration ────────────────────────────────────
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
-
-if not SUPABASE_URL or not SUPABASE_KEY:
-    env_path = os.path.expanduser("~/.hermes/.env")
-    if os.path.exists(env_path):
-        with open(env_path) as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith("SUPABASE_URL="):
-                    SUPABASE_URL = line.split("=", 1)[1].strip().strip("\"'")
-                elif line.startswith("SUPABASE_KEY="):
-                    SUPABASE_KEY = line.split("=", 1)[1].strip().strip("'\"")
-
-_SUPABASE_BASE = f"{SUPABASE_URL}/rest/v1" if SUPABASE_URL else ""
-_SUPABASE_HEADERS = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": f"Bearer {SUPABASE_KEY}",
-    "Content-Type": "application/json",
-} if SUPABASE_KEY else {}
-
-
-def _supabase_reachable():
-    return bool(SUPABASE_URL and SUPABASE_KEY)
-
-
-def _supabase_bulk_upsert(table, records):
-    """Upsert records into Supabase table. Falls back silently on failure."""
-    if not _supabase_reachable() or not records:
-        return
-    for i in range(0, len(records), 100):
-        batch = records[i:i+100]
-        body = json.dumps(batch).encode()
-        req = urllib.request.Request(
-            f"{_SUPABASE_BASE}/{table}",
-            data=body,
-            headers={**_SUPABASE_HEADERS, "Prefer": "resolution=merge-duplicates"},
-            method="POST",
-        )
-        try:
-            with urllib.request.urlopen(req, timeout=15):
-                pass
-        except Exception:
-            pass  # silent fallback
-
-
-# ─────────────────────────────────────────────────────────────
 
 
 SOURCES = [
@@ -1931,136 +1879,6 @@ def fetch_malt():
     return jobs
 
 
-def fetch_jeanmichel():
-    """Fetch QA jobs from Jean-Michel.io (French IT freelance/CDI platform) via their API."""
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-        "Accept": "application/json",
-    }
-    jobs = []
-
-    # Freelance only (le CDI ne nous intéresse pas)
-    contracts = ["freelance"]
-    base_url = "https://sebs.jean-michel.io/offers"
-
-    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
-                       "test engineer", "test automation", "tester",
-                       "testing", "automation engineer", "qa lead", "qa engineer",
-                       "test lead", "testeur", "recette", "qualité", "qualite"]
-
-    for contract in contracts:
-        page = 1
-        nb_pages = 1
-        while page <= nb_pages:
-            try:
-                params = {
-                    "page": page,
-                    "query": "QA test qualité",
-                    "sortBy": "pertinence",
-                    "includeUnknownRemote": "true",
-                    "minExperience": 0,
-                    "maxExperience": 20,
-                    "includeUnknownExperience": "true",
-                    "minTjm": 0,
-                    "includeOnRequestRemuneration": "true",
-                    "contract": contract,
-                }
-                qs = "&".join(f"{k}={v}" for k, v in params.items())
-                url = f"{base_url}?{qs}"
-                resp = requests.get(url, headers=headers, timeout=15)
-                if resp.status_code != 200:
-                    print(f"  Jean-Michel.io ({contract}) page {page}: HTTP {resp.status_code}")
-                    break
-
-                data = resp.json()
-                nb_pages = data.get("nbPages", 1)
-                offers = data.get("offers", [])
-
-                for item in offers:
-                    title = item.get("title", "")
-                    title_lower = title.lower()
-                    if not any(k in title_lower for k in filter_keywords):
-                        continue
-
-                    company = ""
-                    if isinstance(item.get("company"), dict):
-                        company = item["company"].get("name", "")
-
-                    location = ""
-                    if isinstance(item.get("city"), dict):
-                        location = item["city"].get("name", "")
-
-                    offer_id = item.get("id")
-                    offer_url = f"https://consultant.jean-michel.io/annonces/{offer_id}" if offer_id else ""
-
-                    # Salary / TJM
-                    salary = ""
-                    salary_min = item.get("salaryMin")
-                    salary_max = item.get("salaryMax")
-                    tjm_min = item.get("tjmMin")
-                    tjm_max = item.get("tjmMax")
-
-                    if salary_min or salary_max:
-                        if salary_min and salary_max:
-                            salary = f"{salary_min} - {salary_max} €/an"
-                        elif salary_min:
-                            salary = f"From {salary_min} €/an"
-                        elif salary_max:
-                            salary = f"Up to {salary_max} €/an"
-                    if tjm_min or tjm_max:
-                        tjm_str = ""
-                        if tjm_min and tjm_max:
-                            tjm_str = f"{tjm_min} - {tjm_max} €/jour"
-                        elif tjm_min:
-                            tjm_str = f"{tjm_min} €/jour"
-                        elif tjm_max:
-                            tjm_str = f"{tjm_max} €/jour"
-                        if tjm_str:
-                            salary = f"{tjm_str}" if not salary else f"{salary} | {tjm_str}"
-
-                    remote_days = item.get("remoteDaysPerWeek")
-                    tags = item["contract"] if item.get("contract") else ""
-                    if remote_days is not None:
-                        tags += f", {remote_days}j télétravail/sem"
-                    category = item.get("category", "")
-                    if category:
-                        tags += f", {category}" if tags else category
-
-                    desc = item.get("description", "") or ""
-                    # Clean HTML from description
-                    import re as _re
-                    desc = _re.sub(r"<[^>]+>", " ", desc)
-                    desc = _re.sub(r"\s+", " ", desc).strip()
-
-                    pub_date = item.get("publishDate", "")
-                    date = pub_date[:10] if pub_date else datetime.now().strftime("%Y-%m-%d")
-
-                    jobs.append({
-                        "title": title,
-                        "company": company,
-                        "source": "Jean-Michel.io",
-                        "url": offer_url,
-                        "location": location,
-                        "salary": salary,
-                        "tags": tags,
-                        "description": desc[:2000],
-                        "date": date,
-                        "raw_date": int(time.time()),
-                        "contract_type": "freelance" if "freelance" in (item.get("contract") or "") else contract,
-                    })
-
-                page += 1
-                time.sleep(0.5)
-
-            except Exception as e:
-                print(f"  Jean-Michel.io ({contract}) page {page} error: {e}")
-                break
-
-    if not jobs:
-        print("  Jean-Michel.io: 0 QA jobs found")
-    return jobs
-
-
 def fetch_all():
     """Fetch jobs from all sources - legacy wrapper."""
     return fetch_all_new_sources()
@@ -2089,7 +1907,6 @@ def fetch_all_new_sources():
         ("Indeed", fetch_indeed),
         ("Comet", fetch_comet),
         ("Malt", fetch_malt),
-        ("Jean-Michel.io", fetch_jeanmichel),
     ]
     
     for name, fetcher in sources:
@@ -2156,14 +1973,6 @@ def init_db():
             status TEXT DEFAULT 'pending',
             FOREIGN KEY (job_id) REFERENCES jobs(id)
         );
-        CREATE TABLE IF NOT EXISTS dismissed_jobs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            company TEXT,
-            url TEXT,
-            user_id TEXT NOT NULL DEFAULT '',
-            dismissed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
         CREATE INDEX IF NOT EXISTS idx_jobs_url ON jobs(url);
         CREATE INDEX IF NOT EXISTS idx_jobs_qa ON jobs(is_qa);
     """)
@@ -2199,17 +2008,6 @@ def init_db():
             conn.execute(f"ALTER TABLE applications ADD COLUMN {col_name} {col_type}")
         except sqlite3.OperationalError:
             pass
-
-    # Add user_id to dismissed_jobs if missing (v2 migration)
-    try:
-        conn.execute("ALTER TABLE dismissed_jobs ADD COLUMN user_id TEXT NOT NULL DEFAULT ''")
-    except sqlite3.OperationalError:
-        pass
-    # Create index (safe after migration)
-    try:
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_dismissed_user ON dismissed_jobs(user_id, title, company)")
-    except sqlite3.OperationalError:
-        pass
 
     conn.commit()
     conn.close()
@@ -2508,22 +2306,6 @@ def save_jobs(jobs):
         if existing:
             continue
         
-        # Skip if this job was previously dismissed by any user
-        dismissed = cursor.execute(
-            "SELECT id FROM dismissed_jobs WHERE LOWER(TRIM(title)) = ? AND LOWER(TRIM(company)) = ? AND user_id != ''",
-            (norm_title, norm_company)
-        ).fetchone()
-        if dismissed:
-            continue
-        
-        # Also skip if any existing row has pipeline_stage='dismissed' for this match
-        stage_dismissed = cursor.execute(
-            "SELECT id FROM jobs WHERE LOWER(TRIM(title)) = ? AND LOWER(TRIM(company)) = ? AND pipeline_stage = 'dismissed'",
-            (norm_title, norm_company)
-        ).fetchone()
-        if stage_dismissed:
-            continue
-        
         url_hash = hashlib.md5(job["url"].encode()).hexdigest()
         
         # Check if QA-related
@@ -2576,20 +2358,6 @@ def save_jobs(jobs):
     
     conn.commit()
     conn.close()
-    
-    # Sync new jobs to Supabase
-    if new_count > 0 and _supabase_reachable():
-        # Re-fetch the new jobs to get assigned IDs, then upsert
-        try:
-            conn2 = get_db()
-            all_jobs = [dict(r) for r in conn2.execute(
-                "SELECT * FROM jobs ORDER BY id DESC LIMIT ?", (new_count,)
-            ).fetchall()]
-            conn2.close()
-            _supabase_bulk_upsert("jobs", all_jobs)
-        except Exception:
-            pass
-    
     return new_count
 
 
@@ -2642,11 +2410,6 @@ def get_jobs(filters=None):
             query += " AND saved = 1"
         if filters.get("applied_filter"):
             query += " AND applied = 1"
-        if filters.get("not_dismissed"):
-            query += " AND (pipeline_stage IS NULL OR pipeline_stage != 'dismissed')"
-    
-    # ALWAYS filter out dismissed jobs
-    query += " AND (pipeline_stage IS NULL OR pipeline_stage != 'dismissed')"
     
     query += " ORDER BY raw_date DESC, date DESC LIMIT 200"
     
@@ -2659,7 +2422,7 @@ def get_jobs(filters=None):
 def export_static_json(output_path="docs/jobs.json"):
     """Export jobs to JSON for the static site."""
     import json, os
-    jobs = get_jobs({"qa_only": True, "not_dismissed": True})
+    jobs = get_jobs({"qa_only": True})
     # Clean up for export - keep new enriched fields
     for j in jobs:
         j.pop("description", None)
@@ -2669,30 +2432,6 @@ def export_static_json(output_path="docs/jobs.json"):
     with open(output_path, "w") as f:
         json.dump({"jobs": jobs, "exported_at": datetime.now().isoformat()}, f, indent=2)
     print(f"✓ Exported {len(jobs)} jobs to {output_path}")
-    
-    # Export dismissed_jobs table as separate file (for Render restore)
-    dismissed_path = os.path.join(os.path.dirname(output_path), "dismissed_jobs.json")
-    try:
-        conn = get_db()
-        dismissed = [dict(r) for r in conn.execute("SELECT title, company, url FROM dismissed_jobs").fetchall()]
-        conn.close()
-        with open(dismissed_path, "w") as f:
-            json.dump({"dismissed": dismissed, "exported_at": datetime.now().isoformat()}, f, indent=2)
-        print(f"✓ Exported {len(dismissed)} dismissed entries to {dismissed_path}")
-    except Exception as e:
-        print(f"  dismissed_jobs export skipped: {e}")
-    
-    # Also sync full dataset to Supabase
-    if _supabase_reachable():
-        try:
-            conn = get_db()
-            all_jobs = [dict(r) for r in conn.execute("SELECT * FROM jobs").fetchall()]
-            conn.close()
-            _supabase_bulk_upsert("jobs", all_jobs)
-            print(f"  ✓ Synced {len(all_jobs)} jobs to Supabase")
-        except Exception as e:
-            print(f"  ✗ Supabase sync failed: {e}")
-    
     return len(jobs)
 
 
@@ -2705,14 +2444,6 @@ def mark_applied(job_id, cover_letter=""):
                  (job_id, cover_letter))
     conn.commit()
     conn.close()
-    
-    # Sync to Supabase
-    if _supabase_reachable():
-        try:
-            _supabase_bulk_upsert("jobs", [{"id": job_id, "applied": 1, "cover_letter": cover_letter}])
-            _supabase_bulk_upsert("applications", [{"job_id": job_id, "cover_letter": cover_letter, "status": "applied"}])
-        except Exception:
-            pass
 
 
 def get_stats():
