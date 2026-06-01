@@ -59,16 +59,6 @@ CV = {
             "keywords": ["JIRA", "Xray", "Gherkin", "iOS", "Android", "Mobile"],
         },
         {
-            "period": "",
-            "company": "Visiodent",
-            "role": "Software Quality Manager",
-            "description": (
-                "Managed testers team on healthcare software. Coordinated external "
-                "vendor for test automation."
-            ),
-            "keywords": ["Tuleap", "Dynatrace", "Healthcare", "Team Management"],
-        },
-        {
             "period": "2 yrs",
             "company": "Oodrive",
             "role": "QA Lead",
@@ -82,6 +72,16 @@ CV = {
         },
         {
             "period": "",
+            "company": "Visiodent",
+            "role": "Software Quality Manager",
+            "description": (
+                "Managed testers team on healthcare software. Coordinated external "
+                "vendor for test automation."
+            ),
+            "keywords": ["Tuleap", "Dynatrace", "Healthcare", "Team Management"],
+        },
+        {
+            "period": "Oct 2016 — Jan 2017",
             "company": "Vinci Construction",
             "role": "QA Consultant Engineer",
             "description": (
@@ -91,7 +91,7 @@ CV = {
             "keywords": ["Redmine", "SAP", "SAP HANA"],
         },
         {
-            "period": "5 yrs",
+            "period": "Jan 2011 — Sep 2016",
             "company": "Profil Technology",
             "role": "Test Engineer & L3 Support",
             "description": (
