@@ -20,7 +20,9 @@
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 24px; background: rgba(255,255,255,0.92);
     backdrop-filter: blur(12px); border-bottom: 1px solid #e8ecf0;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
   }
+  .top-nav-inner { display: flex; align-items: center; gap: 2px; white-space: nowrap; }
   .top-nav a { font-size: 12px; font-weight: 500; color: #8a92a5; text-decoration: none; padding: 4px 10px; border-radius: 6px; transition: all 0.15s; }
   .top-nav a:hover { color: #1a1d23; background: #f0f2f5; }
   .top-nav a.active { color: #1a2744; background: #e8eef8; }
@@ -46,7 +48,7 @@
   .hdr-name { font-size: 28px; font-weight: 800; color: #111; letter-spacing: -0.5px; }
   .hdr-title { font-size: 15px; color: #1a4a9e; margin-top: 4px; font-weight: 600; }
   .hdr-contact { font-size: 12px; color: #555; margin-top: 10px; display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
-  .hdr-contact a { color: #555; text-decoration: none; }
+  .hdr-contact a { color: #555; text-decoration: none; word-break: break-all; }
   .hdr-contact a:hover { color: #1a4a9e; text-decoration: underline; }
   .hdr-contact .dot { color: #ccc; }
 
@@ -107,7 +109,7 @@
     @page { margin: 0; size: A4; }
   }
   @media (max-width: 768px) {
-    .cv-wrap { padding: 28px 20px 24px; }
+    .cv-wrap { padding: 28px 20px 24px; max-width: 100%; }
     .certs-list { columns: 1; }
     .hdr { flex-direction: column; align-items: center; text-align: center; gap: 14px; }
     .hdr-contact { justify-content: center; gap: 12px; font-size: 11px; }
@@ -120,7 +122,7 @@
     .pdf-btn { font-size: 10px; padding: 3px 10px; }
   }
   @media (max-width: 480px) {
-    .cv-wrap { padding: 20px 14px 18px; margin: 12px 8px 24px; }
+    .cv-wrap { padding: 20px 14px 18px; margin: 12px 8px 24px; max-width: 100%; width: auto; }
     .hdr-name { font-size: 20px; }
     .hdr-title { font-size: 13px; }
     .hdr-photo { flex: 0 0 80px; }
@@ -138,12 +140,30 @@
     .lang-row span { font-size: 11.5px; }
     .cert { font-size: 11px; }
   }
+  @media (max-width: 360px) {
+    .cv-wrap { padding: 16px 10px 16px; margin: 8px 4px 20px; }
+    .hdr-name { font-size: 17px; }
+    .hdr-title { font-size: 11px; }
+    .hdr-photo { flex: 0 0 64px; }
+    .hdr-photo img { width: 64px; height: 64px; }
+    .hdr-contact { font-size: 10px; gap: 2px; }
+    .sec-title { font-size: 10px; }
+    .exp-co { font-size: 12px; }
+    .exp-ro { font-size: 11px; }
+    .exp-date { font-size: 10px; white-space: normal; }
+    .exp-desc { font-size: 11px; }
+    .summary { font-size: 11px; }
+    .skill-tag { font-size: 10px; padding: 2px 6px; }
+    .top-nav a { font-size: 10px; padding: 2px 6px; }
+    .lang-toggle button { font-size: 8px; padding: 1px 5px; }
+    .pdf-btn { font-size: 9px; padding: 2px 8px; }
+  }
 </style>
 </head>
 <body>
 
 <div class="top-nav">
-  <div>
+  <div class="top-nav-inner">
     <a href="{{ url_for('index') }}">Dashboard</a>
     <a href="#" class="active">CV</a>
     <a href="{{ url_for('qa_dashboard') }}">QA</a>
