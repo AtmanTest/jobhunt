@@ -1462,14 +1462,15 @@ def about():
                 parts = line.split("|", 2)
                 log_entries.append({"hash": parts[0][:7], "msg": parts[1], "date": parts[2] if len(parts) > 2 else ""})
         r2 = subprocess.run(
-            ["git", "tag", "-l", "cv-*", "--sort=-creatordate", "--format=%(refname:short)|%(objectname:short)"],
+            ["git", "tag", "-l", "--sort=-creatordate", "--format=%(refname:short)|%(objectname:short)"],
             capture_output=True, text=True, timeout=5,
             cwd=os.path.dirname(__file__),
         )
         for line in r2.stdout.strip().split("\n"):
             if "|" in line:
                 name, h = line.split("|", 1)
-                cv_tags.append({"name": name, "hash": h[:7]})
+                if name.startswith("v") or name.startswith("cv-"):
+                    cv_tags.append({"name": name, "hash": h[:7]})
     except:
         pass
 
@@ -1499,7 +1500,7 @@ def about():
             if r2.status_code == 200:
                 for ref in r2.json():
                     name = ref["ref"].replace("refs/tags/", "")
-                    if name.startswith("cv-"):
+                    if name.startswith("v") or name.startswith("cv-"):
                         cv_tags.append({"name": name, "hash": ref["object"]["sha"][:7]})
         except:
             pass
