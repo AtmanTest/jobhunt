@@ -783,7 +783,7 @@
       <div class="section-label"><span class="bar purple"></span> ✦ Jobs du Jour</div>
       <div class="featured-grid">
       {% for job in jobs_of_day %}
-        <div class="featured-card card-blue" onclick="window.open('{{ job.url | clean_url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;" data-auto="{%- set autoc = (job.title or '') + ' ' + (job.tags or '') -%}{%- if 'automation' in autoc.lower() or 'selenium' in autoc.lower() or 'playwright' in autoc.lower() or 'cypress' in autoc.lower() or 'ai' in autoc.lower() or ' ia ' in autoc.lower() or 'ia,' in autoc.lower() or 'llm' in autoc.lower() or 'machine learning' in autoc.lower() or 'test framework' in autoc.lower() or 'ci/cd' in autoc.lower() -%}ai{%- else -%}manual{%- endif -%}">
+        <div class="featured-card card-blue" onclick="window.open('{{ job.url | clean_url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;" data-auto="{%- set autoc = ((job.title or '') + ' ' + ((job.tags or '')|replace(',',' ') + ' ' + ((job.matched_skills or [])|join(' ')))|lower) -%}{%- if 'automation' in autoc or 'automated' in autoc or 'automat' in autoc or 'selenium' in autoc or 'playwright' in autoc or 'cypress' in autoc or 'ci/cd' in autoc or 'test framework' in autoc or 'llm' in autoc or 'machine learning' in autoc or ' ai ' in autoc -%}auto{%- else -%}manual{%- endif -%}">
           <button class="btn-dismiss" onclick="event.stopPropagation();dismissJob({{ job.id }}, this);" title="Masquer">✕</button>
           <div class="rank">#{{ loop.index }} · {{ job.match_score }}% match</div>
           <div class="fc-title">{{ job.title }}</div>
@@ -812,7 +812,7 @@
       <div class="section-label"><span class="bar orange"></span> 🔥 Hot Picks — Priorité Max</div>
       <div class="featured-grid">
       {% for job in hot_picks %}
-        <div class="featured-card card-purple" onclick="window.open('{{ job.url | clean_url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;" data-auto="{%- set autoc = (job.title or '') + ' ' + (job.tags or '') -%}{%- if 'automation' in autoc.lower() or 'selenium' in autoc.lower() or 'playwright' in autoc.lower() or 'cypress' in autoc.lower() or 'ai' in autoc.lower() or ' ia ' in autoc.lower() or 'ia,' in autoc.lower() or 'llm' in autoc.lower() or 'machine learning' in autoc.lower() or 'test framework' in autoc.lower() or 'ci/cd' in autoc.lower() -%}ai{%- else -%}manual{%- endif -%}">
+        <div class="featured-card card-purple" onclick="window.open('{{ job.url | clean_url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;" data-auto="{%- set autoc = ((job.title or '') + ' ' + ((job.tags or '')|replace(',',' ') + ' ' + ((job.matched_skills or [])|join(' ')))|lower) -%}{%- if 'automation' in autoc or 'automated' in autoc or 'automat' in autoc or 'selenium' in autoc or 'playwright' in autoc or 'cypress' in autoc or 'ci/cd' in autoc or 'test framework' in autoc or 'llm' in autoc or 'machine learning' in autoc or ' ai ' in autoc -%}auto{%- else -%}manual{%- endif -%}">
           <button class="btn-dismiss" onclick="event.stopPropagation();dismissJob({{ job.id }}, this);" title="Masquer">✕</button>
           <div class="rank">#{{ loop.index }} · {{ job.match_score }}% match</div>
           <div class="fc-title">{{ job.title }}</div>
@@ -875,7 +875,7 @@
       <div class="filter-spacer"></div>
       <div class="filter-group" data-type="automation">
         <button class="filter-btn active" data-val="all">🤖 Tous</button>
-        <button class="filter-btn" data-val="ai">🤖 Avec IA</button>
+        <button class="filter-btn" data-val="auto">🤖 Auto</button>
         <button class="filter-btn" data-val="manual">🔧 Manuel</button>
       </div>
       <div class="filter-spacer"></div>
@@ -927,7 +927,7 @@
       <div class="job-list paginated-list" data-per-page="3">
       {% if country_data.jobs %}
       {% for job in country_data.jobs %}
-        <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}" data-auto="{%- set autoc = (job.title or '') + ' ' + (job.tags or '') -%}{%- if 'automation' in autoc.lower() or 'selenium' in autoc.lower() or 'playwright' in autoc.lower() or 'cypress' in autoc.lower() or 'ai' in autoc.lower() or ' ia ' in autoc.lower() or 'ia,' in autoc.lower() or 'llm' in autoc.lower() or 'machine learning' in autoc.lower() or 'test framework' in autoc.lower() or 'ci/cd' in autoc.lower() -%}ai{%- else -%}manual{%- endif -%}">
+        <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}" data-auto="{%- set autoc = ((job.title or '') + ' ' + ((job.tags or '')|replace(',',' ') + ' ' + ((job.matched_skills or [])|join(' ')))|lower) -%}{%- if 'automation' in autoc or 'automated' in autoc or 'automat' in autoc or 'selenium' in autoc or 'playwright' in autoc or 'cypress' in autoc or 'ci/cd' in autoc or 'test framework' in autoc or 'llm' in autoc or 'machine learning' in autoc or ' ai ' in autoc -%}auto{%- else -%}manual{%- endif -%}">
           <button class="btn-dismiss" onclick="dismissJob({{ job.id }}, this);event.stopPropagation();" title="Masquer">✕</button>
           <div class="jc-left">
             <div class="jc-title">
