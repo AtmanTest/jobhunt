@@ -326,6 +326,43 @@ def _supabase_headers():
         "Prefer": "return=representation",
     }
 
+# Ensure dismissed_jobs table exists in Supabase (required for per-user persistence)
+def _ensure_supabase_dismissed_table():
+    """Create dismissed_jobs table in Supabase if it doesn't exist."""
+    import os
+    pat = os.environ.get("SUPABASE_PAT")
+    if not pat:
+        # Try local .env
+        env_path = os.path.expanduser("~/.hermes/.env")
+        if os.path.exists(env_path):
+            with open(env_path) as f:
+                for line in f:
+                    if line.startswith("SUPABASE_PAT="):
+                        pat = line.split("=", 1)[1].strip().strip("'\"")
+                        break
+    if not pat:
+        print("[Supabase] No SUPABASE_PAT, skipped dismissed_jobs table creation")
+        return
+    try:
+        ref = SUPABASE_URL.replace("https://", "").split(".")[0] if SUPABASE_URL else ""
+        if not ref:
+            return
+        sql = "CREATE TABLE IF NOT EXISTS dismissed_jobs (id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, title TEXT NOT NULL, company TEXT DEFAULT '', url TEXT DEFAULT '', user_id TEXT NOT NULL DEFAULT '', dismissed_at TIMESTAMPTZ DEFAULT NOW()); CREATE INDEX IF NOT EXISTS idx_dismissed_user ON dismissed_jobs(user_id, title, company);"
+        r = requests.post(
+            f"https://api.supabase.com/v1/projects/{ref}/database/query",
+            headers={"Authorization": f"Bearer {pat}", "Content-Type": "application/json"},
+            json={"query": sql},
+            timeout=10
+        )
+        if r.status_code == 201:
+            print("[Supabase] dismissed_jobs table ready")
+        else:
+            print(f"[Supabase] dismissed_jobs table creation: HTTP {r.status_code}")
+    except Exception as e:
+        print(f"[Supabase] dismissed_jobs table setup failed: {e}")
+
+_ensure_supabase_dismissed_table()
+
 
 @app.route("/api/profile", methods=["GET", "PUT"])
 def api_profile():
@@ -410,7 +447,8 @@ def api_profile_avatar():
 @app.route("/settings")
 def settings_page():
     """Settings page for authenticated users."""
-
+    if not require_auth():
+        return redirect(url_for("login_page"))
     return render_template("settings.html")
 
 
@@ -660,7 +698,8 @@ def filter_jobs_by_country(country_id):
 
 @app.route("/debug")
 def debug_info():
-
+    if not require_auth():
+        return redirect(url_for("login_page"))
     """Debug endpoint to check app state."""
     lines = []
     lines.append(f"Python: {sys.version}")
@@ -794,7 +833,8 @@ def index():
 
 @app.route("/refresh")
 def refresh():
-
+    if not require_auth():
+        return redirect(url_for("login_page"))
     """Manual refresh of job listings."""
     def do_scrape():
         jobs = fetch_all()
@@ -935,7 +975,8 @@ Senior QA Consultant - SASU"""
 
 @app.route("/stats")
 def stats_page():
-
+    if not require_auth():
+        return redirect(url_for("login_page"))
     """Page des statistiques : sources, skills gap, top matches."""
     conn = get_db()
     rows = conn.execute("SELECT * FROM jobs WHERE freelance_status IN ('VALIDÉE', 'AMBIGUË') ORDER BY raw_date DESC").fetchall()
@@ -1389,7 +1430,8 @@ def generate_cover(job_id):
 
 @app.route("/cv")
 def cv_page():
-
+    if not require_auth():
+        return redirect(url_for("login_page"))
     return render_template("cv.html", cv=CV)
 
 
@@ -1400,7 +1442,6 @@ def api_cv():
 
 @app.route("/about")
 def about():
-
     import subprocess, json
     log_entries = []
     cv_tags = []
@@ -1417,14 +1458,15 @@ def about():
                 parts = line.split("|", 2)
                 log_entries.append({"hash": parts[0][:7], "msg": parts[1], "date": parts[2] if len(parts) > 2 else ""})
         r2 = subprocess.run(
-            ["git", "tag", "-l", "cv-*", "--sort=-creatordate", "--format=%(refname:short)|%(objectname:short)"],
+            ["git", "tag", "-l", "--sort=-creatordate", "--format=%(refname:short)|%(objectname:short)"],
             capture_output=True, text=True, timeout=5,
             cwd=os.path.dirname(__file__),
         )
         for line in r2.stdout.strip().split("\n"):
             if "|" in line:
                 name, h = line.split("|", 1)
-                cv_tags.append({"name": name, "hash": h[:7]})
+                if name.startswith("v") or name.startswith("cv-"):
+                    cv_tags.append({"name": name, "hash": h[:7]})
     except:
         pass
 
@@ -1454,7 +1496,7 @@ def about():
             if r2.status_code == 200:
                 for ref in r2.json():
                     name = ref["ref"].replace("refs/tags/", "")
-                    if name.startswith("cv-"):
+                    if name.startswith("v") or name.startswith("cv-"):
                         cv_tags.append({"name": name, "hash": ref["object"]["sha"][:7]})
         except:
             pass
@@ -1471,7 +1513,8 @@ def about():
 
 @app.route("/changelog")
 def changelog():
-
+    if not require_auth():
+        return redirect(url_for("login_page"))
     import markdown
     try:
         with open("CHANGELOG.md") as f:
@@ -1485,7 +1528,8 @@ def changelog():
 
 @app.route("/marche-qa")
 def marche_qa():
-
+    if not require_auth():
+        return redirect(url_for("login_page"))
     return render_template("marche_qa.html")
 
 
@@ -1493,7 +1537,8 @@ def marche_qa():
 
 @app.route("/qa")
 def qa_dashboard():
-
+    if not require_auth():
+        return redirect(url_for("login_page"))
     return render_template("qa.html")
 
 
@@ -1826,7 +1871,8 @@ def _save_monitor(data):
 
 @app.route("/monitoring")
 def monitoring_page():
-
+    if not require_auth():
+        return redirect(url_for("login_page"))
     return render_template("monitoring.html", version=get_version())
 
 
