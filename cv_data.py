@@ -34,73 +34,72 @@ CV = {
             "keywords": ["IA", "Python", "Automatisation", "LLM", "Prompt Engineering"],
         },
         {
-            "period": "2 yrs",
-            "company": "BRED Bank",
-            "role": "QA Consultant Engineer - Large Account/CIO",
+            "period": "Avril 2023 – Avril 2025",
+            "company": "BRED Banque",
+            "role": "Grands Comptes · DSI · Consultant Ingénieur Qualité",
             "description": (
-                "Regulatory compliance of banking systems to new French standards "
-                "(Sept 2026 deadline). Defined and maintained test strategy covering "
-                "the core perimeter. Led acceptance campaigns covering 100% of "
-                "business epics. Created test datasets in Mainframe/SQL Oracle environments. "
-                "Guaranteed 100% regulatory compliance ahead of deadline."
+                "Mise en conformité du système de facturation électronique aux normes réglementaires françaises "
+                "(échéance 2026). Définir et maintenir la stratégie de tests sur l'ensemble du périmètre. "
+                "Piloter la campagne de recette couvrant 100% des Epics métier. "
+                "Rédiger les plans de tests dans JIRA/Xray, exécution en environnement MainFrame/SQL Oracle. "
+                "Garantir la conformité réglementaire à 100% avant l'échéance de septembre 2026."
             ),
-            "keywords": ["JIRA", "Xray", "SQL", "Oracle", "Mainframe", "Regulatory"],
+            "keywords": ["JIRA", "Xray", "SQL", "Oracle", "Mainframe", "Réglementaire"],
         },
         {
-            "period": "2 yrs",
-            "company": "Accor Hotels",
-            "role": "Mobile QA Lead",
+            "period": "Sept 2019 – Déc 2022",
+            "company": "Accor Hôtels",
+            "role": "Référent QA Mobile · 3 ans",
             "description": (
-                "Global mobile QA lead for Android & iOS apps (100+ countries). "
-                "Co-created User Stories with Product Owner and Dev team. Led "
-                "functional acceptance and regression campaigns in Agile Scrum. "
-                "Wrote 100% of test cases in Gherkin covering critical user journeys. "
-                "Managed defect lifecycle and delivered Go/No-Go reports."
+                "Leader mondial hôtellerie (100+ pays). Qualification continue des apps mobiles Android & iOS. "
+                "Référent QA mobile, co-construction des User Stories avec le PO et l'équipe Dev. "
+                "Piloter les campagnes de recette et non-régression en Agile Scrum (sprints de 2 semaines). "
+                "Rédiger 100% des cas de test en Gherkin. Gérer le cycle de vie des anomalies et "
+                "assurer le reporting Go/No-Go à la direction."
             ),
             "keywords": ["JIRA", "Xray", "Gherkin", "iOS", "Android", "Mobile"],
         },
         {
-            "period": "",
+            "period": "Juin – Août 2019",
             "company": "Visiodent",
-            "role": "Software Quality Manager",
+            "role": "Management QA · Responsable Qualité Logiciel",
             "description": (
-                "Managed testers team on healthcare software. Coordinated external "
-                "vendor for test automation."
+                "Manager une équipe de testeurs sur logiciel santé (Veasy) et piloter un prestataire "
+                "externe pour l'automatisation."
             ),
-            "keywords": ["Tuleap", "Dynatrace", "Healthcare", "Team Management"],
+            "keywords": ["Tuleap", "Dynatrace", "Santé", "Management"],
         },
         {
-            "period": "2 yrs",
+            "period": "Jan 2017 – Avr 2019",
             "company": "Oodrive",
-            "role": "QA Lead",
+            "role": "Responsable QA · 2 ans",
             "description": (
-                "European leader in sovereign B2B cloud storage. Developed and "
-                "executed functional and regression test plans for critical B2B/B2C "
-                "applications. Cross-platform portability testing (Windows, macOS, "
-                "Linux). Level 3 technical support."
+                "Leader européen du cloud souverain B2B. Élaborer et exécuter les plans de tests "
+                "fonctionnels et non-régression pour applications critiques B2B/B2C. "
+                "Tests de portabilité multi-plateformes (Windows, macOS, Linux) et support technique niveau 3."
             ),
             "keywords": ["JIRA", "Zephyr", "Confluence", "Ranorex", "Cloud"],
         },
         {
-            "period": "",
+            "period": "Oct 2016 – Jan 2017",
             "company": "Vinci Construction",
-            "role": "QA Consultant Engineer",
+            "role": "Consultant Ingénieur Qualité",
             "description": (
-                "Functional acceptance testing on SAP BPC web apps. UI/UX compliance "
-                "and data integrity validation."
+                "Recette fonctionnelle sur applications web SAP BPC, validation de la conformité "
+                "et de l'intégrité des données."
             ),
             "keywords": ["Redmine", "SAP", "SAP HANA"],
         },
         {
-            "period": "5 yrs",
+            "period": "Jan 2011 – Sept 2016",
             "company": "Profil Technology",
-            "role": "Test Engineer & L3 Support",
+            "role": "Ingénieur Tests & Support N3 · 5 ans",
             "description": (
-                "Multi-platform software (VADoZ) and security OS (Bianne WebFilter). "
-                "Cross-platform functional and regression test campaigns. AutoIT "
-                "automation. Dedicated security test lab."
+                "Logiciels multi-plateformes (Witigo) et solutions de sécurité (Bitdefender, WebFilter). "
+                "Campagnes de tests fonctionnels et non-régression multi-plateformes, "
+                "automatisation AutoIT, lab de tests sécurité."
             ),
-            "keywords": ["AutoIT", "Windows", "macOS", "Linux", "Security"],
+            "keywords": ["AutoIT", "Windows", "macOS", "Linux", "Sécurité"],
         },
     ],
     "certifications": [
