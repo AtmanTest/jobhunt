@@ -74,11 +74,6 @@
             color: white !important;
         }
         .btn-primary:hover { background: #5f4dd0; }
-        .btn-outline {
-            border: 1px solid var(--border);
-            color: var(--text-dim) !important;
-        }
-        .btn-outline:hover { border-color: var(--accent); color: var(--text) !important; }
 
         /* Container */
         .container { max-width: 1200px; margin: 0 auto; padding: 24px 32px; }
@@ -107,6 +102,210 @@
         }
         .stat-chip .num.green { color: var(--green); }
         .stat-chip .num.orange { color: var(--orange); }
+        .stat-chip .num.gold { color: var(--gold); }
+
+        /* Hotpicks row */
+        .hotpicks-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .hotpick-card {
+            flex: 0 0 220px;
+            background: linear-gradient(135deg, rgba(255,217,61,0.08), rgba(255,159,67,0.04));
+            border: 1px solid rgba(255,217,61,0.25);
+            border-radius: 12px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .hotpick-card:hover {
+            border-color: var(--gold);
+            background: rgba(255,217,61,0.12);
+            transform: translateY(-2px);
+        }
+        .hotpick-card .hp-rank {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--gold);
+            color: #1a1a24;
+            font-size: 10px;
+            font-weight: 700;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hotpick-card .hp-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .hotpick-card .hp-company {
+            font-size: 10px;
+            color: var(--text-dim);
+        }
+        .hotpick-card .hp-meta {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        .hotpick-card .hp-score {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--gold);
+            margin-top: 4px;
+        }
+
+        /* Top matches */
+        .matches-section {
+            margin-bottom: 20px;
+        }
+        .matches-section .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+        .match-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 10px 16px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .match-card:hover {
+            background: var(--card-hover);
+            border-color: var(--accent);
+        }
+        .match-card .m-score {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent);
+            min-width: 36px;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .match-card .m-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .match-card .m-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .match-card .m-company {
+            font-size: 10px;
+            color: var(--text-dim);
+        }
+        .match-card .m-location {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* Pipeline mini */
+        .pipeline-mini {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .pipeline-mini .stage {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: var(--text-dim);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 12px;
+        }
+        .pipeline-mini .stage .count {
+            font-weight: 700;
+            color: var(--text);
+        }
+        .pipeline-mini .stage.new .count { color: var(--blue); }
+        .pipeline-mini .stage.applied .count { color: var(--green); }
+        .pipeline-mini .stage .emoji { font-size: 12px; }
+
+        /* Filters */
+        .filters-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filters-bar input[type="text"] {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 7px 12px;
+            color: var(--text);
+            font-size: 12px;
+            flex: 1;
+            min-width: 180px;
+            outline: none;
+            font-family: inherit;
+            transition: border 0.2s;
+        }
+        .filters-bar input[type="text"]:focus { border-color: var(--accent); }
+        .filter-btn {
+            padding: 7px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text-dim);
+            font-size: 11px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+        .filter-btn.active {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+        .filter-btn.gold.active {
+            border-color: var(--gold);
+            background: rgba(255,217,61,0.1);
+            color: var(--gold);
+        }
+        .filter-btn.green.active {
+            border-color: var(--green);
+            background: rgba(0,214,143,0.1);
+            color: var(--green);
+        }
+        .filter-btn.red.active {
+            border-color: var(--red);
+            background: rgba(255,107,107,0.1);
+            color: var(--red);
+        }
 
         /* Tabs */
         .tabs {
@@ -174,19 +373,10 @@
             cursor: default;
         }
         .platform-card:hover { border-color: var(--accent); background: var(--card-hover); }
-        .platform-card .p-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text);
-            margin-bottom: 4px;
-        }
+        .platform-card .p-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
         .platform-card .p-name a { color: var(--accent); text-decoration: none; }
         .platform-card .p-name a:hover { text-decoration: underline; }
-        .platform-card .p-desc {
-            font-size: 11px;
-            color: var(--text-dim);
-            line-height: 1.4;
-        }
+        .platform-card .p-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
         .platform-card .p-tag {
             display: inline-block;
             font-size: 9px;
@@ -229,6 +419,7 @@
             margin-bottom: 8px;
             transition: all 0.2s;
             cursor: pointer;
+            position: relative;
         }
         .job-card:hover {
             background: var(--card-hover);
@@ -297,6 +488,65 @@
             border-radius: 5px;
         }
 
+        /* Match score badge on cards */
+        .match-score-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            font-size: 10px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg);
+        }
+        .match-score-badge.high { background: var(--accent); color: white; }
+        .match-score-badge.medium { background: var(--orange); color: #1a1a24; }
+        .match-score-badge.low { background: var(--card); color: var(--text-muted); border-color: var(--border); }
+
+        /* Skills gap */
+        .skills-gap {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .skills-gap .skill-tag {
+            font-size: 10px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+        .skills-gap .skill-tag.in-demand {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(255,217,61,0.06);
+        }
+        .skills-gap .skill-tag.gap {
+            border-color: var(--red);
+            color: var(--red);
+            background: rgba(255,107,107,0.06);
+        }
+
+        /* Footer info */
+        .footer-info {
+            margin-top: 32px;
+            padding: 16px 0;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -350,6 +600,8 @@
             .platform-card { flex: 0 0 160px; }
             .job-header { flex-direction: column; }
             .job-actions { width: 100%; justify-content: flex-end; }
+            .hotpick-card { flex: 0 0 180px; }
+            .filters-bar input[type="text"] { min-width: 120px; }
         }
     </style>
 </head>
@@ -385,6 +637,91 @@
         </div>
     </div>
 
+    <!-- Pipeline mini stats -->
+    {% if pipeline_counts %}
+    <div class="pipeline-mini">
+        <span class="stage new"><span class="emoji">🆕</span> Nouveau <span class="count">{{ pipeline_counts.get('new',0) }}</span></span>
+        <span class="stage applied"><span class="emoji">📨</span> Postulé <span class="count">{{ pipeline_counts.get('applied',0) }}</span></span>
+        <span class="stage"><span class="emoji">📞</span> Tél. <span class="count">{{ pipeline_counts.get('phone',0) }}</span></span>
+        <span class="stage"><span class="emoji">🤝</span> Entretien <span class="count">{{ pipeline_counts.get('interview',0) }}</span></span>
+        <span class="stage"><span class="emoji">🎉</span> Offre <span class="count">{{ pipeline_counts.get('offer',0) }}</span></span>
+    </div>
+    {% endif %}
+
+    <!-- Skills gap -->
+    {% if skills_gap and skills_gap.in_demand %}
+    <div class="skills-gap">
+        <span style="font-size:10px;color:var(--text-muted);padding:3px 0;">🧠 Compétences recherchées :</span>
+        {% for sk in skills_gap.in_demand[:8] %}
+        <span class="skill-tag in-demand">{{ sk }}</span>
+        {% endfor %}
+        {% if skills_gap.gaps %}
+        {% for sk in skills_gap.gaps[:4] %}
+        <span class="skill-tag gap">{{ sk }} ⚠️</span>
+        {% endfor %}
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- 🔥 Hot Picks -->
+    {% if hot_picks %}
+    <div style="margin-bottom:6px;">
+        <span style="font-size:13px;font-weight:600;color:var(--gold);">🔥 Hot Picks</span>
+        <span style="font-size:11px;color:var(--text-dim);margin-left:6px;">Priorité absolue — postule d'abord ici</span>
+    </div>
+    <div class="hotpicks-row">
+        {% for hp in hot_picks %}
+        <div class="hotpick-card" onclick="window.open('{{ hp.url }}','_blank')">
+            <div class="hp-rank">{{ loop.index }}</div>
+            <div class="hp-title">{{ hp.title }}</div>
+            <div class="hp-company">{{ hp.company }}</div>
+            <div class="hp-meta">
+                <span>📍 {{ hp.location }}</span>
+                {% if hp.salary %}<span>💰 {{ hp.salary }}</span>{% endif %}
+            </div>
+            <div class="hp-score">Score: {{ hp.match_score or 0 }}%</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 🎯 Top matches -->
+    {% if top_matches %}
+    <div class="matches-section">
+        <div class="section-title">🎯 Top matches — les meilleures opportunités</div>
+        {% for m in top_matches %}
+        <div class="match-card" onclick="window.open('{{ m.url }}','_blank')">
+            <div class="m-score">{{ m.match_score or 0 }}%</div>
+            <div class="m-info">
+                <div class="m-title">{{ m.title }}</div>
+                <div class="m-company">{{ m.company }}</div>
+            </div>
+            <div class="m-location">📍 {{ m.location }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Filters -->
+    <div class="filters-bar">
+        <input type="text" id="searchInput" placeholder="🔍 Chercher par titre, entreprise...">
+        <select id="filterType" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text-dim);font-size:11px;font-family:inherit;outline:none;cursor:pointer;">
+            <option value="all">📍 Tous</option>
+            <option value="remote">🏠 Remote</option>
+            <option value="hybrid">🔄 Hybride</option>
+            <option value="onsite">🏢 Sur site</option>
+        </select>
+        <select id="filterDate" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text-dim);font-size:11px;font-family:inherit;outline:none;cursor:pointer;">
+            <option value="all">📅 Toutes dates</option>
+            <option value="today">Aujourd'hui</option>
+            <option value="3d">&lt; 3 jours</option>
+            <option value="7d">&lt; 7 jours</option>
+        </select>
+        <button class="filter-btn" id="filterQA" onclick="toggleFilter('qa')">🔬 QA only</button>
+        <button class="filter-btn" id="filterUnapplied" onclick="toggleFilter('unapplied')">📭 Non postulé</button>
+        <span style="font-size:10px;color:var(--text-muted);margin-left:auto;" id="resultCount"></span>
+    </div>
+
     <!-- Country tabs -->
     <div class="tabs" id="tabs">
         <button class="tab-btn active" data-tab="france">🇫🇷 France <span class="badge">{{ country_counts|selectattr('key', 'equalto', 'france')|map(attribute='count')|first }}</span></button>
@@ -397,7 +734,7 @@
 
     {% for country_id, country_data in countries.items() %}
     <div class="tab-panel {% if loop.first %}active{% endif %}" id="panel-{{ country_id }}">
-        <!-- TJM indicator + hack -->
+        <!-- TJM indicator -->
         <div class="tjm-box">
             <span class="label">💶 TJM indicatif {{ country_data.flag }}</span>
             <span class="rate">{{ country_data.tjm }}</span>
@@ -433,10 +770,14 @@
             {% endif %}
         </div>
 
-        <div class="job-list">
+        <div class="job-list" data-country="{{ country_id }}">
             {% if country_data.jobs %}
             {% for job in country_data.jobs %}
-            <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}">
+            <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}"
+                 data-title="{{ job.title|e }}" data-company="{{ job.company|e }}"
+                 data-location="{{ job.location|e }}" data-type="{{ job.work_type or '' }}"
+                 data-date="{{ job.date or '' }}" data-match="{{ job.match_score or 0 }}"
+                 data-applied="{{ 'true' if job.applied else 'false' }}">
                 <div class="job-header">
                     <div>
                         <div class="job-title">
@@ -466,6 +807,8 @@
                     {% endfor %}
                 </div>
                 {% endif %}
+                {% set ms = job.match_score or 0 %}
+                <div class="match-score-badge {% if ms >= 30 %}high{% elif ms >= 15 %}medium{% else %}low{% endif %}">{{ ms }}%</div>
             </div>
             {% endfor %}
             {% else %}
@@ -483,12 +826,17 @@
         </div>
     </div>
     {% endfor %}
+
     <!-- Tous panel -->
     <div class="tab-panel {% if countries|length == 0 %}active{% endif %}" id="panel-tous">
-        <div class="job-list">
+        <div class="job-list" data-country="tous">
             {% if tous_jobs %}
             {% for job in tous_jobs %}
-            <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}">
+            <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}"
+                 data-title="{{ job.title|e }}" data-company="{{ job.company|e }}"
+                 data-location="{{ job.location|e }}" data-type="{{ job.work_type or '' }}"
+                 data-date="{{ job.date or '' }}" data-match="{{ job.match_score or 0 }}"
+                 data-applied="{{ 'true' if job.applied else 'false' }}">
                 <div class="job-header">
                     <div>
                         <div class="job-title">
@@ -518,6 +866,8 @@
                     {% endfor %}
                 </div>
                 {% endif %}
+                {% set ms = job.match_score or 0 %}
+                <div class="match-score-badge {% if ms >= 30 %}high{% elif ms >= 15 %}medium{% else %}low{% endif %}">{{ ms }}%</div>
             </div>
             {% endfor %}
             {% else %}
@@ -528,6 +878,12 @@
             </div>
             {% endif %}
         </div>
+    </div>
+
+    <!-- Footer info -->
+    <div class="footer-info">
+        <span>v{{ version }} · Dernière màj : {{ last_update }}</span>
+        <span>{{ tous_jobs|length }} offres · {{ stats.qa }} QA · {{ stats.this_week }} cette semaine</span>
     </div>
 </div>
 
@@ -542,6 +898,7 @@
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             const panel = document.getElementById('panel-' + this.dataset.tab);
             if (panel) panel.classList.add('active');
+            updateCount();
         });
     });
 
@@ -552,6 +909,120 @@
             if (link) window.open(link.href, '_blank');
         });
     });
+
+    // Filter state
+    let filters = { qa: false, unapplied: false };
+
+    function toggleFilter(type) {
+        filters[type] = !filters[type];
+        applyFilters();
+    }
+
+    // Search
+    document.getElementById('searchInput').addEventListener('input', applyFilters);
+    document.getElementById('filterType').addEventListener('change', applyFilters);
+    document.getElementById('filterDate').addEventListener('change', applyFilters);
+
+    function parseDate(dateStr) {
+        if (!dateStr) return null;
+        // Try DD/MM/YYYY or YYYY-MM-DD
+        let parts = dateStr.split('/');
+        if (parts.length === 3) return new Date(parts[2], parts[1]-1, parts[0]);
+        parts = dateStr.split('-');
+        if (parts.length === 3) return new Date(parts[0], parts[1]-1, parts[2]);
+        return null;
+    }
+
+    function daysAgo(dateStr) {
+        const d = parseDate(dateStr);
+        if (!d) return Infinity;
+        return Math.floor((new Date() - d) / (1000*60*60*24));
+    }
+
+    function applyFilters() {
+        const q = document.getElementById('searchInput').value.toLowerCase().trim();
+        const type = document.getElementById('filterType').value;
+        const dateFilter = document.getElementById('filterDate').value;
+
+        // Get active panel's job list
+        const activePanel = document.querySelector('.tab-panel.active');
+        if (!activePanel) return;
+        const jobList = activePanel.querySelector('.job-list');
+        if (!jobList) return;
+
+        const cards = jobList.querySelectorAll('.job-card');
+        let visible = 0;
+
+        cards.forEach(card => {
+            const title = (card.dataset.title || '').toLowerCase();
+            const company = (card.dataset.company || '').toLowerCase();
+            const location = (card.dataset.location || '').toLowerCase();
+            const cardType = card.dataset.type || '';
+            const cardDate = card.dataset.date || '';
+            const match = parseInt(card.dataset.match || '0');
+            const applied = card.dataset.applied === 'true';
+
+            // Search filter
+            let show = true;
+            if (q) {
+                show = title.includes(q) || company.includes(q) || location.includes(q);
+            }
+
+            // QA filter
+            if (show && filters.qa) {
+                show = match >= 10;
+            }
+
+            // Unapplied filter
+            if (show && filters.unapplied) {
+                show = !applied;
+            }
+
+            // Work type filter
+            if (show && type !== 'all') {
+                const ct = cardType.toLowerCase();
+                if (type === 'remote') show = ct.includes('remote') || ct.includes('distanciel') || ct.includes('full remote') || ct.includes('télétravail');
+                else if (type === 'hybrid') show = ct.includes('hybrid') || ct.includes('hybride') || ct.includes('mixte');
+                else if (type === 'onsite') show = ct.includes('onsite') || ct.includes('sur site') || ct.includes('présentiel') || (!ct.includes('remote') && !ct.includes('hybrid') && !ct.includes('distanciel'));
+            }
+
+            // Date filter
+            if (show && dateFilter !== 'all') {
+                const da = daysAgo(cardDate);
+                if (dateFilter === 'today') show = da === 0;
+                else if (dateFilter === '3d') show = da <= 3;
+                else if (dateFilter === '7d') show = da <= 7;
+            }
+
+            card.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        // Update count
+        const total = cards.length;
+        const el = document.getElementById('resultCount');
+        if (el) el.textContent = visible < total ? `${visible} / ${total} affichés` : `${total} offres`;
+
+        // Update filter buttons
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        if (filters.qa) document.getElementById('filterQA').classList.add('active');
+        if (filters.unapplied) document.getElementById('filterUnapplied').classList.add('active');
+    }
+
+    function updateCount() {
+        setTimeout(applyFilters, 50);
+    }
+
+    // Toast notification
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // Run initial filter to show correct counts
+    setTimeout(applyFilters, 100);
 </script>
 </body>
 </html>
