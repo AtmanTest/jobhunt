@@ -690,6 +690,97 @@
     .market-info .tip { font-size: 10px; }
     .welcome-section > div > div:first-child .welcome-name { font-size: 17px !important; }
   }
+
+  /* ── Tinder Swipe (mobile only) ── */
+  .swipe-card {
+    position: relative; overflow: hidden;
+    touch-action: pan-y; /* allow vertical scroll, capture horizontal */
+    transition: none;
+  }
+  .swipe-card.swiping { transition: none; }
+  .swipe-card.swipe-left { animation: swipeOutLeft 0.3s ease forwards; }
+  .swipe-card.swipe-right { animation: swipeOutRight 0.3s ease forwards; }
+  @keyframes swipeOutLeft {
+    0% { transform: translateX(var(--swipe-offset, 0)); opacity: 1; }
+    100% { transform: translateX(-120%); opacity: 0; }
+  }
+  @keyframes swipeOutRight {
+    0% { transform: translateX(var(--swipe-offset, 0)); opacity: 1; }
+    100% { transform: translateX(120%); opacity: 0; }
+  }
+  .swipe-overlay {
+    position: absolute; top: 0; bottom: 0; z-index: 5;
+    display: flex; align-items: center;
+    font-size: 16px; font-weight: 800; letter-spacing: 1px;
+    pointer-events: none; opacity: 0;
+    transition: opacity 0.15s;
+    padding: 0 20px;
+  }
+  .swipe-overlay-left {
+    left: 0; right: 50%;
+    justify-content: flex-start;
+    background: linear-gradient(90deg, rgba(255,107,107,0.60) 0%, transparent 60%);
+    color: #fff;
+    border-radius: var(--radius) 0 0 var(--radius);
+  }
+  .swipe-overlay-right {
+    right: 0; left: 50%;
+    justify-content: flex-end;
+    background: linear-gradient(270deg, rgba(0,214,143,0.55) 0%, transparent 60%);
+    color: #fff;
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .swipe-card.swiping .swipe-overlay { opacity: 0; }
+  .swipe-overlay.show { opacity: 1; }
+  .swipe-overlay-left.show { background: linear-gradient(90deg, rgba(255,107,107,0.75) 0%, transparent 55%); }
+  .swipe-overlay-right.show { background: linear-gradient(270deg, rgba(0,214,143,0.70) 0%, transparent 55%); }
+
+  /* ── Undo Toast ── */
+  #undo-toast {
+    position: fixed; bottom: 20px; left: 10px; right: 10px;
+    z-index: 3000;
+    display: none; align-items: center; gap: 10px;
+    padding: 12px 16px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    font-size: 13px;
+    animation: slideUp 0.25s ease;
+  }
+  #undo-toast.show { display: flex; }
+  #undo-toast .undo-msg { flex: 1; color: var(--text); }
+  #undo-toast .undo-btn {
+    padding: 6px 14px; border-radius: 8px;
+    background: var(--accent); color: #fff; border: none;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: inherit;
+  }
+  #undo-toast .undo-btn:hover { background: var(--accent-dim); }
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* ── Swipe Settings toggle ── */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-label { font-size: 13px; font-weight: 500; }
+  .toggle-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .toggle-switch {
+    width: 44px; height: 24px; position: relative;
+    background: var(--border); border-radius: 12px;
+    cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+  }
+  .toggle-switch.on { background: var(--accent); }
+  .toggle-switch::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; transition: transform 0.2s;
+  }
+  .toggle-switch.on::after { transform: translateX(20px); }
 </style>
 </head>
 <body>
@@ -927,8 +1018,10 @@
       <div class="job-list paginated-list" data-per-page="3">
       {% if country_data.jobs %}
       {% for job in country_data.jobs %}
-        <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}" data-auto="{%- set autoc = ((job.title or '') + ' ' + ((job.tags or '')|replace(',',' ') + ' ' + ((job.matched_skills or [])|join(' ')))|lower) -%}{%- if 'automation' in autoc or 'automated' in autoc or 'automat' in autoc or 'selenium' in autoc or 'playwright' in autoc or 'cypress' in autoc or 'ci/cd' in autoc or 'test framework' in autoc or 'llm' in autoc or 'machine learning' in autoc or ' ai ' in autoc -%}auto{%- else -%}manual{%- endif -%}">
+        <div class="job-card {% if job.applied %}applied{% endif %} swipe-card" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}" data-auto="{%- set autoc = ((job.title or '') + ' ' + ((job.tags or '')|replace(',',' ') + ' ' + ((job.matched_skills or [])|join(' ')))|lower) -%}{%- if 'automation' in autoc or 'automated' in autoc or 'automat' in autoc or 'selenium' in autoc or 'playwright' in autoc or 'cypress' in autoc or 'ci/cd' in autoc or 'test framework' in autoc or 'llm' in autoc or 'machine learning' in autoc or ' ai ' in autoc -%}auto{%- else -%}manual{%- endif -%}">
           <button class="btn-dismiss" onclick="dismissJob({{ job.id }}, this);event.stopPropagation();" title="Masquer">✕</button>
+          <div class="swipe-overlay swipe-overlay-left"><span>❌ Dismiss</span></div>
+          <div class="swipe-overlay swipe-overlay-right"><span>Ouvrir →</span></div>
           <div class="jc-left">
             <div class="jc-title">
               <a href="{{ job.url | clean_url }}" target="_blank" class="jc-title-link">{{ job.title }}</a>
@@ -992,8 +1085,10 @@
       <div class="job-list paginated-list" data-per-page="3">
       {% if tous_jobs %}
       {% for job in tous_jobs %}
-        <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}">
+        <div class="job-card {% if job.applied %}applied{% endif %} swipe-card" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}">
           <button class="btn-dismiss" onclick="dismissJob({{ job.id }}, this);event.stopPropagation();" title="Masquer">✕</button>
+          <div class="swipe-overlay swipe-overlay-left"><span>❌ Dismiss</span></div>
+          <div class="swipe-overlay swipe-overlay-right"><span>Ouvrir →</span></div>
           <div class="jc-left">
             <div class="jc-title">
               <a href="{{ job.url | clean_url }}" target="_blank" class="jc-title-link">{{ job.title }}</a>
@@ -1064,6 +1159,10 @@
 </div><!-- /app -->
 
 <div class="toast" id="toast"></div>
+<div class="toast" id="undo-toast">
+  <span class="undo-msg" id="undo-msg">Offre masquée</span>
+  <button class="undo-btn" id="undo-btn" onclick="undoDismiss()">↩ Annuler</button>
+</div>
 
 <script>
 // ─── Tab Switching ───
@@ -1487,6 +1586,222 @@ function dismissJob(jobId, btn) {
     }
   });
 }
+
+// ── Undo Dismiss ──
+var _lastDismissed = null;
+var _undoTimer = null;
+function showUndoToast(jobId, card, msg) {
+  _lastDismissed = {jobId: jobId, card: card, msg: msg};
+  document.getElementById('undo-msg').textContent = msg;
+  document.getElementById('undo-toast').classList.add('show');
+  if (_undoTimer) clearTimeout(_undoTimer);
+  _undoTimer = setTimeout(function() {
+    document.getElementById('undo-toast').classList.remove('show');
+    _lastDismissed = null;
+  }, 4000);
+}
+function undoDismiss() {
+  if (!_lastDismissed) return;
+  var j = _lastDismissed;
+  _lastDismissed = null;
+  if (_undoTimer) clearTimeout(_undoTimer);
+  document.getElementById('undo-toast').classList.remove('show');
+  // Re-add the card to its original panel
+  var panel = document.querySelector('.tab-panel.active');
+  var list = panel ? panel.querySelector('.job-list.paginated-list') : null;
+  if (list && j.card) {
+    list.insertBefore(j.card, list.firstChild);
+    j.card.style.transform = '';
+    j.card.style.opacity = '';
+    j.card.style.transition = '';
+    j.card.classList.remove('swipe-left', 'swipe-right');
+    j.card.classList.remove('swiping');
+    // Restore visibility in case it was hidden by pagination
+    j.card.style.display = '';
+  }
+  updateAllCounts();
+  if (panel) initPagination(panel.id);
+  fetch('/api/job/' + j.jobId + '/stage', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({stage: 'applied'})
+  }).then(r => r.json()).then(function(d) {});
+}
+
+// ── Tinder Swipe ──
+var SWIPE_THRESHOLD_RATIO = 0.35; // 35% of card width
+var swipeEnabled = ('ontouchstart' in window);
+
+function loadSwipePref() {
+  fetch('/api/profile')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.preferences && d.preferences.swipe_actions !== undefined) {
+        swipeEnabled = ('ontouchstart' in window) && d.preferences.swipe_actions;
+      }
+      if (swipeEnabled) initSwipe();
+    })
+    .catch(function() {
+      if (swipeEnabled) initSwipe();
+    });
+}
+
+function initSwipe() {
+  document.querySelectorAll('.swipe-card').forEach(function(card) {
+    if (card._swipeInited) return;
+    card._swipeInited = true;
+    card.addEventListener('touchstart', function(e) {
+      if (!swipeEnabled) return;
+      var touch = e.touches[0];
+      card._swipe = {
+        startX: touch.clientX,
+        startY: touch.clientY,
+        currentX: 0,
+        currentY: 0,
+        isSwiping: false,
+        moved: false
+      };
+    }, {passive: true});
+
+    card.addEventListener('touchmove', function(e) {
+      if (!swipeEnabled || !card._swipe) return;
+      var touch = e.touches[0];
+      var dx = touch.clientX - card._swipe.startX;
+      var dy = touch.clientY - card._swipe.startY;
+
+      // Only start swiping if horizontal movement exceeds vertical
+      if (!card._swipe.isSwiping) {
+        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+        if (Math.abs(dy) > Math.abs(dx) * 1.5) {
+          // Vertical scroll — ignore
+          card._swipe = null;
+          return;
+        }
+        card._swipe.isSwiping = true;
+        card.classList.add('swiping');
+      }
+
+      // If applied, don't allow swipe
+      if (card.classList.contains('applied')) {
+        card._swipe = null;
+        card.classList.remove('swiping');
+        return;
+      }
+
+      e.preventDefault(); // prevent scroll while swiping
+      card._swipe.currentX = dx;
+      card._swipe.moved = true;
+
+      var width = card.offsetWidth;
+      var pct = dx / width;
+      // Clamp
+      pct = Math.max(-1, Math.min(1, pct));
+
+      card.style.transform = 'translateX(' + (pct * 100) + 'px)';
+      card.style.opacity = 1 - Math.abs(pct) * 0.5;
+      card.style.transition = 'none';
+
+      // Show overlay labels at threshold
+      var leftOverlay = card.querySelector('.swipe-overlay-left');
+      var rightOverlay = card.querySelector('.swipe-overlay-right');
+      if (pct < -0.15) {
+        if (leftOverlay) leftOverlay.classList.add('show');
+        if (rightOverlay) rightOverlay.classList.remove('show');
+      } else if (pct > 0.15) {
+        if (rightOverlay) rightOverlay.classList.add('show');
+        if (leftOverlay) leftOverlay.classList.remove('show');
+      } else {
+        if (leftOverlay) leftOverlay.classList.remove('show');
+        if (rightOverlay) rightOverlay.classList.remove('show');
+      }
+    }, {passive: false});
+
+    card.addEventListener('touchend', function(e) {
+      if (!swipeEnabled || !card._swipe || !card._swipe.isSwiping || !card._swipe.moved) {
+        if (card._swipe && !card._swipe.isSwiping && card._swipe.moved === false) {
+          // Single tap — open the apply link
+          var link = card.querySelector('.btn-apply');
+          if (link) window.open(link.href, '_blank');
+          // Track click
+          var id = card.dataset.id;
+          if (id && !card.classList.contains('applied')) {
+            fetch('/api/job/' + id + '/click');
+          }
+        }
+        card._swipe = null;
+        card.classList.remove('swiping');
+        return;
+      }
+
+      var dx = card._swipe.currentX;
+      var width = card.offsetWidth;
+      var pct = dx / width;
+      var threshold = SWIPE_THRESHOLD_RATIO;
+      var jobId = card.dataset.id;
+      var leftOverlay = card.querySelector('.swipe-overlay-left');
+      var rightOverlay = card.querySelector('.swipe-overlay-right');
+      if (leftOverlay) leftOverlay.classList.remove('show');
+      if (rightOverlay) rightOverlay.classList.remove('show');
+
+      if (Math.abs(pct) >= threshold) {
+        // Action triggered
+        if (pct < 0) {
+          // Swipe left = Dismiss
+          card.style.setProperty('--swipe-offset', dx + 'px');
+          card.classList.remove('swiping');
+          card.classList.add('swipe-left');
+          setTimeout(function() {
+            card.style.display = 'none';
+            showUndoToast(jobId, card, 'Offre masquée');
+            updateAllCounts();
+            // Dismiss via API
+            fetch('/api/job/' + jobId + '/stage', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({stage: 'dismissed'})
+            }).then(function(r) { return r.json(); }).then(function(d) {});
+          }, 300);
+        } else {
+          // Swipe right = Open
+          var link = card.querySelector('.btn-apply');
+          if (link) {
+            card.style.setProperty('--swipe-offset', dx + 'px');
+            card.classList.remove('swiping');
+            card.classList.add('swipe-right');
+            var applyUrl = link.href;
+            setTimeout(function() {
+              window.open(applyUrl, '_blank');
+              resetSwipeCard(card);
+            }, 200);
+          } else {
+            resetSwipeCard(card);
+          }
+          // Track click
+          if (jobId && !card.classList.contains('applied')) {
+            fetch('/api/job/' + jobId + '/click');
+          }
+        }
+      } else {
+        // Snap back — below threshold
+        resetSwipeCard(card);
+      }
+      card._swipe = null;
+    }, {passive: true});
+  });
+}
+
+function resetSwipeCard(card) {
+  card.style.transition = 'transform 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease';
+  card.style.transform = 'translateX(0)';
+  card.style.opacity = '1';
+  card.classList.remove('swiping');
+  setTimeout(function() {
+    card.style.transition = '';
+  }, 350);
+}
+
+// Init swipe on page load after filter prefs
+setTimeout(loadSwipePref, 200);
 </script>
 </body>
 </html>

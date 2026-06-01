@@ -317,6 +317,17 @@
     <button class="btn-save" id="btn-save" onclick="saveProfile()">💾 Enregistrer</button>
     <div class="error-msg" id="save-error"></div>
   </div>
+
+  <div class="settings-card" id="prefs-card">
+    <h2>Préférences du dashboard</h2>
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">👆 Swipe Tinder sur mobile</div>
+        <div class="toggle-desc">Balayer gauche/droite sur les offres pour les masquer ou postuler</div>
+      </div>
+      <div class="toggle-switch" id="toggle-swipe" onclick="toggleSwipe()"></div>
+    </div>
+  </div>
 </main>
 
 <div class="success-toast" id="toast">✅ Modifications enregistrées</div>
@@ -462,7 +473,31 @@ function logout() {
   fetch('/api/auth/logout', {method:'POST'}).then(function() { window.location.href = '/'; });
 }
 
+// ── Swipe toggle ──
+function toggleSwipe() {
+  var el = document.getElementById('toggle-swipe');
+  var newVal = !el.classList.contains('on');
+  el.classList.toggle('on', newVal);
+  fetch('/api/profile', {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({preferences: {swipe_actions: newVal}})
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (d.error) { el.classList.toggle('on', !newVal); }
+    else { showToast('✅ Swipe ' + (newVal ? 'activé' : 'désactivé')); }
+  }).catch(function() { el.classList.toggle('on', !newVal); });
+}
+
+function loadSwipePref() {
+  fetch('/api/profile').then(function(r) { return r.json(); }).then(function(d) {
+    if (d && d.preferences && d.preferences.swipe_actions !== undefined) {
+      document.getElementById('toggle-swipe').classList.toggle('on', d.preferences.swipe_actions);
+    }
+  });
+}
+
 init();
+loadSwipePref();
 </script>
 </body>
 </html>
