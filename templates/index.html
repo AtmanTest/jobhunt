@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobHunt Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f0f13;
+            --card: #1a1a24;
+            --card-hover: #22222f;
+            --border: #2a2a3a;
+            --text: #e4e4ef;
+            --text-dim: #8888a0;
+            --accent: #6c5ce7;
+            --accent-glow: rgba(108, 92, 231, 0.15);
+            --green: #00d68f;
+            --orange: #ff9f43;
+            --red: #ff6b6b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15,15,19,0.95);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent), #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-actions { display: flex; gap: 12px; align-items: center; }
+        .header-actions a {
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: white !important;
+        }
+        .btn-primary:hover { background: #5f4dd0; }
+        .btn-secondary {
+            background: var(--card);
+            color: var(--text) !important;
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { background: var(--card-hover); }
+        .btn-outline {
+            border: 1px solid var(--border);
+            color: var(--text-dim) !important;
+        }
+        .btn-outline:hover { border-color: var(--accent); color: var(--text) !important; }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            gap: 16px;
+            padding: 20px 32px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 24px;
+            flex: 1;
+            min-width: 140px;
+        }
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .stat-card .label {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-card.accent { border-color: var(--accent); }
+        .stat-card.accent .number { color: var(--accent); }
+        .stat-card.green { border-color: var(--green); }
+        .stat-card.green .number { color: var(--green); }
+
+        /* Filters */
+        .filters {
+            padding: 0 32px 16px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filters input[type="text"] {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            color: var(--text);
+            font-size: 13px;
+            flex: 1;
+            min-width: 200px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .filters input[type="text"]:focus { border-color: var(--accent); }
+        .filter-btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text-dim);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn.active {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+        .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+
+        /* Job list */
+        .job-list { padding: 0 32px 32px; }
+        .job-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+        .job-card:hover {
+            background: var(--card-hover);
+            border-color: rgba(108, 92, 231, 0.3);
+            transform: translateX(4px);
+        }
+        .job-card.applied { opacity: 0.6; }
+        .job-card.applied:hover { opacity: 0.8; }
+        
+        .job-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        .job-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .job-title .qa-badge {
+            display: inline-block;
+            background: var(--accent-glow);
+            color: var(--accent);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        .job-company {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+        .job-meta {
+            display: flex;
+            gap: 16px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+        .job-meta span { display: flex; align-items: center; gap: 4px; }
+        .job-source {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+        .job-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .job-actions a, .job-actions button {
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: all 0.15s;
+        }
+        .btn-apply {
+            background: var(--accent);
+            color: white !important;
+            border: none !important;
+        }
+        .btn-apply:hover { background: #5f4dd0; }
+        .btn-cover {
+            background: transparent;
+            color: var(--text-dim);
+        }
+        .btn-cover:hover { border-color: var(--accent); color: var(--accent); }
+        .btn-applied {
+            color: var(--green);
+            border-color: var(--green);
+            background: rgba(0, 214, 143, 0.08);
+        }
+        .applied-label {
+            font-size: 11px;
+            color: var(--green);
+            background: rgba(0, 214, 143, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 640px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal h2 {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        .modal h3 {
+            font-size: 14px;
+            color: var(--text-dim);
+            font-weight: 400;
+            margin-bottom: 20px;
+        }
+        .modal textarea {
+            width: 100%;
+            min-height: 260px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            color: var(--text);
+            font-size: 13px;
+            line-height: 1.6;
+            font-family: 'Inter', sans-serif;
+            resize: vertical;
+            outline: none;
+        }
+        .modal textarea:focus { border-color: var(--accent); }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            justify-content: flex-end;
+        }
+        .modal-actions button { padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 32px;
+            color: var(--text-dim);
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+        .empty-state h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--green);
+            color: #0f0f13;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 13px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+            z-index: 2000;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 768px) {
+            .header { padding: 12px 16px; flex-direction: column; gap: 12px; }
+            .stats-bar { padding: 16px; }
+            .filters { padding: 0 16px 12px; }
+            .job-list { padding: 0 16px 16px; }
+            .job-header { flex-direction: column; }
+            .job-actions { width: 100%; justify-content: flex-end; }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>⚡ JobHunt</h1>
+    <div class="header-actions">
+        <a href="{{ url_for('cv_page') }}" class="btn-secondary">📄 Mon CV</a>
+        <a href="{{ url_for('marche_qa') }}" class="btn-outline">🌍 Marché QA</a>
+        <a href="{{ url_for('qa_dashboard') }}" class="btn-outline">🧪 QA</a>
+        <a href="{{ url_for('about') }}" class="btn-outline">À propos</a>
+        <a href="{{ url_for('refresh') }}" class="btn-primary" onclick="this.textContent='⏳...'">↻ Rafraîchir</a>
+    </div>
+</div>
+
+<div class="stats-bar">
+    <div class="stat-card accent">
+        <div class="number">{{ stats.qa }}</div>
+        <div class="label">Offres QA</div>
+    </div>
+    <div class="stat-card">
+        <div class="number">{{ stats.total }}</div>
+        <div class="label">Total offres</div>
+    </div>
+    <div class="stat-card green">
+        <div class="number">{{ stats.applied }}</div>
+        <div class="label">Candidatures</div>
+    </div>
+    <div class="stat-card">
+        <div class="number">{{ stats.companies }}</div>
+        <div class="label">Entreprises</div>
+    </div>
+    <div class="stat-card">
+        <div class="number">{{ stats.this_week }}</div>
+        <div class="label">Cette semaine</div>
+    </div>
+</div>
+
+<div class="filters">
+    <input type="text" id="searchInput" placeholder="🔍 Chercher par titre, entreprise..." 
+           value="{{ filters.search }}">
+    <button class="filter-btn {% if filters.qa_only %}active{% endif %}" 
+            onclick="toggleFilter('qa')">🔬 QA only</button>
+    <button class="filter-btn {% if filters.not_applied %}active{% endif %}" 
+            onclick="toggleFilter('unapplied')">📭 Non postulé</button>
+    {% if filters.source %}
+    <span class="filter-btn active">{{ filters.source }}</span>
+    {% endif %}
+</div>
+
+<div class="job-list">
+    {% if jobs %}
+    {% for job in jobs %}
+    <div class="job-card {% if job.applied %}applied{% endif %}" data-id="{{ job.id }}">
+        <div class="job-header">
+            <div>
+                <div class="job-title">
+                    {{ job.title }}
+                    {% if job.is_qa %}<span class="qa-badge">QA</span>{% endif %}
+                </div>
+                <div class="job-company">{{ job.company }}</div>
+                <div class="job-meta">
+                    <span>📍 {{ job.location }}</span>
+                    {% if job.salary %}<span>💰 {{ job.salary }}</span>{% endif %}
+                    <span>📅 {{ job.date }}</span>
+                    <span class="job-source">{{ job.source }}</span>
+                </div>
+            </div>
+            <div class="job-actions">
+                {% if job.applied %}
+                <span class="applied-label">✓ Postulé</span>
+                {% else %}
+                <button class="btn-cover" onclick="event.stopPropagation(); openCoverModal({{ job.id }}, '{{ job.title|e }}', '{{ job.company|e }}')">
+                    ✏️ Cover
+                </button>
+                <a href="{{ job.url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
+                {% endif %}
+            </div>
+        </div>
+        {% if job.tags %}
+        <div class="job-meta" style="margin-top:8px">
+            {% for tag in job.tags.split(', ')[:6] %}
+            <span style="background:var(--accent-glow);color:var(--accent);padding:2px 8px;border-radius:12px;font-size:11px;">{{ tag }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if job.cover_letter %}
+        <div style="margin-top:8px;font-size:11px;color:var(--green);">📝 Cover letter générée</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <div class="icon">🔍</div>
+        <h3>Aucune offre trouvée</h3>
+        <p>Lance "Rafraîchir" pour chercher les offres, ou ajuste les filtres.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Cover Letter Modal -->
+<div class="modal-overlay" id="coverModal">
+    <div class="modal">
+        <h2 id="modalTitle">Cover Letter</h2>
+        <h3 id="modalCompany">Company</h3>
+        <textarea id="coverText" placeholder="Génération de la cover letter..."></textarea>
+        <div class="modal-actions">
+            <button onclick="closeModal()" style="background:var(--card);color:var(--text-dim);border:1px solid var(--border);">Annuler</button>
+            <button id="genCoverBtn" onclick="regenerateCover()" style="background:var(--card);color:var(--accent);border:1px solid var(--accent);">↻ Régénérer</button>
+            <button id="saveCoverBtn" onclick="saveCover()" style="background:var(--accent);color:white;border:none;">✓ Marquer postulé</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let currentJobId = null;
+
+function toggleFilter(name) {
+    const url = new URL(window.location);
+    if (url.searchParams.get(name) === '1' || url.searchParams.get(name) === '') {
+        url.searchParams.delete(name);
+    } else {
+        url.searchParams.set(name, '1');
+    }
+    window.location = url;
+}
+
+// Search with debounce
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        const url = new URL(window.location);
+        if (this.value) url.searchParams.set('search', this.value);
+        else url.searchParams.delete('search');
+        window.location = url;
+    }, 400);
+});
+
+function openCoverModal(jobId, title, company) {
+    currentJobId = jobId;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalCompany').textContent = company;
+    document.getElementById('coverModal').classList.add('open');
+    document.getElementById('coverText').value = '⏳ Génération en cours...';
+    document.getElementById('saveCoverBtn').disabled = true;
+    
+    fetch('/api/generate-cover/' + jobId)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('coverText').value = data.cover_letter;
+            document.getElementById('saveCoverBtn').disabled = false;
+        })
+        .catch(() => {
+            document.getElementById('coverText').value = 'Erreur de génération.';
+        });
+}
+
+function closeModal() {
+    document.getElementById('coverModal').classList.remove('open');
+    currentJobId = null;
+}
+
+function regenerateCover() {
+    if (!currentJobId) return;
+    document.getElementById('coverText').value = '⏳ Régénération...';
+    document.getElementById('saveCoverBtn').disabled = true;
+    
+    fetch('/api/generate-cover/' + currentJobId)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('coverText').value = data.cover_letter;
+            document.getElementById('saveCoverBtn').disabled = false;
+        });
+}
+
+function saveCover() {
+    if (!currentJobId) return;
+    const cover = document.getElementById('coverText').value;
+    
+    fetch('/api/apply/' + currentJobId, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({cover_letter: cover})
+    })
+    .then(r => r.json())
+    .then(() => {
+        showToast('✓ Postulé !');
+        closeModal();
+        setTimeout(() => window.location.reload(), 500);
+    });
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Close modal on overlay click
+document.getElementById('coverModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+
+// Keyboard shortcut
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+});
+</script>
+</body>
+</html>

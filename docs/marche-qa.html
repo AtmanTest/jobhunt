@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marché QA Freelance — JobHunt</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f0f13;
+            --card: #1a1a24;
+            --card-hover: #22222f;
+            --border: #2a2a3a;
+            --text: #e4e4ef;
+            --text-dim: #8888a0;
+            --text-muted: #5a5a72;
+            --accent: #6c5ce7;
+            --accent-dim: #4a3db5;
+            --accent-glow: rgba(108, 92, 231, 0.15);
+            --green: #00d68f;
+            --orange: #ff9f43;
+            --red: #ff6b6b;
+            --gold: #ffd93d;
+            --blue: #54a0ff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        /* Header */
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding: 14px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15,15,19,0.95);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .header-logo {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-nav { display: flex; gap: 6px; }
+        .header-nav a {
+            padding: 6px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-dim);
+            transition: all 0.2s;
+        }
+        .header-nav a:hover { color: var(--text); background: var(--card); }
+        .header-nav a.active { color: var(--accent); background: var(--accent-glow); }
+
+        /* Container */
+        .container { max-width: 1200px; margin: 0 auto; padding: 32px; }
+
+        /* Title */
+        .page-title {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .page-title h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .page-title p {
+            color: var(--text-dim);
+            font-size: 14px;
+            margin-top: 6px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin: 24px 0 0;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            flex-wrap: nowrap;
+        }
+        .tab-btn {
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+            border-radius: 8px 8px 0 0;
+        }
+        .tab-btn:hover { color: var(--text); background: var(--card-hover); }
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            background: var(--accent-glow);
+        }
+        .tab-btn .flag { margin-right: 6px; }
+
+        /* Tab Content */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Section Cards */
+        .section-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        .section-card-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-card-header h2 {
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .section-card-header .icon { font-size: 18px; }
+        .section-card-body {
+            padding: 20px 24px;
+        }
+
+        /* Text styles */
+        .section-card-body p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+        }
+        .section-card-body p:last-child { margin-bottom: 0; }
+        .section-card-body strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+        .section-card-body .highlight {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .section-card-body .rate {
+            color: var(--green);
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Platform list */
+        .platform-list {
+            list-style: none;
+            padding: 0;
+        }
+        .platform-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .platform-list li:last-child { border-bottom: none; }
+        .platform-list .platform-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text);
+            min-width: 160px;
+        }
+        .platform-list .platform-name a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .platform-list .platform-name a:hover { text-decoration: underline; }
+        .platform-list .platform-desc {
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+        .platform-list .platform-tag {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+        .tag-local { background: rgba(84,160,255,0.15); color: var(--blue); }
+        .tag-intl { background: rgba(108,92,231,0.15); color: var(--accent); }
+
+        /* Hack box */
+        .hack-box {
+            background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(162,155,254,0.05));
+            border: 1px solid rgba(108,92,231,0.3);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-top: 20px;
+        }
+        .hack-box .hack-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .hack-box p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-dim);
+        }
+        .hack-box strong {
+            color: var(--text);
+        }
+
+        /* TJM Table */
+        .rate-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .rate-table th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+        .rate-table td {
+            padding: 12px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+        .rate-table tr:last-child td { border-bottom: none; }
+        .rate-table .country-cell { font-weight: 600; }
+        .rate-table .rate-cell {
+            color: var(--green);
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .rate-table .platform-cell {
+            color: var(--text-dim);
+            font-size: 13px;
+        }
+
+        /* Market bar */
+        .market-bar {
+            display: inline-block;
+            height: 8px;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 16px; }
+            .header { padding: 12px 16px; }
+            .tabs { gap: 0; }
+            .tab-btn { padding: 10px 14px; font-size: 13px; }
+            .platform-list li { flex-direction: column; gap: 4px; }
+            .platform-list .platform-name { min-width: auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <span class="header-logo">JobHunt</span>
+        </div>
+        <div class="header-nav">
+            <a href="./">Dashboard</a>
+            <a href="./cv.html">CV</a>
+            <a href="./qa.html">QA</a>
+            <a href="./marche-qa.html" class="active">Marché QA</a>
+            <a href="./about.html">About</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-title">
+            <h1>Marché QA Freelance 2026</h1>
+            <p>Analyse pays par pays pour profils Lead / Senior QA</p>
+        </div>
+
+        <!-- TJM Récapitulatif -->
+        <table class="rate-table">
+            <tr>
+                <th>Pays</th>
+                <th>Taux indicatif</th>
+                <th>Plateformes clés</th>
+            </tr>
+            <tr>
+                <td class="country-cell">🇫🇷 France</td>
+                <td class="rate-cell">550-700€/j</td>
+                <td class="platform-cell">Malt, Free-Work</td>
+            </tr>
+            <tr>
+                <td class="country-cell">🇨🇭 Suisse</td>
+                <td class="rate-cell">110-160 CHF/h</td>
+                <td class="platform-cell">Jem, Hays Genève</td>
+            </tr>
+            <tr>
+                <td class="country-cell">🇱🇺 Luxembourg</td>
+                <td class="rate-cell">550-750€/j</td>
+                <td class="platform-cell">Hays Lux, NSI</td>
+            </tr>
+            <tr>
+                <td class="country-cell">🇦🇪 Dubaï / EAU</td>
+                <td class="rate-cell">600-900$/j</td>
+                <td class="platform-cell">Testvox, Truelancer</td>
+            </tr>
+            <tr>
+                <td class="country-cell">🇸🇬 Singapour</td>
+                <td class="rate-cell">80-150 SGD/h</td>
+                <td class="platform-cell">NodeFlair, Hays SG</td>
+            </tr>
+        </table>
+
+        <!-- Tabs -->
+        <div class="tabs" id="tabs">
+            <button class="tab-btn active" data-tab="france"><span class="flag">🇫🇷</span> France</button>
+            <button class="tab-btn" data-tab="suisse"><span class="flag">🇨🇭</span> Suisse</button>
+            <button class="tab-btn" data-tab="luxembourg"><span class="flag">🇱🇺</span> Luxembourg</button>
+            <button class="tab-btn" data-tab="dubai"><span class="flag">🇦🇪</span> Dubaï / EAU</button>
+            <button class="tab-btn" data-tab="singapour"><span class="flag">🇸🇬</span> Singapour</button>
+        </div>
+
+        <!-- 🇫🇷 FRANCE -->
+        <div class="tab-content active" id="tab-france">
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span class="icon">📊</span>
+                    <h2>Analyse du Marché QA Freelance</h2>
+                </div>
+                <div class="section-card-body">
+                    <p>Le marché français est le plus mature d'Europe pour le freelancing QA. Pénurie de profils <strong>Senior/Lead QA</strong> sur Paris et métropoles régionales (Lyon, Nantes, Toulouse, Lille).</p>
+                    <p>Les missions longues (6-18 mois) dominent. Forte demande en <strong>automatisation</strong> (Playwright, Cypress, Selenium) et en QA embedded dans des SAAS/Fintech/Assurance.</p>
+                    <p>Concurrence modérée — peu de profils alliant <strong>ISTQB + automation + expérience agile</strong>. Le TJM pour un Lead QA Senior : <span class="rate">500-650€/jour</span> en région, <span class="rate">550-700€/jour</span> sur Paris.</p>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span class="icon">🌐</span>
+                    <h2>Sites Locaux</h2>
+                </div>
+                <div class="section-card-body">
+                    <ul class="platform-list">
+                        <li>
+                            <span class="platform-name"><a href="https://malt.fr" target="_blank">Malt.fr</a> <span class="platform-tag tag-local">Leader</span></span>
+                            <span class="platform-desc">80% des missions QA passent par Malt. Tarifs transparents, système de reviews. Obligatoire d'y être.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name"><a href="https://free-work.com" target="_blank">Free-Work</a></span>
+                            <span class="platform-desc">Historique, beaucoup de SSII/E SNCF, banques, assurances. Annonces en nombre.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name"><a href="https://freelance-informatique.fr" target="_blank">Freelance-informatique.fr</a></span>
+                            <span class="platform-desc">Actif pour les missions en régions. Moins de volume mais des offres niches.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name"><a href="https://infreelancing.com" target="_blank">InFreelancing.com</a></span>
+                            <span class="platform-desc">Portail pour missions longues. Pas mal de QA.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span class="icon">🌍</span>
+                    <h2>Jobboards Internationaux Présents</h2>
+                </div>
+                <div class="section-card-body">
+                    <ul class="platform-list">
+                        <li>
+                            <span class="platform-name">LinkedIn France <span class="platform-tag tag-intl">International</span></span>
+                            <span class="platform-desc">Les recruteurs chassent activement. Active le #OpenToWork discrètement.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name">Toptal</span>
+                            <span class="platform-desc">Présent mais processus de sélection long pour le marché FR.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="hack-box">
+                <div class="hack-title">💡 Hack pour un Lead QA</div>
+                <p>Mets à jour ton profil Malt <strong>avec des mots-clés précis</strong> : "Playwright", "Xray/JIRA", "API testing", "CTO/CEO friendly". Pas juste "QA". Les recruteurs Malt cherchent <strong>"Lead technique"</strong> pas "testeur manuel". TJM conseillé à l'entrée : <span class="rate">550€/jour</span>, monte à <span class="rate">650€/jour</span> après 2 missions.</p>
+            </div>
+        </div>
+
+        <!-- 🇨🇭 SUISSE -->
+        <div class="tab-content" id="tab-suisse">
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span class="icon">📊</span>
+                    <h2>Analyse du Marché QA Freelance</h2>
+                </div>
+                <div class="section-card-body">
+                    <p>Marché du contracting très lucratif mais exigeant. Les taux horaires (préférés au TJM) vont de <span class="rate">110-160 CHF/h</span> pour un Lead QA / Test Manager.</p>
+                    <p>Forte demande sur <strong>Genève</strong> (banque, pharma, ONU) et <strong>Zurich</strong> (fintech, assurance, big tech). Le marché suisse est petit et relationnel : 90% des missions passent par des networks personnels ou des régies (Hays, Robert Half, Swisslinx).</p>
+                    <p>Le statut de freelance (indépendant) est simple. Attention : le permis B ou C est souvent demandé, mais les missions contractantes acceptent le <strong>frontalier</strong> (résident France voisine) pour Genève.</p>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span class="icon">🌐</span>
+                    <h2>Sites Locaux</h2>
+                </div>
+                <div class="section-card-body">
+                    <ul class="platform-list">
+                        <li>
+                            <span class="platform-name"><a href="https://jem.ch" target="_blank">Jem (JobEngineMarket)</a> <span class="platform-tag tag-local">Leader</span></span>
+                            <span class="platform-desc">LA plateforme suisse du contracting IT. Beaucoup de QA/Test. Inscription obligatoire.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name"><a href="https://swissdevjobs.ch" target="_blank">SwissDevJobs.ch</a></span>
+                            <span class="platform-desc">Moins de QA mais des annonces bien rémunérées. Quelques missions test automation.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name"><a href="https://jobup.ch" target="_blank">JobUp.ch</a></span>
+                            <span class="platform-desc">Portail généraliste, à filtrer par "Test" / "QA".</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span class="icon">🌍</span>
+                    <h2>Jobboards Internationaux Présents</h2>
+                </div>
+                <div class="section-card-body">
+                    <ul class="platform-list">
+                        <li>
+                            <span class="platform-name">Hays Switzerland <span class="platform-tag tag-intl">Incontournable</span></span>
+                            <span class="platform-desc">Le plus gros acteur du contracting QA en Suisse. Contact direct leur bureau de Genève ou Zurich.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name">LinkedIn Suisse</span>
+                            <span class="platform-desc">Indispensable. Active le filtre "Zurich, Geneva".</span>
+                        </li>
+                        <li>
+                            <span class="platform-name">Robert Half Technology</span>
+                            <span class="platform-desc">Très présent pour les missions QA.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="hack-box">
+                <div class="hack-title">💡 Hack pour un Lead QA</div>
+                <p>Le marché suisse paie <strong>CHER</strong> mais déteste les profils "génériques". Spécialise-toi : <strong>"QA Lead Banque"</strong> ou <strong>"Test Manager Pharma/Medical Devices"</strong>. Les certifications ISTQB Advanced + ISTQB TA sont quasiment obligatoires. Meilleur plan : cible Genève en frontalier d'abord, puis Zurich pour les salaires max (<span class="rate">140-160 CHF/h</span>).</p>
+            </div>
+        </div>
+
+        <!-- 🇱🇺 LUXEMBOURG -->
+        <div class="tab-content" id="tab-luxembourg">
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span class="icon">📊</span>
+                    <h2>Analyse du Marché QA Freelance</h2>
+                </div>
+                <div class="section-card-body">
+                    <p>Petit marché dominé par 3 secteurs : <strong>banque/finance</strong> (BCE, BIL, Spuerkeess), assurance, et institutions européennes. Peu de concurrence directe en QA freelance — la plupart des testeurs sont en CDI ou via régies.</p>
+                    <p>Le TJM est élevé : <span class="rate">550-750€/jour</span>, parfois plus pour des missions spécialisées (SAP testing, core banking, MiFID II).</p>
+                    <p>Le marché est très contractuel : les SSII locales (Hays, NSI, SFE) placent des freelances en mission longue durée. Être référencé chez ces régies = <strong>80% du marché</strong>.</p>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span class="icon">🌐</span>
+                    <h2>Sites Locaux</h2>
+                </div>
+                <div class="section-card-body">
+                    <ul class="platform-list">
+                        <li>
+                            <span class="platform-name"><a href="https://developpeur-informatique.lu" target="_blank">Developpeur-Informatique.lu</a></span>
+                            <span class="platform-desc">Référence pour les annonces IT. Filtre par "Test", "QA", "Selenium".</span>
+                        </li>
+                        <li>
+                            <span class="platform-name"><a href="https://moovijob.com" target="_blank">Moovijob.com</a></span>
+                            <span class="platform-desc">Portail généraliste. Beaucoup d'offres de régies.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name"><a href="https://jobs.lu" target="_blank">Jobs.lu</a></span>
+                            <span class="platform-desc">Annonces IT, moins spécialisé mais à surveiller.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span class="icon">🌍</span>
+                    <h2>Jobboards Internationaux Présents</h2>
+                </div>
+                <div class="section-card-body">
+                    <ul class="platform-list">
+                        <li>
+                            <span class="platform-name">Hays Luxembourg <span class="platform-tag tag-intl">Incontournable</span></span>
+                            <span class="platform-desc">À contacter directement. C'est LE partenaire pour le contracting QA au Luxembourg.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name">LinkedIn Luxembourg</span>
+                            <span class="platform-desc">Active "Luxembourg" comme localisation.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name">Malt</span>
+                            <span class="platform-desc">Présent mais faible volume comparé à Paris.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="hack-box">
+                <div class="hack-title">💡 Hack pour un Lead QA</div>
+                <p>Contacte <strong>Hays Luxembourg</strong> et <strong>NSI</strong> directement par email avec ton CV ISTQB. Ne passe pas par les annonces en ligne — 70% des missions ne sont jamais publiées. Les régies ont besoin de profils QA disponibles <strong>immédiatement</strong>. Si tu es dispo sous 2 semaines, t'as un avantage énorme. TJM visé : <span class="rate">650€/jour</span>.</p>
+            </div>
+        </div>
+
+        <!-- 🇦🇪 DUBAÏ / EAU -->
+        <div class="tab-content" id="tab-dubai">
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span class="icon">📊</span>
+                    <h2>Analyse du Marché QA Freelance</h2>
+                </div>
+                <div class="section-card-body">
+                    <p>Marché en pleine explosion. Dubaï attire les boîtes tech (Careem, Kitopi, Talabat, GovTech) et les banques internationales. Le freelancing y est moins structuré qu'en Europe — beaucoup de contrats via des <strong>consulting companies</strong> locales qui sponsorisent les visas.</p>
+                    <p>Les taux sont compétitifs : <span class="rate">600-900$/jour</span> pour un Lead QA. <strong>Pas d'impôt sur le revenu</strong> — avantage énorme. Le coût de la vie à Dubaï est élevé mais l'avantage fiscal compense largement.</p>
+                    <p>Crowdsourcing très populaire : <strong>uTest</strong> est massivement utilisé par les boîtes tech de la région pour le functional testing et l'UAT.</p>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span class="icon">🌐</span>
+                    <h2>Sites Locaux</h2>
+                </div>
+                <div class="section-card-body">
+                    <ul class="platform-list">
+                        <li>
+                            <span class="platform-name"><a href="https://testvox.com" target="_blank">Testvox</a> <span class="platform-tag tag-local">QA Spécialisé</span></span>
+                            <span class="platform-desc">Plateforme QA spécialisée Moyen-Orient. Très active pour les missions freelance QA en finance et e-commerce.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name"><a href="https://truelancer.com" target="_blank">Truelancer</a> <span class="platform-tag tag-local">Leader</span></span>
+                            <span class="platform-desc">Le Malt de Dubaï. Portail freelance généraliste le plus utilisé.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name"><a href="https://bayt.com" target="_blank">Bayt.com</a></span>
+                            <span class="platform-desc">Plus gros portail emploi du Moyen-Orient. Filtre "QA", "Testing", "Freelance Contract".</span>
+                        </li>
+                        <li>
+                            <span class="platform-name"><a href="https://naukrigulf.com" target="_blank">Naukri Gulf</a></span>
+                            <span class="platform-desc">Version EAU de Naukri. Beaucoup d'offres IT.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span class="icon">🌍</span>
+                    <h2>Jobboards Internationaux Présents</h2>
+                </div>
+                <div class="section-card-body">
+                    <ul class="platform-list">
+                        <li>
+                            <span class="platform-name">Toptal <span class="platform-tag tag-intl">Premium</span></span>
+                            <span class="platform-desc">Forte demande pour QA Lead/Senior sur des missions moyen-orient. Process sélectif mais clients premium.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name">uTest (GlobalStep)</span>
+                            <span class="platform-desc">Crowdsourcing QA. Très actif au Moyen-Orient. Bon pour se faire un réseau.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name">LinkedIn Dubaï</span>
+                            <span class="platform-desc">Active le filtre "Dubai, United Arab Emirates".</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="hack-box">
+                <div class="hack-title">💡 Hack pour un Lead QA</div>
+                <p>Tu ne peux pas freelance "officiellement" à Dubaï sans visa freelance ou sponsor. Solution : inscris-toi dans une <strong>freezone</strong> (DMCC, IFZA, RAK ICC — ~15K AED/an) qui te délivre un visa freelance. Ou passe par une société de consulting locale. <strong>Toptal</strong> et <strong>Testvox</strong> sont tes meilleures portes d'entrée. TJM visé : <span class="rate">700-800$/jour</span>.</p>
+            </div>
+        </div>
+
+        <!-- 🇸🇬 SINGAPOUR -->
+        <div class="tab-content" id="tab-singapour">
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span class="icon">📊</span>
+                    <h2>Analyse du Marché QA Freelance</h2>
+                </div>
+                <div class="section-card-body">
+                    <p>Hub tech <strong>#1 de l'Asie du Sud-Est</strong>. Le marché du QA freelance y est porté par la banque/fintech (DBS, OCBC, UOB, Grab, Sea Group), le e-commerce (Shopee, Lazada), et le GovTech.</p>
+                    <p>Le contracting IT est très développé : beaucoup de "contractors" rémunérés à l'heure (<span class="rate">80-150 SGD/h</span> pour un Lead QA, soit 180-230K SGD/an). Contrats de 6-12 mois renouvelables.</p>
+                    <p>Singapour privilégie les résidents locaux (EP/PR) pour les missions longues. L'<strong>Employment Pass</strong> est accessible (salaire min 5K SGD/mois). Beaucoup de missions acceptent le remote depuis la région ASEAN.</p>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span class="icon">🌐</span>
+                    <h2>Sites Locaux</h2>
+                </div>
+                <div class="section-card-body">
+                    <ul class="platform-list">
+                        <li>
+                            <span class="platform-name"><a href="https://nodeflair.com" target="_blank">NodeFlair</a> <span class="platform-tag tag-local">Leader Tech</span></span>
+                            <span class="platform-desc">Plateforme tech référence à Singapour. Comparateur de salaires + offres. Beaucoup de QA/test automation.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name"><a href="https://jobstreet.com.sg" target="_blank">JobStreet.com.sg</a></span>
+                            <span class="platform-desc">Le plus gros portail emploi. Filtre "Contract", "QA", "Software Testing".</span>
+                        </li>
+                        <li>
+                            <span class="platform-name"><a href="https://mycareersfuture.gov.sg" target="_blank">MyCareersFuture.sg</a></span>
+                            <span class="platform-desc">Portail gouvernemental. Offres vérifiées.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name"><a href="https://efinancialcareers.sg" target="_blank">eFinancialCareers Singapore</a></span>
+                            <span class="platform-desc">Spécialisé finance. DBS/OCBC recrutent ici.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-card-header">
+                    <span class="icon">🌍</span>
+                    <h2>Jobboards Internationaux Présents</h2>
+                </div>
+                <div class="section-card-body">
+                    <ul class="platform-list">
+                        <li>
+                            <span class="platform-name">Toptal <span class="platform-tag tag-intl">Premium</span></span>
+                            <span class="platform-desc">Forte présence Singapour pour Lead QA. Clients : banques, fintechs.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name">LinkedIn Singapore</span>
+                            <span class="platform-desc">Le plus utilisé par les recruteurs tech. Active Singapore + filtre Contract.</span>
+                        </li>
+                        <li>
+                            <span class="platform-name">Hays Singapore <span class="platform-tag tag-intl">Incontournable</span></span>
+                            <span class="platform-desc">Bureau local très actif dans le contracting QA. Contacte leur desk "Technology – Contracting".</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="hack-box">
+                <div class="hack-title">💡 Hack pour un Lead QA</div>
+                <p>Singapour recrute des QA Lead pour des missions de <strong>6-12 mois</strong> dans la banque/fintech. La clé : passe par les régies (<strong>Hays, Randstad, Robert Half Singapore</strong>) qui sponsorisent l'Employment Pass. Spécialise-toi dans <strong>"Core Banking Testing"</strong> ou <strong>"Fintech QA"</strong> — la demande est énorme et les profils Lead QA sont rares. Taux horaire cible : <span class="rate">100-120 SGD/h</span>. Option B : missions remote depuis la Thaïlande ou Bali pour clients singapouriens (taux plus bas mais coût de vie divisé par 3).</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+                // Update URL hash
+                window.location.hash = btn.dataset.tab;
+            });
+        });
+
+        // Open tab from URL hash on load
+        const hash = window.location.hash.replace('#', '');
+        if (hash) {
+            const btn = document.querySelector(`.tab-btn[data-tab="${hash}"]`);
+            if (btn) btn.click();
+        }
+    </script>
+</body>
+</html>
