@@ -544,6 +544,15 @@
             border: none !important;
         }
         .btn-apply:hover { background: #5f4dd0; }
+        .btn-dismiss {
+            position: absolute; top: 8px; right: 10px;
+            width: 28px; height: 28px; border-radius: 50%;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.7); font-size: 15px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.15s; z-index: 2; line-height: 1;
+        }
+        .btn-dismiss:hover { background: rgba(255,107,107,0.25); border-color: rgba(255,107,107,0.5); color: #ff6b6b; }
         .applied-label {
             font-size: 10px;
             color: var(--green);
@@ -862,6 +871,7 @@
                  data-location="{{ job.location|e }}" data-type="{{ job.work_type or '' }}"
                  data-date="{{ job.date or '' }}" data-match="{{ job.match_score or 0 }}"
                  data-applied="{{ 'true' if job.applied else 'false' }}">
+                <button class="btn-dismiss" onclick="event.stopPropagation();dismissJob({{ job.id }}, this);" title="Masquer">✕</button>
                 <div class="job-header">
                     <div>
                         <div class="job-title">
@@ -921,6 +931,7 @@
                  data-location="{{ job.location|e }}" data-type="{{ job.work_type or '' }}"
                  data-date="{{ job.date or '' }}" data-match="{{ job.match_score or 0 }}"
                  data-applied="{{ 'true' if job.applied else 'false' }}">
+                <button class="btn-dismiss" onclick="event.stopPropagation();dismissJob({{ job.id }}, this);" title="Masquer">✕</button>
                 <div class="job-header">
                     <div>
                         <div class="job-title">
@@ -1150,6 +1161,28 @@
 
     window.logout = function() {
         fetch('/api/auth/logout', {method:'POST'}).then(() => location.reload());
+    };
+
+    // Dismiss job
+    window.dismissJob = function(jobId, btn) {
+        fetch('/api/job/' + jobId + '/stage', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({stage: 'dismissed'})
+        }).then(r => r.json()).then(function(d) {
+            var card = btn.closest('.job-card, .featured-card');
+            if (card) {
+                card.style.opacity = '0';
+                card.style.transform = 'translateX(20px)';
+                card.style.transition = 'all 0.25s';
+                setTimeout(function() {
+                    card.remove();
+                    document.querySelectorAll('.job-card[data-id="' + jobId + '"]').forEach(function(c) {
+                        if (c !== card) c.remove();
+                    });
+                }, 250);
+            }
+        });
     };
 
     // Run initial filter to show correct counts
