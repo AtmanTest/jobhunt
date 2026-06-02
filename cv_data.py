@@ -25,7 +25,7 @@ CV = {
             "company": "Sabbatical Year",
             "role": "Skills Development & Technology Watch",
             "description": (
-                "Développé des projets personnels en IA & automatisation : agents "
+                "Développer des projets personnels en IA & automatisation : agents "
                 "autonomes (Hermes Agent, ClawBot) avec planification, outils et "
                 "mémoire ; dashboard de chasse d'emploi piloté par IA (JobHunt) ; "
                 "bots conversationnels. Voyage à travers l'Asie du Sud-Est."
@@ -58,7 +58,7 @@ CV = {
                 "functional acceptance and regression campaigns in Agile Scrum. "
                 "Wrote 100% of test cases in Gherkin covering critical user journeys. "
                 "Managed defect lifecycle and delivered Go/No-Go reports. "
-                "Participé à l'enrichissement des tests sous Appium : aide aux "
+                "Participer à l'enrichissement des tests sous Appium : aide aux "
                 "automaticiens pour définir les smoke tests. "
                 "Élaboration de stratégies et plans de tests à partir des user stories. "
                 "Collaboration avec Développeurs, Scrum Master, Product Owner, "
