@@ -236,7 +236,10 @@ def get_user_id():
     return session.get('user_id')
 
 def require_auth():
-    """Redirect to login if not authenticated. For page routes."""
+    """Redirect to login if not authenticated. For page routes.
+    En local (pas Render), on bypass l'auth pour faciliter le dev."""
+    if not os.environ.get('RENDER'):
+        return True  # dev local — pas de login requis
     if not get_user_id():
         return False
     return True
