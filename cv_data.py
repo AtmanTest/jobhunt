@@ -25,12 +25,12 @@ CV = {
             "company": "Sabbatical Year",
             "role": "Skills Development & Technology Watch",
             "description": (
-                "Ongoing courses in Generative AI, Prompt Engineering (Google), "
-                "and Digital Product Management. Building side projects related "
-                "to AI, automation, and conversational bots. Traveling across "
-                "Southeast Asia."
+                "Développé des projets personnels en IA & automatisation : agents "
+                "autonomes (Hermes Agent, ClawBot) avec planification, outils et "
+                "mémoire ; dashboard de chasse d'emploi piloté par IA (JobHunt) ; "
+                "bots conversationnels. Voyage à travers l'Asie du Sud-Est."
             ),
-            "keywords": ["AI", "Python", "Automation", "LLM"],
+            "keywords": ["AI", "Python", "Automation", "LLM", "Agentic"],
         },
         {
             "period": "2 yrs",
