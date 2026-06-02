@@ -38,6 +38,16 @@ SOURCES = [
         "url": "https://www.malt.fr/search?keyword=QA+test",
         "type": "malt"
     },
+    {
+        "name": "PowerToFly",
+        "url": "https://powertofly.com/jobs/?keywords=QA",
+        "type": "powertofly"
+    },
+    {
+        "name": "Landing.Jobs",
+        "url": "https://landing.jobs/jobs?remote=true",
+        "type": "landingjobs"
+    },
 ]
 
 
@@ -1907,6 +1917,8 @@ def fetch_all_new_sources():
         ("Indeed", fetch_indeed),
         ("Comet", fetch_comet),
         ("Malt", fetch_malt),
+        ("PowerToFly", fetch_powertofly),
+        ("Landing.Jobs", fetch_landingjobs),
     ]
     
     for name, fetcher in sources:
@@ -2462,6 +2474,252 @@ def get_stats():
     stats["companies"] = cursor.fetchone()[0]
     conn.close()
     return stats
+
+
+def fetch_powertofly():
+    """Fetch QA/SDET jobs from PowerToFly public API."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "application/json",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test engineer", "test automation", "tester",
+                       "testing", "automation engineer", "test lead",
+                       "test manager", "qa lead", "qa engineer",
+                       "software test", "software testing", "test developer",
+                       "engineer in test", "sdet engineer",
+                       "quality analyst", "qa analyst"]
+
+    try:
+        for page in range(1, 6):  # Max 5 pages = 250 jobs
+            resp = requests.get(
+                "https://powertofly.com/api/v1/jobs/",
+                params={"per_page": 50, "page": page},
+                headers=headers,
+                timeout=20,
+            )
+            if resp.status_code != 200:
+                break
+            data = resp.json()
+            results = data.get("data", [])
+            if not results:
+                break
+            for item in results:
+                title = item.get("title", "") or item.get("job_title", "")
+                title_lower = title.lower()
+                if not any(k in title_lower for k in filter_keywords):
+                    continue
+
+                company = item.get("company", "") or item.get("company_name", "") or ""
+                if isinstance(company, dict):
+                    company = company.get("name", "")
+                url = item.get("apply_url", "") or item.get("url", "") or ""
+                location = item.get("location", "") or ""
+                # Check location type
+                loc_type = item.get("location_type", "") or ""
+                if loc_type and "remote" in loc_type.lower():
+                    location = "Remote"
+                tags_list = item.get("required_skills", []) or []
+                if isinstance(tags_list, list):
+                    tags = ", ".join(
+                        s.get("title", str(s)) if isinstance(s, dict) else str(s)
+                        for s in tags_list
+                    )
+                else:
+                    tags = str(tags_list)
+                description = item.get("description", "") or item.get("summary", "") or ""
+                # Clean HTML from description
+                if description:
+                    description = re.sub(r"<[^>]+>", " ", description)
+                    description = re.sub(r"\s+", " ", description).strip()
+                salary = item.get("salary", "") or ""
+                date = datetime.now().strftime("%Y-%m-%d")
+
+                jobs.append({
+                    "title": title, "company": company,
+                    "source": "PowerToFly", "url": url,
+                    "location": location, "salary": salary,
+                    "tags": tags, "description": description,
+                    "date": date, "raw_date": int(time.time()),
+                })
+            time.sleep(0.5)
+    except Exception as e:
+        print(f"  PowerToFly error: {e}")
+    return jobs
+
+
+def fetch_freelancermap():
+    """Fetch QA/SDET freelance projects from FreelancerMap."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test engineer", "test automation", "tester",
+                       "testing", "automation engineer", "test lead",
+                       "test manager", "qa lead", "qa engineer",
+                       "software test", "test manager",
+                       "quality analyst", "qa analyst"]
+
+    try:
+        for page in range(1, 6):
+            url = f"https://www.freelancermap.com/projects?query=QA&pagenr={page}"
+            resp = requests.get(url, headers=headers, timeout=20)
+            if resp.status_code != 200:
+                break
+            soup = BeautifulSoup(resp.text, "lxml")
+            # Try embedded JSON first
+            script_tag = soup.find("script", type="application/json")
+            project_data = []
+            if script_tag:
+                try:
+                    data = json.loads(script_tag.string)
+                    project_data = data if isinstance(data, list) else data.get("projects", data.get("items", []))
+                except Exception:
+                    pass
+            # Fallback: parse HTML cards
+            if not project_data:
+                cards = soup.select(".project-card, .card, [class*=project]")
+                for card in cards:
+                    title_el = card.select_one("h2, h3, .title, .project-title")
+                    if not title_el:
+                        continue
+                    title = title_el.get_text(strip=True)
+                    title_lower = title.lower()
+                    if not any(k in title_lower for k in filter_keywords):
+                        continue
+                    company_el = card.select_one(".company, .client, .customer")
+                    company = company_el.get_text(strip=True) if company_el else ""
+                    link_el = card.select_one("a[href*=project]")
+                    link = ""
+                    if link_el:
+                        href = link_el.get("href", "")
+                        link = f"https://www.freelancermap.com{href}" if href.startswith("/") else href
+                    location_el = card.select_one(".location, .place, .country")
+                    location = location_el.get_text(strip=True) if location_el else ""
+                    salary_el = card.select_one(".rate, .price, .salary, .budget")
+                    salary = salary_el.get_text(strip=True) if salary_el else ""
+                    desc_el = card.select_one(".description, .text, p")
+                    description = desc_el.get_text(strip=True) if desc_el else ""
+
+                    jobs.append({
+                        "title": title, "company": company,
+                        "source": "FreelancerMap", "url": link,
+                        "location": location, "salary": salary,
+                        "tags": "", "description": description,
+                        "date": datetime.now().strftime("%Y-%m-%d"),
+                        "raw_date": int(time.time()),
+                    })
+                continue
+
+            # Parse embedded JSON
+            for item in project_data:
+                if isinstance(item, dict):
+                    title = item.get("title", "") or item.get("name", "")
+                    title_lower = title.lower()
+                    if not any(k in title_lower for k in filter_keywords):
+                        continue
+                    company = item.get("company", "") or item.get("customer", "") or ""
+                    slug = item.get("slug", "") or item.get("id", "")
+                    link = f"https://www.freelancermap.com/project/{slug}"
+                    location = item.get("country", "") or item.get("location", "") or ""
+                    description = item.get("description", "") or ""
+                    if description:
+                        description = re.sub(r"<[^>]+>", " ", description)
+                        description = re.sub(r"\s+", " ", description).strip()
+                    tags_list = item.get("skills", []) or item.get("tags", []) or []
+                    tags = ", ".join(tags_list) if isinstance(tags_list, list) else str(tags_list)
+
+                    jobs.append({
+                        "title": title, "company": company,
+                        "source": "FreelancerMap", "url": link,
+                        "location": location, "salary": "",
+                        "tags": tags, "description": description,
+                        "date": datetime.now().strftime("%Y-%m-%d"),
+                        "raw_date": int(time.time()),
+                    })
+            time.sleep(1)
+    except Exception as e:
+        print(f"  FreelancerMap error: {e}")
+    return jobs
+
+
+def fetch_landingjobs():
+    """Fetch QA/SDET jobs from Landing.Jobs public API."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "application/json",
+    }
+    jobs = []
+    filter_keywords = ["qa", "sdet", "quality assurance", "quality engineer",
+                       "test engineer", "test automation", "tester",
+                       "testing", "automation engineer", "test lead",
+                       "test manager", "qa lead", "qa engineer",
+                       "software test", "software testing", "test developer"]
+
+    try:
+        resp = requests.get(
+            "https://landing.jobs/api/v1/jobs",
+            params={"remote": "true"},
+            headers=headers,
+            timeout=15,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            results = data if isinstance(data, list) else data.get("jobs", data.get("data", []))
+            for item in results:
+                title = item.get("title", "") or item.get("name", "")
+                title_lower = title.lower()
+                if not any(k in title_lower for k in filter_keywords):
+                    continue
+
+                company = item.get("company", "") or ""
+                if isinstance(company, dict):
+                    company = company.get("name", "")
+                # Company might be in a different field
+                if not company:
+                    company = item.get("company_name", "") or item.get("employer", "") or ""
+
+                url = item.get("url", "") or ""
+                if not url:
+                    slug = item.get("slug", "") or item.get("id", "")
+                    url = f"https://landing.jobs/jobs/{slug}" if slug else ""
+
+                location = item.get("location", "") or ""
+                locations = item.get("locations", []) or []
+                if locations and not location:
+                    location = ", ".join([l.get("name", "") for l in locations if isinstance(l, dict)])
+
+                # Salary from API fields
+                salary = ""
+                salary_min = item.get("gross_salary_low") or item.get("salary_min") or ""
+                salary_max = item.get("gross_salary_high") or item.get("salary_max") or ""
+                currency = item.get("currency_code") or item.get("currency") or ""
+                if salary_min or salary_max:
+                    salary = f"{salary_min} - {salary_max} {currency}".strip()
+
+                description = item.get("description", "") or item.get("role_description", "") or ""
+                if description:
+                    description = re.sub(r"<[^>]+>", " ", description)
+                    description = re.sub(r"\s+", " ", description).strip()
+
+                tags_list = item.get("tags", []) or []
+                tags = ", ".join(tags_list) if isinstance(tags_list, list) else str(tags_list)
+
+                date = datetime.now().strftime("%Y-%m-%d")
+
+                jobs.append({
+                    "title": title, "company": company,
+                    "source": "Landing.Jobs", "url": url,
+                    "location": location, "salary": salary,
+                    "tags": tags, "description": description,
+                    "date": date, "raw_date": int(time.time()),
+                })
+    except Exception as e:
+        print(f"  Landing.Jobs error: {e}")
+    return jobs
 
 
 if __name__ == "__main__":
