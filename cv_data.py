@@ -41,7 +41,10 @@ CV = {
                 "(Sept 2026 deadline). Defined and maintained test strategy covering "
                 "the core perimeter. Led acceptance campaigns covering 100% of "
                 "business epics. Created test datasets in Mainframe/SQL Oracle environments. "
-                "Guaranteed 100% regulatory compliance ahead of deadline."
+                "Guaranteed 100% regulatory compliance ahead of deadline. "
+                "Élaboration de stratégies et plans de tests à partir des user stories. "
+                "Collaboration étroite avec Business Analyste, Développeurs, Support "
+                "Technique et Responsable SI."
             ),
             "keywords": ["JIRA", "Xray", "SQL", "Oracle", "Mainframe", "Regulatory"],
         },
@@ -54,9 +57,14 @@ CV = {
                 "Co-created User Stories with Product Owner and Dev team. Led "
                 "functional acceptance and regression campaigns in Agile Scrum. "
                 "Wrote 100% of test cases in Gherkin covering critical user journeys. "
-                "Managed defect lifecycle and delivered Go/No-Go reports."
+                "Managed defect lifecycle and delivered Go/No-Go reports. "
+                "Participé à l'enrichissement des tests sous Appium : aide aux "
+                "automaticiens pour définir les smoke tests. "
+                "Élaboration de stratégies et plans de tests à partir des user stories. "
+                "Collaboration avec Développeurs, Scrum Master, Product Owner, "
+                "Responsable Technique, équipe Backend et QA Manager."
             ),
-            "keywords": ["JIRA", "Xray", "Gherkin", "iOS", "Android", "Mobile"],
+            "keywords": ["JIRA", "Xray", "Gherkin", "iOS", "Android", "Mobile", "Appium"],
         },
         {
             "period": "2 yrs",
@@ -66,7 +74,10 @@ CV = {
                 "European leader in sovereign B2B cloud storage. Developed and "
                 "executed functional and regression test plans for critical B2B/B2C "
                 "applications. Cross-platform portability testing (Windows, macOS, "
-                "Linux). Level 3 technical support."
+                "Linux). Level 3 technical support. "
+                "Élaboration de stratégies et plans de tests à partir des user stories. "
+                "Collaboration avec l'équipe de développement, Manager, Support "
+                "Technique et Product Owner."
             ),
             "keywords": ["JIRA", "Zephyr", "Confluence", "Ranorex", "Cloud"],
         },
@@ -76,7 +87,8 @@ CV = {
             "role": "Software Quality Manager",
             "description": (
                 "Managed testers team on healthcare software. Coordinated external "
-                "vendor for test automation."
+                "vendor for test automation. "
+                "Élaboration de stratégies et plans de tests à partir des user stories."
             ),
             "keywords": ["Tuleap", "Dynatrace", "Healthcare", "Team Management"],
         },
@@ -86,7 +98,8 @@ CV = {
             "role": "QA Consultant Engineer",
             "description": (
                 "Functional acceptance testing on SAP BPC web apps. UI/UX compliance "
-                "and data integrity validation."
+                "and data integrity validation. "
+                "Élaboration de stratégies et plans de tests à partir des user stories."
             ),
             "keywords": ["Redmine", "SAP", "SAP HANA"],
         },
@@ -97,7 +110,8 @@ CV = {
             "description": (
                 "Multi-platform software (VADoZ) and security OS (Bianne WebFilter). "
                 "Cross-platform functional and regression test campaigns. AutoIT "
-                "automation. Dedicated security test lab."
+                "automation. Dedicated security test lab. "
+                "Élaboration de stratégies et plans de tests à partir des user stories."
             ),
             "keywords": ["AutoIT", "Windows", "macOS", "Linux", "Security"],
         },
