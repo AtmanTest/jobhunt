@@ -426,9 +426,8 @@
     margin-bottom: 2px;
   }
   .job-card .jc-title-link {
-    color: var(--text); text-decoration: none; transition: color 0.15s;
+    color: var(--text);
   }
-  .job-card .jc-title-link:hover { color: var(--accent); }
   .job-card .jc-company { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
   .job-card .jc-meta {
     display: flex; gap: 10px; flex-wrap: wrap;
@@ -882,7 +881,7 @@
       <div class="section-label"><span class="bar purple"></span> ✦ Jobs du Jour</div>
       <div class="featured-grid">
       {% for job in jobs_of_day %}
-        <div class="featured-card card-blue" onclick="window.open('{{ job.url | clean_url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;" data-auto="{%- set autoc = ((job.title or '') + ' ' + ((job.tags or '')|replace(',',' ') + ' ' + ((job.matched_skills or [])|join(' ')))|lower) -%}{%- if 'automation' in autoc or 'automated' in autoc or 'automat' in autoc or 'selenium' in autoc or 'playwright' in autoc or 'cypress' in autoc or 'ci/cd' in autoc or 'test framework' in autoc or 'llm' in autoc or 'machine learning' in autoc or ' ai ' in autoc -%}auto{%- else -%}manual{%- endif -%}">
+        <div class="featured-card card-blue" style="position:relative;" data-auto="{%- set autoc = ((job.title or '') + ' ' + ((job.tags or '')|replace(',',' ') + ' ' + ((job.matched_skills or [])|join(' ')))|lower) -%}{%- if 'automation' in autoc or 'automated' in autoc or 'automat' in autoc or 'selenium' in autoc or 'playwright' in autoc or 'cypress' in autoc or 'ci/cd' in autoc or 'test framework' in autoc or 'llm' in autoc or 'machine learning' in autoc or ' ai ' in autoc -%}auto{%- else -%}manual{%- endif -%}">
           <button class="btn-dismiss" onclick="event.stopPropagation();dismissJob({{ job.id }}, this);" title="Masquer">✕</button>
           <div class="rank">{{ job.match_score }}% match</div>
           <div class="fc-title">{{ job.title }}</div>
@@ -897,7 +896,7 @@
           {% endif %}
           <div style="display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:4px;border-top:1px solid var(--border);">
             <span class="fc-score"><span class="num">{{ job.match_score }}%</span> match</span>
-            <span style="font-size:11px;color:var(--accent);margin-left:auto;">Postuler →</span>
+            <a href="{{ job.url | clean_url }}" target="_blank" onclick="fetch('/api/job/{{ job.id }}/click');" style="font-size:11px;color:var(--accent);margin-left:auto;text-decoration:none;">Postuler →</a>
           </div>
         </div>
       {% endfor %}
@@ -911,7 +910,7 @@
       <div class="section-label"><span class="bar orange"></span> 🔥 Hot Picks — Priorité Max</div>
       <div class="featured-grid">
       {% for job in hot_picks %}
-        <div class="featured-card card-purple" onclick="window.open('{{ job.url | clean_url }}','_blank');fetch('/api/job/{{ job.id }}/click');" style="position:relative;cursor:pointer;" data-auto="{%- set autoc = ((job.title or '') + ' ' + ((job.tags or '')|replace(',',' ') + ' ' + ((job.matched_skills or [])|join(' ')))|lower) -%}{%- if 'automation' in autoc or 'automated' in autoc or 'automat' in autoc or 'selenium' in autoc or 'playwright' in autoc or 'cypress' in autoc or 'ci/cd' in autoc or 'test framework' in autoc or 'llm' in autoc or 'machine learning' in autoc or ' ai ' in autoc -%}auto{%- else -%}manual{%- endif -%}">
+        <div class="featured-card card-purple" style="position:relative;" data-auto="{%- set autoc = ((job.title or '') + ' ' + ((job.tags or '')|replace(',',' ') + ' ' + ((job.matched_skills or [])|join(' ')))|lower) -%}{%- if 'automation' in autoc or 'automated' in autoc or 'automat' in autoc or 'selenium' in autoc or 'playwright' in autoc or 'cypress' in autoc or 'ci/cd' in autoc or 'test framework' in autoc or 'llm' in autoc or 'machine learning' in autoc or ' ai ' in autoc -%}auto{%- else -%}manual{%- endif -%}">
           <button class="btn-dismiss" onclick="event.stopPropagation();dismissJob({{ job.id }}, this);" title="Masquer">✕</button>
           <div class="rank">{{ job.match_score }}% match</div>
           <div class="fc-title">{{ job.title }}</div>
@@ -926,7 +925,7 @@
           {% endif %}
           <div style="display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:4px;">
             <span class="fc-score"><span class="num">{{ job.match_score }}%</span> match</span>
-            <span style="font-size:11px;color:var(--accent);margin-left:auto;">Postuler →</span>
+            <a href="{{ job.url | clean_url }}" target="_blank" onclick="fetch('/api/job/{{ job.id }}/click');" style="font-size:11px;color:var(--accent);margin-left:auto;text-decoration:none;">Postuler →</a>
           </div>
         </div>
       {% endfor %}
@@ -1032,7 +1031,7 @@
           <div class="swipe-overlay swipe-overlay-right"><span>Ouvrir →</span></div>
           <div class="jc-left">
             <div class="jc-title">
-              <a href="{{ job.url | clean_url }}" target="_blank" class="jc-title-link">{{ job.title }}</a>
+              <span class="jc-title-link">{{ job.title }}</span>
               {% if not job.viewed %}<span class="badge badge-new">Nouveau</span>{% endif %}
               <span class="badge badge-fresh-{{ job.freshness_score or 'D' }}">
                 {% if job.freshness_score == 'A' %}🔥 Neuf{% elif job.freshness_score == 'B' %}📆 Récents{% elif job.freshness_score == 'C' %}📅 Semaine{% else %}Ancien{% endif %}
@@ -1099,7 +1098,7 @@
           <div class="swipe-overlay swipe-overlay-right"><span>Ouvrir →</span></div>
           <div class="jc-left">
             <div class="jc-title">
-              <a href="{{ job.url | clean_url }}" target="_blank" class="jc-title-link">{{ job.title }}</a>
+              <span class="jc-title-link">{{ job.title }}</span>
               {% if not job.viewed %}<span class="badge badge-new">Nouveau</span>{% endif %}
               <span class="badge badge-fresh-{{ job.freshness_score or 'D' }}">
                 {% if job.freshness_score == 'A' %}🔥 Neuf{% elif job.freshness_score == 'B' %}📆 Récents{% elif job.freshness_score == 'C' %}📅 Semaine{% else %}Ancien{% endif %}
