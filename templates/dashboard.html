@@ -805,6 +805,7 @@
         <button class="nav-more-btn" onclick="toggleMore()" style="background:none;border:none;padding:6px 10px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text-dim);cursor:pointer;font-family:inherit;transition:all 0.2s;">Plus ▾</button>
         <div class="nav-more-drop" id="nav-more-drop" style="display:none;position:absolute;top:100%;left:0;min-width:160px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:4px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
           <a href="{{ url_for('qa_dashboard') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">🧪 QA Test</a>
+          <a href="{{ url_for('jobs_clotures') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">📋 Jobs Clôturés</a>
           <a href="{{ url_for('monitoring_page') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">📊 Monitor</a>
           <a href="{{ url_for('stats_page') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">📈 Stats</a>
           <a href="{{ url_for('about') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">ℹ️ À propos</a>
@@ -866,6 +867,13 @@
         <div class="value blue" id="total-markets">{{ country_counts|sum(attribute='count') }}</div>
         <div class="sub">France · Suisse · Lux · Dubaï · SG</div>
       </div>
+      <a href="{{ url_for('jobs_clotures') }}" style="text-decoration:none;color:inherit;display:contents;">
+      <div class="hero-card" style="cursor:pointer;">
+        <div class="label">Jobs clôturés</div>
+        <div class="value orange">{{ closed_jobs_count }}</div>
+        <div class="sub">clôturés · voir détail →</div>
+      </div>
+      </a>
     </div>
 
     <!-- Jobs du Jour (featured) -->

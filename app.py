@@ -822,6 +822,14 @@ def index():
     # Skills gap
     skills = analyze_skills_gap(all_jobs)
 
+    # Count closed/dismissed jobs
+    uid = get_user_id() or ''
+    conn = get_db()
+    closed_jobs_count = conn.execute(
+        "SELECT COUNT(*) FROM dismissed_jobs WHERE user_id = ?", (uid,)
+    ).fetchone()[0]
+    conn.close()
+
     # Last update timestamp
     last_update = "—"
     ts_path = os.path.join(os.path.dirname(__file__), "docs", "last_update.txt")
@@ -845,7 +853,8 @@ def index():
         source_stats=s_stats,
         skills_gap=skills,
         version=get_version(),
-        last_update=last_update)
+        last_update=last_update,
+        closed_jobs_count=closed_jobs_count)
 
 
 @app.route("/refresh")
@@ -1443,6 +1452,33 @@ def generate_cover(job_id):
     )
     
     return jsonify({"cover_letter": cover})
+
+
+@app.route("/jobs-clotures")
+def jobs_clotures():
+    """Page listing all dismissed/closed jobs, sorted by closing date."""
+    if not require_auth():
+        return redirect(url_for("login_page"))
+    conn = get_db()
+    uid = get_user_id() or ''
+    rows = conn.execute("""
+        SELECT d.id, d.title, d.company, d.url, d.dismissed_at,
+               COALESCE(j.source, '—') as source
+        FROM dismissed_jobs d
+        LEFT JOIN jobs j ON LOWER(TRIM(j.title)) = LOWER(TRIM(d.title))
+                       AND LOWER(TRIM(COALESCE(j.company,''))) = LOWER(TRIM(COALESCE(d.company,'')))
+        WHERE d.user_id = ?
+        GROUP BY d.id
+        ORDER BY d.dismissed_at DESC
+    """, (uid,)).fetchall()
+    conn.close()
+    jobs = [dict(r) for r in rows]
+    companies = len(set(j.get('company','') for j in jobs if j.get('company')))
+    return render_template("jobs_clotures.html",
+        jobs=jobs,
+        total=len(jobs),
+        companies=companies,
+        version=get_version())
 
 
 @app.route("/cv")

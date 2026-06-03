@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jobs Clôturés · JobHunt{% if env_label %} · {{ env_label }}{% endif %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg: #07070d; --bg-alt: #0c0c16; --card: #12121e; --card-hover: #181828;
+    --border: #1e1e32; --border-light: #2a2a44;
+    --text: #e8e8f0; --text-dim: #8888a8; --text-muted: #55557a;
+    --accent: #7c6cf0; --accent-dim: #5a4bc0; --accent-glow: rgba(124,108,240,0.12);
+    --green: #00d68f; --orange: #ff9f43; --red: #ff6b6b; --blue: #54a0ff;
+    --radius: 12px; --radius-lg: 16px;
+  }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+  }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(124,108,240,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,108,240,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+  .bg-glow {
+    position: fixed; top: -40vh; left: -20vw;
+    width: 80vw; height: 80vh;
+    background: radial-gradient(ellipse, rgba(124,108,240,0.06) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+    animation: glow-drift 12s ease-in-out infinite alternate;
+  }
+  @keyframes glow-drift {
+    0% { transform: translate(0,0) scale(1); }
+    100% { transform: translate(10vw,5vh) scale(1.2); }
+  }
+
+  .app { position:relative; z-index:1; min-height:100vh; }
+
+  .header {
+    position: sticky; top:0; z-index:100;
+    padding: 0 32px; height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(7,7,13,0.85);
+    backdrop-filter: blur(20px) saturate(1.4);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-logo {
+    font-size: 16px; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), #a89bff);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+  }
+  .header-logo span { font-weight: 400; -webkit-text-fill-color: var(--text-dim); }
+  .header-nav { display: flex; gap: 4px; align-items: center; }
+  .header-nav a {
+    padding: 6px 14px; border-radius: 8px; text-decoration: none;
+    font-size: 13px; font-weight: 500; color: var(--text-dim);
+    transition: all 0.2s;
+  }
+  .header-nav a:hover { color: var(--text); background: var(--card); }
+  .header-nav a.active { color: var(--accent); background: var(--accent-glow); }
+
+  .main { max-width: 1240px; margin: 0 auto; padding: 24px 32px; }
+
+  /* Page Title */
+  .page-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .page-header h1 {
+    font-size: 20px; font-weight: 800; letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .page-header h1 .count {
+    font-size: 14px; font-weight: 600;
+    background: var(--accent-glow); color: var(--accent);
+    padding: 2px 10px; border-radius: 8px;
+  }
+  .back-link {
+    padding: 6px 14px; border-radius: 8px;
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text-dim); text-decoration: none;
+    font-size: 12px; font-weight: 500;
+    transition: all 0.2s;
+  }
+  .back-link:hover { border-color: var(--accent); color: var(--text); }
+
+  /* Sort Controls */
+  .sort-bar {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .sort-bar .label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--text-muted);
+  }
+  .sort-btn {
+    padding: 6px 14px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--card); color: var(--text-dim);
+    font-family: inherit; font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .sort-btn:hover { border-color: var(--border-light); color: var(--text); }
+  .sort-btn.active { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); }
+  .sort-btn .arrow { margin-left: 3px; }
+
+  /* Search */
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 14px; flex: 1; max-width: 300px;
+  }
+  .search-box input {
+    background: none; border: none; color: var(--text);
+    font-family: inherit; font-size: 13px; outline: none; flex: 1;
+  }
+  .search-box input::placeholder { color: var(--text-muted); }
+
+  /* Stats line */
+  .stats-line {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    margin-bottom: 20px; font-size: 12px; color: var(--text-dim);
+  }
+  .stats-line span { display: flex; align-items: center; gap: 5px; }
+  .stats-line .num { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--text); }
+
+  /* Table */
+  .table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    text-align: left; font-weight: 600; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--text-muted);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-alt);
+    cursor: pointer; user-select: none;
+    white-space: nowrap;
+  }
+  thead th:hover { color: var(--text); }
+  thead th .sarrow { margin-left: 4px; color: var(--accent); }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--card-hover); }
+  tbody td {
+    padding: 10px 16px;
+    color: var(--text-dim);
+    vertical-align: middle;
+  }
+  tbody td:first-child {
+    font-weight: 600; color: var(--text);
+  }
+  .td-title {
+    max-width: 350px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .td-title a {
+    color: var(--text); text-decoration: none;
+  }
+  .td-title a:hover { color: var(--accent); }
+  .td-company { white-space: nowrap; }
+  .td-source {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px;
+    color: var(--orange); white-space: nowrap;
+  }
+  .td-date {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    white-space: nowrap;
+  }
+  .td-empty {
+    text-align: center; padding: 60px 20px;
+    color: var(--text-dim); font-size: 14px;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center; padding: 60px 20px; color: var(--text-dim);
+  }
+  .empty-state .icon { font-size: 36px; margin-bottom: 10px; }
+  .empty-state h3 { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+
+  /* Pagination */
+  .pagination {
+    display: flex; align-items: center; justify-content: center;
+    gap: 4px; margin-top: 16px;
+  }
+  .page-btn {
+    min-width: 30px; height: 30px;
+    border: 1px solid var(--border); border-radius: 7px;
+    background: var(--card); color: var(--text-dim);
+    font-family: inherit; font-size: 12px; font-weight: 500;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; padding: 0 7px;
+  }
+  .page-btn:hover { border-color: var(--accent); color: var(--text); }
+  .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .page-btn:disabled { opacity: 0.25; cursor: default; pointer-events: none; }
+  .page-info { font-size: 11px; color: var(--text-muted); margin: 0 6px; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .header { padding: 0 14px; height: 52px; }
+    .main { padding: 16px 14px; }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .sort-bar { flex-wrap: wrap; }
+    .search-box { max-width: 100%; }
+    .table-wrap { overflow-x: auto; }
+    table { font-size: 12px; }
+    thead th, tbody td { padding: 8px 10px; }
+    .td-title { max-width: 200px; }
+  }
+  @media (max-width: 620px) {
+    .td-title { max-width: 140px; }
+    .td-date { font-size: 10px; }
+    .td-source { font-size: 9px; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<div class="app">
+  <div class="header">
+    <div class="header-logo">
+      <a href="/" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--accent),#a89bff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px;">JobHunt{% if env_label %}<span style="font-size:12px;font-weight:600;opacity:0.7;margin-left:6px;background:var(--bg2);padding:2px 8px;border-radius:20px;border:1px solid var(--border);-webkit-text-fill-color:var(--t2);"> {{ env_label }}</span>{% endif %}</span>
+      </a>
+    </div>
+    <nav class="header-nav">
+      <a href="{{ url_for('index') }}">Dashboard</a>
+      <a href="{{ url_for('jobs_clotures') }}" class="active">Jobs Clôturés</a>
+    </nav>
+  </div>
+
+  <div class="main">
+    <div class="page-header">
+      <h1>
+        📋 Jobs Clôturés
+        <span class="count">{{ total }}</span>
+      </h1>
+      <a href="{{ url_for('index') }}" class="back-link">← Retour Dashboard</a>
+    </div>
+
+    {% if jobs %}
+    <div class="stats-line">
+      <span>📅 Dernière clôture : <span class="num">{{ jobs[0].dismissed_at[:10] if jobs[0].dismissed_at else '—' }}</span></span>
+      <span>🏢 <span class="num">{{ companies }}</span> entreprises différentes</span>
+    </div>
+
+    <!-- Sort + Search -->
+    <div class="sort-bar">
+      <span class="label">Trier par</span>
+      <button class="sort-btn active" data-sort="date" onclick="sortBy('date')">Date de clôture <span class="arrow">↓</span></button>
+      <button class="sort-btn" data-sort="title" onclick="sortBy('title')">Titre <span class="arrow"></span></button>
+      <button class="sort-btn" data-sort="company" onclick="sortBy('company')">Entreprise <span class="arrow"></span></button>
+      <div class="search-box" style="margin-left:auto;">
+        <span style="color:var(--text-muted);font-size:13px;">🔍</span>
+        <input type="text" id="searchInput" placeholder="Rechercher..." oninput="filterTable()">
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('title')">Titre <span class="sarrow"></span></th>
+            <th onclick="sortBy('company')" style="cursor:pointer;">Entreprise</th>
+            <th onclick="sortBy('source')" style="cursor:pointer;">Source</th>
+            <th onclick="sortBy('date')" style="cursor:pointer;">Date de clôture</th>
+            <th>Lien</th>
+          </tr>
+        </thead>
+        <tbody id="jobs-tbody">
+          {% for j in jobs %}
+          <tr data-title="{{ j.title|e }}" data-company="{{ j.company|e }}" data-source="{{ j.source|e }}" data-date="{{ j.dismissed_at or '' }}">
+            <td class="td-title"><a href="{{ j.url }}" target="_blank" title="{{ j.title|e }}">{{ j.title[:80] }}{% if j.title|length > 80 %}…{% endif %}</a></td>
+            <td class="td-company">{{ j.company }}</td>
+            <td class="td-source">{{ j.source }}</td>
+            <td class="td-date">{{ j.dismissed_at[:10] if j.dismissed_at else '—' }}</td>
+            <td><a href="{{ j.url }}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:12px;">Ouvrir →</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">📭</div>
+      <h3>Aucun job clôturé</h3>
+      <p>Les jobs que tu dismiss apparaîtront ici.</p>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<script>
+// ─── Sort state ───
+let sortKey = 'date';
+let sortAsc = false;
+const PER_PAGE = 50;
+let currentPage = 1;
+
+function sortBy(key) {
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`.sort-btn[data-sort="${key}"]`);
+  if (btn) btn.classList.add('active');
+
+  if (sortKey === key) {
+    sortAsc = !sortAsc;
+  } else {
+    sortKey = key;
+    sortAsc = (key === 'date');
+  }
+
+  const arrow = btn ? btn.querySelector('.arrow') : null;
+  if (arrow) arrow.textContent = sortAsc ? '↑' : '↓';
+
+  renderTable();
+}
+
+function getJobs() {
+  const rows = Array.from(document.querySelectorAll('#jobs-tbody tr'));
+  return rows.map(tr => ({
+    el: tr,
+    title: (tr.dataset.title || '').toLowerCase(),
+    company: (tr.dataset.company || '').toLowerCase(),
+    source: (tr.dataset.source || '').toLowerCase(),
+    date: tr.dataset.date || '',
+  }));
+}
+
+function filterTable() {
+  currentPage = 1;
+  renderTable();
+}
+
+function doSort(jobs) {
+  const cmp = (a, b) => {
+    let va, vb;
+    if (sortKey === 'date') {
+      va = a.date || '0';
+      vb = b.date || '0';
+    } else if (sortKey === 'title') {
+      va = a.title;
+      vb = b.title;
+    } else if (sortKey === 'company') {
+      va = a.company;
+      vb = b.company;
+    } else {
+      va = a.source;
+      vb = b.source;
+    }
+    if (va < vb) return sortAsc ? -1 : 1;
+    if (va > vb) return sortAsc ? 1 : -1;
+    return 0;
+  };
+  return jobs.sort(cmp);
+}
+
+function renderTable() {
+  const query = (document.getElementById('searchInput').value || '').toLowerCase();
+  let jobs = getJobs();
+
+  // Filter
+  if (query) {
+    jobs = jobs.filter(j =>
+      j.title.includes(query) || j.company.includes(query) || j.source.includes(query)
+    );
+  }
+
+  // Sort
+  jobs = doSort(jobs);
+
+  // Paginate
+  const total = jobs.length;
+  const totalPages = Math.ceil(total / PER_PAGE);
+  if (currentPage > totalPages) currentPage = totalPages || 1;
+  const start = (currentPage - 1) * PER_PAGE;
+  const page = jobs.slice(start, start + PER_PAGE);
+
+  // Render tbody
+  const tbody = document.getElementById('jobs-tbody');
+  tbody.innerHTML = '';
+  page.forEach(j => tbody.appendChild(j.el));
+
+  // Render pagination
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+  const container = document.getElementById('pagination');
+  if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+  let html = '';
+  html += `<button class="page-btn" onclick="goPage(1)" ${currentPage <= 1 ? 'disabled' : ''}>«</button>`;
+  html += `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>‹</button>`;
+  html += `<span class="page-info">${currentPage} / ${totalPages}</span>`;
+  html += `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>›</button>`;
+  html += `<button class="page-btn" onclick="goPage(${totalPages})" ${currentPage >= totalPages ? 'disabled' : ''}>»</button>`;
+  container.innerHTML = html;
+}
+
+function goPage(p) {
+  currentPage = p;
+  renderTable();
+}
+
+// Init: set default sort arrow
+document.querySelector('.sort-btn[data-sort="date"] .arrow').textContent = '↓';
+</script>
+</body>
+</html>
