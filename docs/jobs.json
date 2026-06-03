@@ -78,14 +78,14 @@
       "is_qa": 1,
       "applied": 0,
       "created_at": "2026-06-03 02:10:45",
-      "tech_stack": null,
-      "seniority": null,
-      "contract_type": null,
-      "remote_type": null,
+      "tech_stack": "[\"PLM\", \"ERP\", \"SAP\", \"8D\", \"A3\", \"Ishikawa\", \"5P\", \"EN9100\", \"ECSS\", \"DO\", \"ARP\"]",
+      "seniority": "senior",
+      "contract_type": "fulltime",
+      "remote_type": "hybrid",
       "salary_min": null,
       "salary_max": null,
       "currency": null,
-      "ai_enriched": 0,
+      "ai_enriched": 1,
       "saved": 0,
       "applied_at": null,
       "viewed": 0,
@@ -6401,5 +6401,5 @@
       "pipeline_stage": "new"
     }
   ],
-  "exported_at": "2026-06-03T06:01:20.594708"
+  "exported_at": "2026-06-03T07:01:18.235517"
 }
