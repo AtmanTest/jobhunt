@@ -1454,7 +1454,7 @@ def generate_cover(job_id):
     return jsonify({"cover_letter": cover})
 
 
-@app.route("/jobs-clotures")
+@app.route("/jobclotured")
 def jobs_clotures():
     """Page listing all dismissed/closed jobs, sorted by closing date."""
     if not require_auth():
