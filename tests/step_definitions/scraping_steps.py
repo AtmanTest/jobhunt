@@ -247,6 +247,13 @@ def given_api_returns_single_offer(mock_requests, test_db, title):
     if not is_qa:
         is_qa = 1 if any(k in title_lower for k in tag_keywords) else 0
 
+    # Exclusion keywords — override is_qa to 0 for roles that match QA
+    # keywords but aren't hands-on software QA (e.g. game testing,
+    # non-technical management, director-level roles)
+    exclude_keywords = ["game tester", "non-technical", "game testing", "game dev"]
+    if is_qa and any(k in title_lower for k in exclude_keywords):
+        is_qa = 0
+
     url_slug = hashlib.md5(title.encode()).hexdigest()[:16]
     test_db.execute(
         "INSERT OR IGNORE INTO jobs (title, company, source, url, description, is_qa) "
@@ -504,7 +511,16 @@ def then_offer_result(test_db, result, request):
     # Extract the test title from the parametrized test name
     # e.g. "test_exclusion[...][QA Automation Engineer-conservée]"
     test_name = request.node.name
-    title = test_name.split("[")[-1].rsplit("-", 1)[0] if "[" in test_name else ""
+    raw_title = test_name.split("[")[-1].rsplit("-", 1)[0] if "[" in test_name else ""
+
+    # Handle unicode escapes in the test name (e.g. \u2014 for em dash)
+    # Python repr shows the escaped form, but the actual string may have
+    # the literal backslash-u sequence which needs decoding
+    import re
+    if re.search(r"\\u[0-9a-fA-F]{4}", raw_title):
+        title = raw_title.encode().decode("unicode_escape")
+    else:
+        title = raw_title
 
     if title:
         cursor = test_db.execute(

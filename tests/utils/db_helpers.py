@@ -160,6 +160,13 @@ def create_schema(conn):
             currency TEXT,
             ai_enriched INTEGER DEFAULT 0,
             saved INTEGER DEFAULT 0,
+            viewed INTEGER DEFAULT 0,
+            freelance_status TEXT,
+            freelance_score INTEGER DEFAULT 0,
+            duration_info TEXT,
+            budget_info TEXT,
+            source_publish_date TEXT,
+            pipeline_stage TEXT DEFAULT 'new',
             applied_at DATETIME
         );
         CREATE TABLE IF NOT EXISTS applications (
@@ -175,6 +182,15 @@ def create_schema(conn):
         );
         CREATE INDEX IF NOT EXISTS idx_jobs_url ON jobs(url);
         CREATE INDEX IF NOT EXISTS idx_jobs_qa ON jobs(is_qa);
+        CREATE TABLE IF NOT EXISTS dismissed_jobs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            company TEXT DEFAULT '',
+            url TEXT DEFAULT '',
+            user_id TEXT NOT NULL DEFAULT '',
+            dismissed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE INDEX IF NOT EXISTS idx_dismissed_user ON dismissed_jobs(user_id, title, company);
     """
     )
     conn.commit()

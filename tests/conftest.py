@@ -23,6 +23,8 @@ pytest_plugins = [
     "tests.step_definitions.api_steps",
     "tests.step_definitions.frontend_steps",
     "tests.step_definitions.regression_steps",
+    "tests.step_definitions.regression_2026_steps",
+    "tests.step_definitions.cron_steps",
 ]
 
 FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
@@ -76,10 +78,24 @@ def flask_app(test_db):
     original_get_db = app_module.get_db
 
     def test_get_db():
-        return test_db
+        """Return test DB, reconnecting if it was closed."""
+        try:
+            test_db.execute("SELECT 1")
+            return test_db
+        except (sqlite3.ProgrammingError, sqlite3.OperationalError):
+            # Connection was closed, reopen in-memory with schema
+            new_conn = sqlite3.connect(":memory:")
+            new_conn.row_factory = sqlite3.Row
+            from tests.utils.db_helpers import create_schema
+            create_schema(new_conn)
+            return new_conn
 
     app_module.get_db = test_get_db
     app_module.DB_PATH = ":memory:"
+
+    # Disable GitHub DB population in tests
+    app_module.DB_POPULATED = True
+    app_module._ensure_db_populated = lambda: None
 
     yield app_module.app
 

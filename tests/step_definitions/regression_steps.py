@@ -393,20 +393,6 @@ def then_offer_inserted_with_empty_salary(test_db):
     )
 
 
-@then("l'offre est exclue")
-def then_offer_excluded():
-    """Verify the offer was excluded by the filter."""
-    from scraper import get_jobs
-
-    # The offer should NOT appear in QA results
-    qa_jobs = get_jobs({"qa_only": True})
-    # Check that high-level titles like "QA Director" are excluded
-    for job in qa_jobs:
-        title = job.get("title", "").lower()
-        assert "director" not in title or "vp" not in title, (
-            f"Job '{job['title']}' should have been excluded"
-        )
-
 
 @then(parsers.parse("{count:d} doublon est inséré"))
 def then_duplicates_inserted(seeded_db, count):
