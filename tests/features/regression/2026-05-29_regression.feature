@@ -108,6 +108,7 @@ Feature: Tests de régression — Session 2026-05-29
       | /marche-qa    |
       | /about        |
       | /changelog    |
+      | /jobs-clotures |
 
   # ─── FONCTIONNEL: API endpoints ──────────────────────────
   @api @medium
