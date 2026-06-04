@@ -95,6 +95,42 @@ def test_pagination(page):
     return {"passed": True, "details": "Only 1 page, pagination not needed"}
 
 
+def test_dismiss_button_does_not_navigate(page):
+    """Verify that clicking the dismiss button (✕) does NOT navigate away."""
+    page.goto(BASE_URL)
+    page.wait_for_selector(".btn-dismiss", timeout=15000)
+    current_url = page.url
+    dismiss_btn = page.query_selector(".btn-dismiss")
+    if not dismiss_btn:
+        return {"passed": True, "details": "No dismiss buttons found, skip"}
+    dismiss_btn.click()
+    page.wait_for_timeout(1000)
+    assert page.url == current_url, f"Page navigated! {current_url} → {page.url}"
+    return {"passed": True, "details": "Dismiss button click did NOT navigate away"}
+
+
+def test_apply_button_is_only_clickable_link(page):
+    """Verify that clicking a job card body does NOT navigate, only the btn-apply link."""
+    page.goto(BASE_URL)
+    page.wait_for_selector(".job-card", timeout=15000)
+    card = page.query_selector(".job-card")
+    if not card:
+        return {"passed": True, "details": "No job cards found"}
+    current_url = page.url
+    # Click the card body (not the button)
+    card.click(position={"x": 50, "y": 50})
+    page.wait_for_timeout(500)
+    assert page.url == current_url, "Job card click navigated away!"
+    # Click the Apply button
+    apply_btn = card.query_selector(".btn-apply")
+    if not apply_btn:
+        return {"passed": True, "details": "No Apply button, skip"}
+    # Don't actually click the link - just verify it has a valid href
+    href = apply_btn.get_attribute("href")
+    assert href and href.startswith("http"), f"Apply button has no valid href: {href}"
+    return {"passed": True, "details": f"Card body non-clickable ✓, Apply → {href}"}
+
+
 SCENARIOS = {
     "test_page_title": test_page_title,
     "test_hero_stats": test_hero_stats,
@@ -104,6 +140,8 @@ SCENARIOS = {
     "test_top_matches": test_top_matches,
     "test_cv_page": test_cv_page,
     "test_pagination": test_pagination,
+    "test_dismiss_button_does_not_navigate": test_dismiss_button_does_not_navigate,
+    "test_apply_button_is_only_clickable_link": test_apply_button_is_only_clickable_link,
 }
 
 

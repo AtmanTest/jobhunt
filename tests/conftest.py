@@ -25,6 +25,7 @@ pytest_plugins = [
     "tests.step_definitions.regression_steps",
     "tests.step_definitions.regression_2026_steps",
     "tests.step_definitions.cron_steps",
+    "tests.step_definitions.closed_jobs_steps",
 ]
 
 FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
