@@ -61,6 +61,9 @@ if not GITHUB_TOKEN:
                 GITHUB_TOKEN = f.read().strip()
             break
 
+CLOSED_JOBS_URL = "https://raw.githubusercontent.com/AtmanTest/jobhunt/main/docs/closed_jobs.json"
+CLOSED_JOBS_GITHUB_PATH = "docs/closed_jobs.json"
+
 FEATURES_DIR = os.path.join(os.path.dirname(__file__), "tests", "features")
 
 
@@ -476,6 +479,65 @@ GITHUB_JOBS_URL = "https://raw.githubusercontent.com/AtmanTest/jobhunt/main/docs
 ON_RENDER = os.environ.get("RENDER", False) or not os.path.exists(DB_PATH)
 
 
+def _load_closed_jobs_from_github():
+    """Load dismissed jobs from docs/closed_jobs.json on GitHub for persistence."""
+    try:
+        resp = requests.get(CLOSED_JOBS_URL, timeout=15)
+        if resp.status_code != 200:
+            print(f"[GitHub] closed_jobs.json not found (HTTP {resp.status_code}), skipping")
+            return
+        data = resp.json()
+        entries = data.get("dismissed", [])
+        c = sqlite3.connect(DB_PATH)
+        for e in entries:
+            c.execute("INSERT OR IGNORE INTO dismissed_jobs (title, company, url, user_id) VALUES (?, ?, ?, ?)",
+                (e.get("title",""), e.get("company",""), e.get("url",""), e.get("user_id","")))
+        c.commit()
+        c.close()
+        print(f"[GitHub] Restored {len(entries)} dismissed entries from closed_jobs.json")
+    except Exception as e:
+        print(f"[GitHub] closed_jobs.json load skipped: {e}")
+
+
+def _push_closed_jobs_to_github():
+    """Push all dismissed_jobs to docs/closed_jobs.json on GitHub via API."""
+    if not GITHUB_TOKEN:
+        print("[GitHub] No token, skipped closed_jobs push")
+        return
+    try:
+        conn = get_db()
+        rows = conn.execute("SELECT title, company, url, user_id FROM dismissed_jobs").fetchall()
+        conn.close()
+        if not rows:
+            return
+        payload = {"dismissed": [dict(r) for r in rows]}
+        content = json.dumps(payload, indent=2, ensure_ascii=False)
+        import base64
+        encoded = base64.b64encode(content.encode()).decode()
+        # Get current file SHA
+        sha_resp = requests.get(
+            f"https://api.github.com/repos/AtmanTest/jobhunt/contents/{CLOSED_JOBS_GITHUB_PATH}",
+            headers={"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"},
+            timeout=10
+        )
+        sha = sha_resp.json().get("sha") if sha_resp.status_code == 200 else None
+        body = {"message": "sync: update closed_jobs.json", "content": encoded, "branch": "main"}
+        if sha:
+            body["sha"] = sha
+        put_resp = requests.put(
+            f"https://api.github.com/repos/AtmanTest/jobhunt/contents/{CLOSED_JOBS_GITHUB_PATH}",
+            headers={"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd.github.v3+json"},
+            json=body,
+            timeout=15
+        )
+        if put_resp.status_code in (200, 201):
+            print(f"[GitHub] Pushed {len(rows)} dismissed entries to closed_jobs.json")
+        else:
+            print(f"[GitHub] closed_jobs push failed: HTTP {put_resp.status_code}")
+    except Exception as e:
+        print(f"[GitHub] closed_jobs push error: {e}")
+
+
 def _populate_from_github():
     """Fetch jobs from GitHub raw JSON and populate local SQLite."""
     try:
@@ -519,6 +581,8 @@ def _populate_from_github():
                 print(f"[Render] Restored {len(rows)} dismissed entries from Supabase")
         except Exception as e:
             print(f"[Render] dismissed_jobs Supabase restore skipped: {e}")
+        # Also restore from GitHub closed_jobs.json (persistent fallback)
+        _load_closed_jobs_from_github()
         print(f"[Render] Loaded {len(jobs)} jobs from GitHub")
     except Exception as e:
         print(f"[Render] Error populating DB: {e}")
@@ -955,6 +1019,11 @@ def api_job_stage(job_id):
     if stage == "dismissed" and uid:
         try:
             _sync_dismissed_to_supabase(uid)
+        except Exception:
+            pass
+        # Also push to GitHub closed_jobs.json (persistent across deploys)
+        try:
+            _push_closed_jobs_to_github()
         except Exception:
             pass
     
