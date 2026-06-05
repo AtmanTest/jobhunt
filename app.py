@@ -467,8 +467,6 @@ def api_profile_avatar():
 @app.route("/settings")
 def settings_page():
     """Settings page for authenticated users."""
-    if not require_auth():
-        return redirect(url_for("login_page"))
     return render_template("settings.html")
 
 
@@ -590,7 +588,23 @@ def _populate_from_github():
 
 # Initialize DB on import (needed for gunicorn on Render)
 init_db()
-
+# Ensure dismissed_jobs table exists locally (for persisting closed jobs across restarts)
+try:
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("""CREATE TABLE IF NOT EXISTS dismissed_jobs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        company TEXT DEFAULT '',
+        url TEXT DEFAULT '',
+        user_id TEXT NOT NULL DEFAULT '',
+        dismissed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(title, company, user_id)
+    )""")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_dismissed_user ON dismissed_jobs(user_id, title, company)")
+    conn.commit()
+    conn.close()
+except Exception:
+    pass
 
 DB_POPULATED = False
 
@@ -779,8 +793,6 @@ def filter_jobs_by_country(country_id):
 
 @app.route("/debug")
 def debug_info():
-    if not require_auth():
-        return redirect(url_for("login_page"))
     """Debug endpoint to check app state."""
     lines = []
     lines.append(f"Python: {sys.version}")
@@ -923,8 +935,6 @@ def index():
 
 @app.route("/refresh")
 def refresh():
-    if not require_auth():
-        return redirect(url_for("login_page"))
     """Manual refresh of job listings."""
     def do_scrape():
         jobs = fetch_all()
@@ -982,9 +992,7 @@ def _sync_dismissed_to_supabase(uid):
 @app.route("/api/job/<int:job_id>/stage", methods=["POST"])
 def api_job_stage(job_id):
     """Mettre à jour le stage pipeline."""
-    uid = get_user_id()
-    if not uid:
-        return jsonify({"error": "Non authentifié"}), 401
+    uid = get_user_id() or 'anonymous'
     
     data = request.get_json() or {}
     stage = data.get("stage", "saved")
@@ -1016,7 +1024,7 @@ def api_job_stage(job_id):
     conn.close()
     
     # Sync dismissed_jobs to Supabase for persistence across restarts
-    if stage == "dismissed" and uid:
+    if stage == "dismissed" and uid and uid != 'anonymous':
         try:
             _sync_dismissed_to_supabase(uid)
         except Exception:
@@ -1070,8 +1078,6 @@ Senior QA Consultant - SASU"""
 
 @app.route("/stats")
 def stats_page():
-    if not require_auth():
-        return redirect(url_for("login_page"))
     """Page des statistiques : sources, skills gap, top matches."""
     conn = get_db()
     rows = conn.execute("SELECT * FROM jobs WHERE freelance_status IN ('VALIDÉE', 'AMBIGUË') ORDER BY raw_date DESC").fetchall()
@@ -1526,20 +1532,16 @@ def generate_cover(job_id):
 @app.route("/jobclotured")
 def jobs_clotures():
     """Page listing all dismissed/closed jobs, sorted by closing date."""
-    if not require_auth():
-        return redirect(url_for("login_page"))
     conn = get_db()
-    uid = get_user_id() or ''
     rows = conn.execute("""
         SELECT d.id, d.title, d.company, d.url, d.dismissed_at,
                COALESCE(j.source, '—') as source
         FROM dismissed_jobs d
         LEFT JOIN jobs j ON LOWER(TRIM(j.title)) = LOWER(TRIM(d.title))
                        AND LOWER(TRIM(COALESCE(j.company,''))) = LOWER(TRIM(COALESCE(d.company,'')))
-        WHERE d.user_id = ?
         GROUP BY d.id
         ORDER BY d.dismissed_at DESC
-    """, (uid,)).fetchall()
+    """).fetchall()
     conn.close()
     jobs = [dict(r) for r in rows]
     companies = len(set(j.get('company','') for j in jobs if j.get('company')))
@@ -1552,8 +1554,6 @@ def jobs_clotures():
 
 @app.route("/cv")
 def cv_page():
-    if not require_auth():
-        return redirect(url_for("login_page"))
     return render_template("cv.html", cv=CV)
 
 
@@ -1635,8 +1635,6 @@ def about():
 
 @app.route("/changelog")
 def changelog():
-    if not require_auth():
-        return redirect(url_for("login_page"))
     import markdown
     try:
         with open("CHANGELOG.md") as f:
@@ -1650,8 +1648,6 @@ def changelog():
 
 @app.route("/marche-qa")
 def marche_qa():
-    if not require_auth():
-        return redirect(url_for("login_page"))
     return render_template("marche_qa.html")
 
 
@@ -1659,8 +1655,6 @@ def marche_qa():
 
 @app.route("/qa")
 def qa_dashboard():
-    if not require_auth():
-        return redirect(url_for("login_page"))
     return render_template("qa.html")
 
 
@@ -1993,8 +1987,6 @@ def _save_monitor(data):
 
 @app.route("/monitoring")
 def monitoring_page():
-    if not require_auth():
-        return redirect(url_for("login_page"))
     return render_template("monitoring.html", version=get_version())
 
 
