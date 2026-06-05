@@ -606,6 +606,12 @@ try:
 except Exception:
     pass
 
+# Restore dismissed jobs from GitHub at startup (so closed jobs survive redeploys)
+try:
+    _load_closed_jobs_from_github()
+except Exception:
+    pass
+
 DB_POPULATED = False
 
 
