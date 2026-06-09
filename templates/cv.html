@@ -67,26 +67,24 @@
   .proj-gh { font-size: 10px; opacity: .55; text-decoration: none; }
   .proj-gh:hover { opacity: 1; text-decoration: underline; }
 
-  /* ── Skills 4-col ── */
-  .skills-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; margin-top: 4px; }
-  @media (max-width: 700px) { .skills-grid { grid-template-columns: 1fr 1fr; gap: 12px; } }
-  @media (max-width: 480px) { .skills-grid { grid-template-columns: 1fr; } }
-  .skill-col {
-    break-inside: avoid; border-top: 2px solid #1a2744; padding-top: 6px;
+  /* ── Skills rows ── */
+  .skills-rows { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+  .skill-row {
+    display: flex; align-items: flex-start; gap: 10px; padding-bottom: 8px;
+    border-bottom: 1px solid #edf0f5; break-inside: avoid;
   }
-  .skill-col-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
-  .skill-col-icon { flex: 0 0 24px; }
-  .skill-col-icon svg { width: 24px; height: 24px; fill: none; stroke: #1a2744; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  .skill-col-num { font-size: 10px; font-weight: 700; color: #4a6fa5; letter-spacing: 1px; }
-  .skill-col-title { font-size: 10.5px; font-weight: 700; color: #1a2744; text-transform: uppercase; letter-spacing: 0.5px; }
-  .skill-col-items { list-style: none; padding: 0; margin: 0; }
-  .skill-col-items li {
-    font-size: 10px; color: #333; line-height: 1.5; padding: 0.5px 0 0.5px 10px;
-    position: relative;
+  .skill-row:last-child { border-bottom: none; }
+  .skill-row-icon {
+    flex: 0 0 30px; width: 30px; height: 30px; border-radius: 50%;
+    background: #f0f2f5; display: flex; align-items: center; justify-content: center; margin-top: 1px;
   }
-  .skill-col-items li::before {
-    content: ''; position: absolute; left: 0; top: 7px;
-    width: 4px; height: 4px; border-radius: 50%; background: #4a6fa5;
+  .skill-row-icon svg { width: 16px; height: 16px; fill: none; stroke: #1a2744; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .skill-row-body { flex: 1; min-width: 0; }
+  .skill-row-title { font-size: 10.5px; font-weight: 700; color: #1a2744; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .skill-row-items { font-size: 10px; color: #333; line-height: 1.65; }
+  @media (max-width: 480px) {
+    .skill-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .skill-row-icon { margin-top: 0; }
   }
 
   /* ── Experience ── */
@@ -152,7 +150,6 @@
     .exp-desc { font-size: 11.5px; }
     .summary { font-size: 12px; }
     .lang-row { gap: 14px; }
-    .skills-grid { grid-template-columns: 1fr; }
     .lang-row span { font-size: 11.5px; }
     .cert { font-size: 11px; }
   }
@@ -222,64 +219,34 @@
 
   <div class="sec">
     <div class="sec-title">Compétences</div>
-    <div class="skills-grid">
-      <div class="skill-col">
-        <div class="skill-col-header">
-          <div class="skill-col-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg></div>
-          <div><div class="skill-col-num">01</div><div class="skill-col-title">Pilotage QA</div></div>
+    <div class="skills-rows">
+      <div class="skill-row">
+        <div class="skill-row-icon"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <div class="skill-row-body">
+          <div class="skill-row-title">Pilotage QA &amp; Gouvernance</div>
+          <div class="skill-row-items">Stratégie de test · Plans de recette · Coordination QA · UAT · Non-régression · Reporting qualité · Go/No-Go · Gestion des anomalies · Suivi d'avancement · Couverture de tests · Tableaux de bord Jira · Indicateurs qualité · Agile / Scrum</div>
         </div>
-        <ul class="skill-col-items">
-          <li>Stratégie &amp; gouvernance QA</li>
-          <li>Planification &amp; estimation</li>
-          <li>Suivi des KPI &amp; reporting</li>
-          <li>Gestion des risques qualité</li>
-          <li>Amélioration continue</li>
-          <li>Relation client &amp; parties prenantes</li>
-        </ul>
       </div>
-      <div class="skill-col">
-        <div class="skill-col-header">
-          <div class="skill-col-icon"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-          <div><div class="skill-col-num">02</div><div class="skill-col-title">Tests &amp; Automatisation</div></div>
+      <div class="skill-row">
+        <div class="skill-row-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <div class="skill-row-body">
+          <div class="skill-row-title">Recette fonctionnelle</div>
+          <div class="skill-row-items">Tests web &amp; mobile · Rédaction de cas de test depuis les user stories · Exécution de campagnes de validation · Validation de parcours critiques · Recette fonctionnelle · Gherkin · Appium (bases légères) · Ranorex</div>
         </div>
-        <ul class="skill-col-items">
-          <li>Analyse des exigences</li>
-          <li>Conception de plans de tests</li>
-          <li>Tests fonctionnels &amp; non fonctionnels</li>
-          <li>Tests API &amp; services</li>
-          <li>Tests de régression</li>
-          <li>Intégration CI/CD</li>
-          <li>Stratégies de couverture</li>
-        </ul>
       </div>
-      <div class="skill-col">
-        <div class="skill-col-header">
-          <div class="skill-col-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33"/><path d="M4.6 9A1.65 1.65 0 0 0 4.27 7.18l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M2 12h2"/><path d="M20 12h2"/></svg></div>
-          <div><div class="skill-col-num">03</div><div class="skill-col-title">Outils &amp; Environnements</div></div>
+      <div class="skill-row">
+        <div class="skill-row-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <div class="skill-row-body">
+          <div class="skill-row-title">Outils &amp; Environnements</div>
+          <div class="skill-row-items">Jira · Xray · Zephyr · TestRail · Confluence · ServiceNow · SQL Oracle · Mainframe · Charles Proxy · Crashlytics · Dynatrace · Redmine · SAP BPC · SAP HANA · Windows / macOS / Linux · Android / iOS · VMware</div>
         </div>
-        <ul class="skill-col-items">
-          <li>Jira · Xray · Zephyr · TestRail</li>
-          <li>Confluence · Postman</li>
-          <li>Git · GitLab CI · Jenkins</li>
-          <li>SQL Oracle</li>
-          <li>Windows · macOS · Linux</li>
-          <li>Android · iOS · Mainframe</li>
-        </ul>
       </div>
-      <div class="skill-col">
-        <div class="skill-col-header">
-          <div class="skill-col-icon"><svg viewBox="0 0 24 24"><path d="M12 2a9 9 0 0 0-9 9c0 4.97 4.03 9 9 9s9-4.03 9-9c0-4.97-4.03-9-9-9z"/><path d="M8 12h8"/><path d="M12 8v8"/><path d="M9 4.4C13.2 3.6 17 5.2 19 8"/></svg></div>
-          <div><div class="skill-col-num">04</div><div class="skill-col-title">IA &amp; Automatisation avancée</div></div>
+      <div class="skill-row">
+        <div class="skill-row-icon"><svg viewBox="0 0 24 24"><path d="M12 2a9 9 0 0 0-9 9c0 4.97 4.03 9 9 9s9-4.03 9-9c0-4.97-4.03-9-9-9z"/><path d="M8 12h8"/><path d="M12 8v8"/><path d="M9 4.4C13.2 3.6 17 5.2 19 8"/></svg></div>
+        <div class="skill-row-body">
+          <div class="skill-row-title">IA &amp; Outils techniques</div>
+          <div class="skill-row-items">Agents IA · Agentique · Prompt engineering · MCP · Claude Code · Python · Flask · GitHub Actions · LLMs cloud et locaux · Ollama · LM Studio · VS Code · Xcode</div>
         </div>
-        <ul class="skill-col-items">
-          <li>Conception de frameworks IA</li>
-          <li>Tests intelligents &amp; auto-healing</li>
-          <li>Génération automatique de cas de tests</li>
-          <li>Analyse prédictive des anomalies</li>
-          <li>Utilisation d'outils IA (LLM, RAG)</li>
-          <li>NLP pour la validation de contenus</li>
-          <li>Intégration IA dans la chaîne QA</li>
-        </ul>
       </div>
     </div>
   </div>
