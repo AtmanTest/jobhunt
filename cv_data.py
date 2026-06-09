@@ -28,9 +28,11 @@ CV = {
                 "Développer des projets personnels en IA & automatisation : agents "
                 "autonomes (Hermes Agent, ClawBot) avec planification, outils et "
                 "mémoire ; dashboard de chasse d'emploi piloté par IA (JobHunt) ; "
-                "bots conversationnels. Voyage à travers l'Asie du Sud-Est."
+                "bots conversationnels. Voyage à travers l'Asie du Sud-Est.\n"
+                "Moteur d'auto-amélioration continue (re-scoring, boucles RLHF, "
+                "optimisation prompts auto) sur Nous AI News."
             ),
-            "keywords": ["AI", "Python", "Automation", "LLM", "Agentic"],
+            "keywords": ["AI", "Python", "Automation", "LLM", "Agentic", "Self-Improving"],
         },
         {
             "period": "2 yrs",
