@@ -68,20 +68,20 @@
   .proj-gh:hover { opacity: 1; text-decoration: underline; }
 
   /* ── Skills rows ── */
-  .skills-rows { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .skills-rows { display: flex; flex-direction: column; gap: 4px; margin-top: 2px; }
   .skill-row {
     display: flex; align-items: flex-start; gap: 10px; padding-bottom: 8px;
     border-bottom: 1px solid #edf0f5; break-inside: avoid;
   }
   .skill-row:last-child { border-bottom: none; }
   .skill-row-icon {
-    flex: 0 0 30px; width: 30px; height: 30px; border-radius: 50%;
+    flex: 0 0 26px; width: 26px; height: 26px; border-radius: 50%;
     background: #f0f2f5; display: flex; align-items: center; justify-content: center; margin-top: 1px;
   }
-  .skill-row-icon svg { width: 16px; height: 16px; fill: none; stroke: #1a2744; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .skill-row-icon svg { width: 14px; height: 14px; fill: none; stroke: #1a2744; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .skill-row-body { flex: 1; min-width: 0; }
-  .skill-row-title { font-size: 10px; font-weight: 700; color: #1a2744; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-  .skill-row-items { font-size: 9.5px; color: #333; line-height: 1.65; }
+  .skill-row-title { font-size: 9.5px; font-weight: 700; color: #1a2744; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .skill-row-items { font-size: 9px; color: #333; line-height: 1.65; }
   @media (max-width: 480px) {
     .skill-row { flex-direction: column; align-items: flex-start; gap: 4px; }
     .skill-row-icon { margin-top: 0; }
@@ -93,7 +93,7 @@
   .exp-co { font-size: 13px; font-weight: 700; color: #111; }
   .exp-date { font-size: 11px; font-weight: 500; color: #888; white-space: nowrap; }
   .exp-ro { font-size: 12px; font-weight: 600; color: #1a4a9e; margin-bottom: 3px; }
-  .exp-desc { font-size: 10.5px; color: #444; line-height: 1.4; }
+  .exp-desc { font-size: 10.5px; color: #444; line-height: 1.3; }
   .exp-desc ul { list-style: none; padding: 0; margin: 0; }
   .exp-desc li { padding-left: 14px; margin-bottom: 1px; position: relative; }
   .exp-desc li::before { content: '▸'; position: absolute; left: 0; color: #1a4a9e; font-size: 10px; top: 1px; }
@@ -284,10 +284,11 @@
       <div class="exp-ro">Consultant QA Senior — Freelance SASU</div>
       <div class="exp-desc"><ul>
         <li>Piloter la <strong>recette fonctionnelle</strong> sur un programme de <strong>conformité réglementaire</strong> — dématérialisation des factures, périmètres <strong>P2P/O2C</strong>.</li>
-        <li>Définir la <strong>stratégie de test</strong> et structurer les plans de recette sur toute la chaîne de validation comptable.</li>
-        <li>Rédiger des <strong>cas de tests</strong> depuis les <strong>users stories</strong> et exécuter les campagnes de validation sur le périmètre facturation électronique P2P/O2C.</li>
+        <li>Concevoir, planifier et exécuter des campagnes de <strong>tests fonctionnels</strong>, <strong>de régression</strong>, de compatibilité multi-navigateurs et de responsive design sur le périmètre facturation électronique.</li>
+        <li>Rédiger et maintenir les <strong>plans de test</strong>, <strong>cahiers de recette</strong>, <strong>cas de tests</strong>, <strong>scénarios de test</strong> et matrices de couverture.</li>
+        <li>Prioriser les <strong>cas de test</strong> en fonction des risques fonctionnels et de l'impact métier.</li>
         <li>Coordonner des campagnes multi-équipes dans <strong>Jira/Xray</strong>, suivi de couverture, gestion des anomalies et reporting <strong>Go/No-Go</strong>.</li>
-        <li>Synchroniser quotidiennement avec <strong>équipes métier</strong>, <strong>BA</strong>, <strong>développeurs</strong> et <strong>support</strong> en <strong>Agile / Scrum</strong>.</li>
+        <li>Synchroniser avec <strong>équipes métier</strong>, <strong>BA</strong>, <strong>développeurs</strong> et <strong>support</strong> en <strong>Agile / Scrum</strong>.</li>
         <li>Sécuriser les cycles de <strong>non-régression</strong> dans un environnement <strong>Mainframe / SQL Oracle</strong>.</li>
       </ul></div>
       <div class="exp-env">Environnement : Jira, Xray, SQL Oracle, Mainframe, Corcentric, ServiceNow.</div>
@@ -300,11 +301,13 @@
       </div>
       <div class="exp-ro">Référent QA Mobile — Consultant</div>
       <div class="exp-desc"><ul>
-        <li>Référent QA <strong>Android/iOS</strong> 100+ pays : validation fonctionnelle, UAT, non-régression.</li>
-        <li><strong>Cas de tests</strong> depuis <strong>user stories</strong>, campagnes validations réservation/fidélité/paiement.</li>
-        <li>Co-construire les <strong>user stories</strong> avec PO/développeurs pour renforcer la testabilité.</li>
-        <li>Formaliser les scénarios en <strong>Gherkin</strong> pour l'automatisation mobile.</li>
-        <li>Valider les flux transactionnels multi-appareils/multi-langues, reporting direction produit.</li>
+        <li>Référent QA sur applications <strong>Android/iOS</strong> déployées dans 100+ pays : validation fonctionnelle, UAT et non-régression.</li>
+        <li>Concevoir, planifier et exécuter des campagnes de <strong>tests fonctionnels</strong>, <strong>de régression</strong> et de compatibilité multi-versions sur une flotte de <strong>terminaux Android et iOS physiques</strong>.</li>
+        <li>Rédiger et maintenir les <strong>plans de test</strong>, <strong>cahiers de recette</strong>, <strong>cas de tests</strong>, <strong>scénarios de test</strong> et matrices de couverture.</li>
+        <li>Prioriser les <strong>cas de test</strong> en fonction des risques fonctionnels et de l'impact métier.</li>
+        <li>Co-construire les <strong>user stories</strong> avec PO et développeurs pour renforcer la testabilité.</li>
+        <li>Formaliser les scénarios critiques en <strong>Gherkin</strong> pour l'alignement avec l'<strong>automatisation mobile</strong>.</li>
+        <li>Valider les flux transactionnels multi-appareils/multi-langues, reporting à la direction produit.</li>
       </ul></div>
       <div class="exp-env">Environnement : Jira, Xray, <strong>Gherkin</strong>, Charles Proxy, Crashlytics, Android, iOS, Confluence.</div>
     </div>
@@ -316,9 +319,12 @@
       </div>
       <div class="exp-ro">Ingénieur Qualité Logiciel / Responsable QA</div>
       <div class="exp-desc"><ul>
-        <li>Responsable qualité <strong>B2B/B2C</strong> : plans de test fonctionnels et non-régression sur <strong>Windows/macOS/Linux</strong>.</li>
-        <li><strong>Cas de tests</strong> depuis <strong>user stories</strong>, structuration QA <strong>Jira/Zephyr</strong>.</li>
-        <li><strong>Support N3</strong> grands comptes + intro <strong>automatisation Ranorex</strong> pour accélérer les cycles de validation.</li>
+        <li>Responsable qualité sur applications critiques <strong>B2B/B2C</strong> cloud et desktop : <strong>WebSynchro</strong> (synchronisation fichiers), <strong>PostFiles</strong> (partage sécurisé), <strong>BoardNox</strong> (solution de gouvernance pour comités de direction / CA).</li>
+        <li>Concevoir, planifier et exécuter des campagnes de <strong>tests fonctionnels</strong>, <strong>de régression</strong>, de compatibilité multi-navigateurs et de responsive design sur applications cloud et client lourd.</li>
+        <li>Rédiger et maintenir les <strong>plans de test</strong>, <strong>cahiers de recette</strong>, <strong>cas de tests</strong>, <strong>scénarios de test</strong> et matrices de couverture.</li>
+        <li>Prioriser les <strong>cas de test</strong> en fonction des risques fonctionnels et de l'impact métier.</li>
+        <li>Structurer les pratiques QA : templates, critères, gestion des anomalies dans <strong>Jira/Zephyr</strong>.</li>
+        <li><strong>Support N3</strong> grands comptes et introduction <strong>automatisation Ranorex</strong> pour les cycles de validation.</li>
         <li>Collaborer avec <strong>équipes dev</strong>, support et <strong>PO</strong> pour fiabiliser les livraisons.</li>
       </ul></div>
       <div class="exp-env">Environnement : Jira, Zephyr, <strong>Ranorex</strong>, Confluence, <strong>Windows, macOS, Linux</strong>.</div>
@@ -331,9 +337,12 @@
       </div>
       <div class="exp-ro">Responsable Qualité Logiciel</div>
       <div class="exp-desc"><ul>
-        <li>Encadrer une équipe de <strong>testeurs</strong> et supervision d'un <strong>prestataire externe d'automatisation</strong> sur le logiciel métier santé Veasy.</li>
-        <li><strong>Cas de tests</strong> depuis <strong>user stories</strong>, plans et coordinations validations logiciel santé.</li>
+        <li>Encadrer une équipe de <strong>testeurs</strong> et superviser un <strong>prestataire externe d'automatisation</strong> sur le logiciel métier santé <strong>Veasy</strong>.</li>
+        <li>Concevoir, planifier et exécuter des campagnes de <strong>tests fonctionnels</strong>, <strong>de régression</strong> et de compatibilité multi-navigateurs sur les parcours métier et réglementaires.</li>
+        <li>Rédiger et maintenir les <strong>plans de test</strong>, <strong>cahiers de recette</strong>, <strong>cas de tests</strong>, <strong>scénarios de test</strong> et matrices de couverture.</li>
+        <li>Prioriser les <strong>cas de test</strong> en fonction des risques fonctionnels et de l'impact métier.</li>
         <li>Intégrer la <strong>Carte Vitale</strong> dans les scénarios de test pour couvrir les exigences réglementaires.</li>
+        <li>Coordonner les validations avec <strong>développeurs</strong>, <strong>PO</strong> et <strong>équipes métier</strong>.</li>
       </ul></div>
       <div class="exp-env">Environnement : Jira, Xray, Dynatrace, CloudNetCare, Excel.</div>
     </div>
@@ -509,12 +518,12 @@
       <div class="exp-ro">Senior QA Consultant — Freelance · Finance Division</div>
       <div class="exp-desc"><ul>
         <li>Led <strong>end-to-end functional acceptance</strong> for a <strong>regulatory compliance program</strong> covering invoice dematerialization across <strong>P2P/O2C</strong>.</li>
-        <li><strong>Test case design</strong> from user stories, campaign execution, defect tracking and retesting on the electronic invoicing scope.</li>
-        <li><strong>Defined test strategy</strong> and structured test plans across the full data flow: input control, accounting validation, ledger entries.</li>
+        <li>Designed, planned and executed <strong>functional tests</strong>, <strong>regression tests</strong>, cross-browser compatibility and responsive design campaigns on the e-invoicing perimeter.</li>
+        <li>Authored and maintained <strong>test plans</strong>, <strong>test books</strong>, <strong>test cases</strong>, <strong>test scenarios</strong> and coverage matrices.</li>
+        <li>Prioritized <strong>test cases</strong> based on functional risk and business impact.</li>
         <li><strong>Coordinated multi-team test campaigns</strong> in Jira/Xray: coverage metrics, defect lifecycle management, <strong>Go/No-Go reporting</strong> to steering committees.</li>
         <li><strong>Agile/Scrum ceremonies</strong> as QA lead — daily alignment between business, dev, and project ownership.</li>
         <li>Secured quarterly <strong>regression cycles</strong> in a <strong>Mainframe / SQL Oracle</strong> environment.</li>
-        <li><strong>Close collaboration</strong> with Business Analysts, Developers, Technical Support, and IT Manager.</li>
         </ul></div>
       <div class="exp-env">Environment: Jira, Xray, SQL Oracle, MainFrame, Corcentric, ServiceNow</div>
     </div>
