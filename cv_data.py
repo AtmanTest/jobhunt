@@ -10,7 +10,7 @@ CV = {
     "location": "Remote / France",
     "phone": "",
     "email": "",
-    "linkedin": "",
+    "linkedin": "https://www.linkedin.com/in/thasin-j-47582635/",
     "website": "",
     "summary": (
         "12+ years of experience in QA engineering across banking, hospitality, "
