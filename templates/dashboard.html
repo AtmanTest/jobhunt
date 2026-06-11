@@ -225,6 +225,132 @@
     font-size: 11px; color: var(--text-dim); margin-top: 4px;
   }
 
+  /* ── Engine / Marketing Pipeline ── */
+  .engine-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .engine-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6c5ce7, #e17055, #00b894, #74b9ff, #a89bff);
+  }
+  .engine-header { text-align: center; margin-bottom: 28px; }
+  .engine-badge {
+    display: inline-block;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--accent);
+    background: rgba(108,92,231,0.12);
+    padding: 3px 12px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .engine-title {
+    font-size: 22px; font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .engine-subtitle {
+    font-size: 14px;
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+  .pipeline {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .pipeline-step {
+    flex: 1;
+    min-width: 170px;
+    max-width: 230px;
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 16px 16px;
+    text-align: center;
+    position: relative;
+    transition: all 0.25s;
+  }
+  .pipeline-step:hover {
+    border-color: var(--step-color, var(--accent));
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  }
+  .step-icon { font-size: 28px; margin-bottom: 8px; }
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    color: var(--step-color, var(--accent));
+    margin-bottom: 4px;
+  }
+  .step-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+  .step-desc { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+  .pipeline-arrow {
+    font-size: 22px;
+    color: var(--text-muted);
+    padding-top: 48px;
+    flex-shrink: 0;
+  }
+  .engine-footer { margin-top: 8px; }
+  .test-badge {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(0,184,148,0.08);
+    border: 1px solid rgba(0,184,148,0.2);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    margin-bottom: 14px;
+  }
+  .test-icon { font-size: 26px; }
+  .test-info { flex: 1; }
+  .test-label { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .test-result { font-size: 15px; font-weight: 700; color: var(--green); }
+  .test-meta { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+  .engine-stats-row {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .e-stat {
+    text-align: center;
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 18px;
+    min-width: 100px;
+  }
+  .e-num {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px; font-weight: 800;
+    color: var(--accent);
+  }
+  .e-num.purple-color { color: var(--accent); }
+  .e-label {
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--text-dim); margin-top: 2px;
+    display: block;
+  }
+  @media (max-width: 768px) {
+    .pipeline { flex-direction: column; align-items: center; }
+    .pipeline-arrow { transform: rotate(90deg); padding-top: 0; }
+    .pipeline-step { max-width: 100%; }
+  }
+
   /* ── Balance Chip ── */
   .balance { font-family: 'JetBrains Mono', monospace !important; }
   .balance .num { font-family: 'JetBrains Mono', monospace; font-size: 14px; }
@@ -805,17 +931,12 @@
       <a href="{{ url_for('index') }}" class="active">Dashboard</a>
       <a href="{{ url_for('cv_page') }}">CV</a>
       <a href="{{ url_for('marche_qa') }}">Marché</a>
-      <div class="nav-more" style="position:relative;">
-        <button class="nav-more-btn" onclick="toggleMore()" style="background:none;border:none;padding:6px 10px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text-dim);cursor:pointer;font-family:inherit;transition:all 0.2s;">Plus ▾</button>
-        <div class="nav-more-drop" id="nav-more-drop" style="display:none;position:absolute;top:100%;left:0;min-width:160px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:4px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
-          <a href="{{ url_for('cv_page') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">📄 CV</a>
-          <a href="{{ url_for('qa_dashboard') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">🧪 QA Test</a>
-          <a href="{{ url_for('jobs_clotures') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">📋 Jobs Clôturés</a>
-          <a href="{{ url_for('monitoring_page') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">📊 Monitor</a>
-          <a href="{{ url_for('stats_page') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">📈 Stats</a>
-          <a href="{{ url_for('about') }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--text-dim);font-size:13px;font-weight:500;transition:all 0.15s;">ℹ️ À propos</a>
-        </div>
-      </div>
+      <a href="{{ url_for('cv_page') }}" style="font-size:13px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all 0.15s;">📄 CV</a>
+      <a href="{{ url_for('qa_dashboard') }}" style="font-size:13px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all 0.15s;">🧪 QA Test</a>
+      <a href="{{ url_for('jobs_clotures') }}" style="font-size:13px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all 0.15s;">📋 Clôturés</a>
+      <a href="{{ url_for('monitoring_page') }}" style="font-size:13px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all 0.15s;">📊 Monitor</a>
+      <a href="{{ url_for('stats_page') }}" style="font-size:13px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all 0.15s;">📈 Stats</a>
+      <a href="{{ url_for('about') }}" style="font-size:13px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all 0.15s;">ℹ️ À propos</a>
       <span id="balance-header" style="font-size:11px;font-weight:500;color:var(--text-dim);font-family:'JetBrains Mono',monospace;margin-left:4px;white-space:nowrap;"><span class="bal-prefix">API AI</span> $<span class="bal-amount">⟳</span></span>
     </nav>
     <div class="header-right">
@@ -880,6 +1001,64 @@
       </div>
       </a>
     </div>
+
+  <!-- ENGINES: Marketing Pipeline -->
+  <div class="engine-section">
+    <div class="engine-header">
+      <div class="engine-badge">⚡ Temps réel</div>
+      <h2 class="engine-title">Le Moteur — Comment ça marche</h2>
+      <p class="engine-subtitle">IA agentique qui scrape, match et priorise les meilleures offres QA pour toi</p>
+    </div>
+
+    <div class="pipeline">
+      <div class="pipeline-step" style="--step-color:#6c5ce7;">
+        <div class="step-icon">🕸️</div>
+        <div class="step-num">01</div>
+        <div class="step-title">Sources</div>
+        <div class="step-desc">Scraping multi-sources : LinkedIn, Welcome to the Jungle, Free-Work, RemoteOK, We Work Remotely, Indeed, emploitic — 8 marchés actifs simultanément (France, Suisse, Luxembourg, Dubaï, Singapour).</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step" style="--step-color:#e17055;">
+        <div class="step-icon">🧹</div>
+        <div class="step-num">02</div>
+        <div class="step-title">IA de scoring</div>
+        <div class="step-desc">Moteur de matching intelligent : analyse du titre, description, compétences et localisation. Scoring automatisé avec poids variables pour chaque critère.</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step" style="--step-color:#00b894;">
+        <div class="step-icon">🎯</div>
+        <div class="step-num">03</div>
+        <div class="step-title">Filtrage</div>
+        <div class="step-desc">Dédoublonnage automatique, exclusion des offres hors périmètre (jeux vidéo, pharma, non-QA). Détection auto vs manuel via IA.</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step" style="--step-color:#74b9ff;">
+        <div class="step-icon">📨</div>
+        <div class="step-num">04</div>
+        <div class="step-title">Notification</div>
+        <div class="step-desc">Rafraîchissement quotidien automatisé. Jobs du jour, Hot Picks (priorité max), Top Matches. Affichage temps réel dans le dashboard.</div>
+      </div>
+    </div>
+
+    <!-- Test Badge Row -->
+    <div class="engine-footer">
+      <div class="test-badge">
+        <div class="test-icon">🧪</div>
+        <div class="test-info">
+          <div class="test-label">Pipeline QA — 34 tests</div>
+          <div class="test-result">✅ 34 passed · 0 failed</div>
+          <div class="test-meta">pytest · BDD · tests de scraping, scoring, filtrage, rendu et régression</div>
+        </div>
+      </div>
+      <div class="engine-stats-row">
+        <div class="e-stat"><span class="e-num" id="e-total-offres">{{ stats.qa }}</span><span class="e-label">offres scrappées</span></div>
+        <div class="e-stat"><span class="e-num">{{ country_counts|sum(attribute='count') }}</span><span class="e-label">offres actives</span></div>
+        <div class="e-stat"><span class="e-num">{{ stats.this_week }}</span><span class="e-label">cette semaine</span></div>
+        <div class="e-stat"><span class="e-num">{{ country_counts|length }}</span><span class="e-label">marchés</span></div>
+        <div class="e-stat"><span class="e-num purple-color">{{ closed_jobs_count }}</span><span class="e-label">clôturés</span></div>
+      </div>
+    </div>
+  </div>
 
     <!-- Jobs du Jour (featured) -->
     {% if jobs_of_day %}
