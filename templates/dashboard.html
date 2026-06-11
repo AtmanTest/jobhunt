@@ -298,10 +298,39 @@
   .step-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
   .step-desc { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
   .pipeline-arrow {
-    font-size: 22px;
-    color: var(--text-muted);
-    padding-top: 48px;
     flex-shrink: 0;
+    padding-top: 48px;
+    display: flex;
+    align-items: flex-start;
+  }
+  .pipeline-arrow svg {
+    width: 36px;
+    height: 32px;
+    overflow: visible;
+  }
+  .pipeline-arrow .arrow-line {
+    stroke: var(--text-muted);
+    stroke-width: 2;
+    stroke-linecap: round;
+    fill: none;
+  }
+  .pipeline-arrow .arrow-glow {
+    stroke: var(--accent);
+    stroke-width: 4;
+    stroke-linecap: round;
+    fill: none;
+    opacity: 0.15;
+  }
+  .pipeline-arrow .arrow-head {
+    fill: var(--text-muted);
+  }
+  .pipeline:hover .pipeline-arrow .arrow-line {
+    stroke: var(--accent);
+    transition: stroke 0.4s;
+  }
+  .pipeline:hover .pipeline-arrow .arrow-head {
+    fill: var(--accent);
+    transition: fill 0.4s;
   }
   .engine-footer { margin-top: 8px; }
   .test-badge {
@@ -1017,26 +1046,44 @@
         <div class="step-title">Sources</div>
         <div class="step-desc">Scraping multi-sources : LinkedIn, Welcome to the Jungle, Free-Work, RemoteOK, We Work Remotely, Indeed, emploitic — 8 marchés actifs simultanément (France, Suisse, Luxembourg, Dubaï, Singapour).</div>
       </div>
-      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-arrow">
+        <svg viewBox="0 0 36 32">
+          <line class="arrow-glow" x1="2" y1="16" x2="30" y2="16"/>
+          <line class="arrow-line" x1="2" y1="16" x2="30" y2="16"/>
+          <polygon class="arrow-head" points="30,12 34,16 30,20"/>
+        </svg>
+      </div>
       <div class="pipeline-step" style="--step-color:#e17055;">
         <div class="step-icon">🧹</div>
         <div class="step-num">02</div>
         <div class="step-title">IA de scoring</div>
         <div class="step-desc">Moteur de matching intelligent : analyse du titre, description, compétences et localisation. Scoring automatisé avec poids variables pour chaque critère.</div>
       </div>
-      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-arrow">
+        <svg viewBox="0 0 36 32">
+          <line class="arrow-glow" x1="2" y1="16" x2="30" y2="16"/>
+          <line class="arrow-line" x1="2" y1="16" x2="30" y2="16"/>
+          <polygon class="arrow-head" points="30,12 34,16 30,20"/>
+        </svg>
+      </div>
       <div class="pipeline-step" style="--step-color:#00b894;">
         <div class="step-icon">🎯</div>
         <div class="step-num">03</div>
         <div class="step-title">Filtrage</div>
         <div class="step-desc">Dédoublonnage automatique, exclusion des offres hors périmètre (jeux vidéo, pharma, non-QA). Détection auto vs manuel via IA.</div>
       </div>
-      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-arrow">
+        <svg viewBox="0 0 36 32">
+          <line class="arrow-glow" x1="2" y1="16" x2="30" y2="16"/>
+          <line class="arrow-line" x1="2" y1="16" x2="30" y2="16"/>
+          <polygon class="arrow-head" points="30,12 34,16 30,20"/>
+        </svg>
+      </div>
       <div class="pipeline-step" style="--step-color:#74b9ff;">
         <div class="step-icon">📨</div>
         <div class="step-num">04</div>
         <div class="step-title">Notification</div>
-        <div class="step-desc">Rafraîchissement quotidien automatisé. Jobs du jour, Hot Picks (priorité max), Top Matches. Affichage temps réel dans le dashboard.</div>
+        <div class="step-desc">Rafraîchissement quotidien automatisé. Jobs du jour, Hot Picks (priorité max), Top Matches. Alertes WhatsApp temps réel, rapports hebdomadaires, affichage temps réel dans le dashboard.</div>
       </div>
     </div>
 
@@ -1045,9 +1092,9 @@
       <div class="test-badge">
         <div class="test-icon">🧪</div>
         <div class="test-info">
-          <div class="test-label">Pipeline QA — 34 tests</div>
-          <div class="test-result">✅ 34 passed · 0 failed</div>
-          <div class="test-meta">pytest · BDD · tests de scraping, scoring, filtrage, rendu et régression</div>
+          <div class="test-label">Pipeline QA — Tests complets</div>
+          <div class="test-result">✅ 83 unit/intégration · 19 BDD · Playwright E2E</div>
+          <div class="test-meta">pytest · BDD Gherkin · scraping, scoring, filtrage, API, cron, frontend, régression, enrichissement</div>
         </div>
       </div>
       <div class="engine-stats-row">
