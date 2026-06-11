@@ -47,13 +47,13 @@
   .hdr-photo img { width: 110px; height: 110px; border-radius: 8px; object-fit: cover; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
   .hdr-name { font-size: 28px; font-weight: 800; color: #111; letter-spacing: -0.5px; }
   .hdr-title { font-size: 13px; color: #1a4a9e; margin-top: 4px; font-weight: 600; }
-  .hdr-contact { font-size: 12px; color: #555; margin-top: 10px; display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
+  .hdr-contact { font-size: 11px; color: #555; margin-top: 7px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
   .hdr-contact a { color: #555; text-decoration: none; word-break: break-all; }
   .hdr-contact a:hover { color: #1a4a9e; text-decoration: underline; }
   .hdr-contact .dot { color: #ccc; }
 
   /* ── Sections ── */
-  .sec { margin-bottom: 16px; }
+  .sec { margin-bottom: 14px; }
   .sec-title {
     font-size: 12px; font-weight: 700; text-transform: uppercase;
     letter-spacing: 1.2px; color: #1a2744;
@@ -88,7 +88,7 @@
   }
 
   /* ── Experience ── */
-  .exp { margin-bottom: 5px; break-inside: avoid; page-break-inside: avoid; overflow: hidden; }
+  .exp { margin-bottom: 3px; break-inside: avoid; page-break-inside: avoid; overflow: hidden; }
   .exp-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; margin-bottom: 2px; }
   .exp-co { font-size: 12px; font-weight: 700; color: #111; }
   .exp-date { font-size: 10px; font-weight: 500; color: #888; white-space: nowrap; }
@@ -198,10 +198,10 @@
     <div class="hdr-name">Thasin Jahangir</div>
     <div class="hdr-title">Consultant QA Senior · Freelance SASU</div>
     <div class="hdr-contact">
-      <span>Paris & Remote</span><span class="dot">·</span>
-      <span>07 69 78 72 13</span><span class="dot">·</span>
-      <a href="mailto:thasin@live.com">thasin@live.com</a><span class="dot">·</span>
-      <a href="https://www.linkedin.com/in/thasin-j-47582635/" target="_blank">linkedin.com/in/thasin-j-47582635</a>
+      <strong><span>Paris & Remote</span></strong><span class="dot">·</span>
+      <strong><span>07 69 78 72 13</span></strong><span class="dot">·</span>
+      <strong><a href="mailto:thasin@live.com">thasin@live.com</a></strong><span class="dot">·</span>
+      <strong><a href="https://www.linkedin.com/in/thasin-j-47582635/" target="_blank">linkedin.com/in/thasin-j-47582635</a></strong>
     </div>
     </div>
     <div class="hdr-photo"><img src="{{ url_for('static', filename='cv_photo.jpg') }}" alt="Thasin Jahangir"></div>
@@ -210,7 +210,7 @@
   <div class="sec">
     <div class="sec-title">Profil</div>
     <div class="summary">
-      Senior QA — <strong>12 ans d'expérience</strong> sur projets complexes (web, mobile, ERP, bancaire) pour <strong>BRED, Accor, Oodrive, Vinci, Visiodent</strong> — approche Agile, collaborative, orientée résultats.<br>
+      J'interviens sur des projets complexes (<strong>web app, applications mobiles Android & iOS, ERP, bancaire</strong>) pour des clients comme <strong>BRED, Accor, Oodrive, Vinci Construction, Visiodent</strong>, avec <strong>une approche Agile, collaborative et orientée résultats</strong>.<br>
       <br>
       ▸ Recueillir et analyser les besoins métier, définir la <strong>stratégie de recette</strong> et le planning des campagnes.<br>
       ▸ Rédiger les <strong>cahiers de recette</strong> et <strong>scénarios de test</strong> en collaboration métier/digital.<br>
@@ -405,9 +405,14 @@
   <div class="sec">
     <div class="sec-title">Certifications</div>
     <div class="certs-list">
-      <div class="cert"><strong>PSPO</strong> — Professional Scrum Product Owner <span class="yr">· Scrum.org, 2020</span></div>
-      <div class="cert"><strong>IA Générative &amp; Prompt Engineering</strong> <span class="yr">· Google / Coursera, 2025</span></div>
-      <div class="cert"><strong>Digital Product Management</strong> <span class="yr">· Coursera, 2025</span></div>
+      <div class="cert"><strong>PSPO</strong> — Professional Scrum Product Owner <span class="yr">· <a href="https://www.scrum.org/user/678954" target="_blank" style="color:inherit;text-decoration:underline;">Scrum.org</a>, 2020</span></div>
+      <div class="cert"><strong>IA Générative &amp; Prompt Engineering</strong> <span class="yr">· <a href="https://www.coursera.org/account/accomplishments/verify/9XZNI1D7BS99" target="_blank" style="color:inherit;text-decoration:underline;">Google / Coursera</a>, 2025</span></div>
+      <div class="cert"><strong>Digital Product Management</strong> <span class="yr">· <a href="https://www.coursera.org/account/accomplishments/verify/WDJ5GP56DKQ3" target="_blank" style="color:inherit;text-decoration:underline;">Coursera</a>, 2025</span></div>
+      <div class="cert"><strong>Introduction to Python</strong> <span class="yr">· <a href="https://www.coursera.org/account/accomplishments/verify/KWH6Q433FXWY" target="_blank" style="color:inherit;text-decoration:underline;">Coursera</a>, 2025</span></div>
+      <div class="cert"><strong>Introduction to AI</strong> <span class="yr">· <a href="https://www.coursera.org/account/accomplishments/verify/2CKOHAZJQF8U" target="_blank" style="color:inherit;text-decoration:underline;">Coursera</a>, 2025</span></div>
+      <div class="cert"><strong>Basic SQL Syntax</strong> <span class="yr">· <a href="https://www.coursera.org/account/accomplishments/verify/4OEVH2E3WN6Z" target="_blank" style="color:inherit;text-decoration:underline;">Coursera</a>, 2025</span></div>
+      <div class="cert"><strong>Becoming an SAP Professional</strong> <span class="yr">· <a href="https://www.coursera.org/account/accomplishments/verify/XCSKJ6UP8DTP" target="_blank" style="color:inherit;text-decoration:underline;">Coursera</a>, 2025</span></div>
+      <div class="cert"><strong>API Testing Journey With Postman Tool</strong> <span class="yr">· <a href="https://www.coursera.org/account/accomplishments/verify/C9AWHOYPKVBI" target="_blank" style="color:inherit;text-decoration:underline;">Coursera</a>, 2025</span></div>
     </div>
   </div>
 
@@ -429,10 +434,10 @@
     <div class="hdr-name">Thasin Jahangir</div>
     <div class="hdr-title">Senior QA Consultant · Freelance</div>
     <div class="hdr-contact">
-      <span>Paris & Remote</span><span class="dot">·</span>
-      <span>07 69 78 72 13</span><span class="dot">·</span>
-      <a href="mailto:thasin@live.com">thasin@live.com</a><span class="dot">·</span>
-      <a href="https://www.linkedin.com/in/thasin-j-47582635/" target="_blank">linkedin.com/in/thasin-j-47582635</a>
+      <strong><span>Paris & Remote</span></strong><span class="dot">·</span>
+      <strong><span>07 69 78 72 13</span></strong><span class="dot">·</span>
+      <strong><a href="mailto:thasin@live.com">thasin@live.com</a></strong><span class="dot">·</span>
+      <strong><a href="https://www.linkedin.com/in/thasin-j-47582635/" target="_blank">linkedin.com/in/thasin-j-47582635</a></strong>
     </div>
     </div>
     <div class="hdr-photo"><img src="{{ url_for('static', filename='cv_photo.jpg') }}" alt="Thasin Jahangir"></div>
@@ -441,7 +446,7 @@
   <div class="sec">
     <div class="sec-title">Summary</div>
     <div class="summary">
-      Senior QA — <strong>12 years of experience</strong> on complex projects (web, mobile, ERP, banking) for <strong>BRED, Accor, Oodrive, Vinci, Visiodent</strong> — Agile, collaborative, results-driven approach.<br>
+      I work on complex projects (<strong>web app, mobile applications Android & iOS, ERP, banking</strong>) for clients like <strong>BRED, Accor, Oodrive, Vinci Construction, Visiodent</strong>, with <strong>an Agile, collaborative, results-driven approach</strong>.<br>
       <br>
       ▸ Gather and analyze business requirements, define <strong>test strategy</strong> and campaign planning.<br>
       ▸ Write <strong>test books</strong> and <strong>test scenarios</strong> in collaboration with business and digital teams.<br>
@@ -640,9 +645,14 @@
   <div class="sec">
     <div class="sec-title">Certifications</div>
     <div class="certs-list">
-      <div class="cert">PSPO — Professional Scrum Product Owner <span class="yr">· Scrum.org, 2020</span></div>
-      <div class="cert">Generative AI & Prompt Engineering <span class="yr">· Google / Coursera, 2025</span></div>
-      <div class="cert">Digital Product Management <span class="yr">· Coursera, 2025</span></div>
+      <div class="cert">PSPO — Professional Scrum Product Owner <span class="yr">· <a href="https://www.scrum.org/user/678954" target="_blank" style="color:inherit;text-decoration:underline;">Scrum.org</a>, 2020</span></div>
+      <div class="cert">Generative AI & Prompt Engineering <span class="yr">· <a href="https://www.coursera.org/account/accomplishments/verify/9XZNI1D7BS99" target="_blank" style="color:inherit;text-decoration:underline;">Google / Coursera</a>, 2025</span></div>
+      <div class="cert">Digital Product Management <span class="yr">· <a href="https://www.coursera.org/account/accomplishments/verify/WDJ5GP56DKQ3" target="_blank" style="color:inherit;text-decoration:underline;">Coursera</a>, 2025</span></div>
+      <div class="cert">Introduction to Python <span class="yr">· <a href="https://www.coursera.org/account/accomplishments/verify/KWH6Q433FXWY" target="_blank" style="color:inherit;text-decoration:underline;">Coursera</a>, 2025</span></div>
+      <div class="cert">Introduction to AI <span class="yr">· <a href="https://www.coursera.org/account/accomplishments/verify/2CKOHAZJQF8U" target="_blank" style="color:inherit;text-decoration:underline;">Coursera</a>, 2025</span></div>
+      <div class="cert">Basic SQL Syntax <span class="yr">· <a href="https://www.coursera.org/account/accomplishments/verify/4OEVH2E3WN6Z" target="_blank" style="color:inherit;text-decoration:underline;">Coursera</a>, 2025</span></div>
+      <div class="cert">Becoming an SAP Professional <span class="yr">· <a href="https://www.coursera.org/account/accomplishments/verify/XCSKJ6UP8DTP" target="_blank" style="color:inherit;text-decoration:underline;">Coursera</a>, 2025</span></div>
+      <div class="cert">API Testing Journey With Postman Tool <span class="yr">· <a href="https://www.coursera.org/account/accomplishments/verify/C9AWHOYPKVBI" target="_blank" style="color:inherit;text-decoration:underline;">Coursera</a>, 2025</span></div>
     </div>
   </div>
 
