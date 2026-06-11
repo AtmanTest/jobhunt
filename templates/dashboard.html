@@ -263,6 +263,46 @@
     color: var(--text-dim);
     font-weight: 400;
   }
+  .engine-subtitle strong { color: var(--accent); }
+
+  /* ── Cron Scheduler Row ── */
+  .cron-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    justify-content: center;
+    margin-bottom: 20px;
+    padding: 12px 20px;
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .cron-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+  }
+  .cron-icon { font-size: 18px; }
+  .cron-sched {
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .cron-desc {
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+  .cron-div {
+    width: 1px;
+    height: 24px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+  @media (max-width: 768px) {
+    .cron-row { flex-direction: column; gap: 8px; }
+    .cron-div { width: 40px; height: 1px; }
+  }
   .pipeline {
     display: flex;
     align-items: flex-start;
@@ -1036,7 +1076,16 @@
     <div class="engine-header">
       <div class="engine-badge">⚡ Temps réel</div>
       <h2 class="engine-title">Le Moteur — Comment ça marche</h2>
-      <p class="engine-subtitle">IA agentique qui scrape, match et priorise les meilleures offres QA pour toi</p>
+      <p class="engine-subtitle">Orchestré par <strong>crons autonomes</strong> — IA agentique qui scrape, match et priorise les meilleures offres QA pour toi <strong>24h/24</strong></p>
+    </div>
+
+    <!-- Cron Scheduler Row -->
+    <div class="cron-row">
+      <div class="cron-item"><span class="cron-icon">🔄</span><span class="cron-sched">Toutes les heures · scraping</span><span class="cron-desc">LinkedIn, Free-Work, Indeed, Malt, WTJ, RemoteOK</span></div>
+      <div class="cron-div"></div>
+      <div class="cron-item"><span class="cron-icon">📊</span><span class="cron-sched">Lundi 9h · bilan hebdo</span><span class="cron-desc">Nouvelles offres, tendances TJM, état du pipeline</span></div>
+      <div class="cron-div"></div>
+      <div class="cron-item"><span class="cron-icon">📬</span><span class="cron-sched">Tous les 3 jours · alertes</span><span class="cron-desc">Nouveaux top matches, offres clôturées</span></div>
     </div>
 
     <div class="pipeline">
