@@ -200,7 +200,7 @@ def get_qa_runs(limit=10):
 import re
 from urllib.parse import urlparse, urlunparse
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 
 def clean_linkedin_url(url):
     """Normalize LinkedIn job URLs: extract numeric job ID, drop domain locale + slug + tracking params."""
