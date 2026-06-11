@@ -102,8 +102,6 @@
   }
   .header-nav a:hover { color: var(--text); background: var(--card); }
   .header-nav a.active { color: var(--accent); background: var(--accent-glow); }
-  .header-nav .nav-more-btn:hover { color: var(--text); background: var(--card); }
-  .nav-more-drop a:hover { background: var(--card-hover) !important; color: var(--text) !important; }
 
   .header-right { display: flex; align-items: center; gap: 10px; }
   .refresh-btn {
@@ -803,7 +801,6 @@
     .header-logo a span { font-size: 16px !important; }
     .user-name { display: none; }
     .refresh-btn { width: 30px; height: 30px; font-size: 14px; }
-    .nav-more-btn { font-size: 12px !important; padding: 5px 8px !important; }
     #balance-header { font-size: 10px !important; }
     .main { padding: 16px 14px; }
     .hero { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
@@ -827,11 +824,6 @@
     .footer { padding: 18px 16px; font-size: 10px; }
   }
   @media (max-width: 620px) {
-    .header-nav a:not(.active) { display: none; }
-    .header-nav .nav-more { display: block !important; }
-    .header-nav a.active { display: inline-flex; }
-    .nav-more-drop { left: auto !important; right: 0 !important; min-width: 180px !important; }
-    .nav-more-drop a { padding: 7px 10px !important; font-size: 12px !important; }
     .welcome-section { margin-bottom: 14px !important; }
     .welcome-section > div { flex-direction: column; gap: 8px; }
     .country-btn { padding: 6px 10px; font-size: 11px; }
@@ -1000,12 +992,11 @@
       <a href="{{ url_for('index') }}" class="active">Dashboard</a>
       <a href="{{ url_for('cv_page') }}">CV</a>
       <a href="{{ url_for('marche_qa') }}">Marché</a>
-      <a href="{{ url_for('cv_page') }}" style="font-size:13px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all 0.15s;">📄 CV</a>
-      <a href="{{ url_for('qa_dashboard') }}" style="font-size:13px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all 0.15s;">🧪 QA Test</a>
-      <a href="{{ url_for('jobs_clotures') }}" style="font-size:13px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all 0.15s;">📋 Clôturés</a>
-      <a href="{{ url_for('monitoring_page') }}" style="font-size:13px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all 0.15s;">📊 Monitor</a>
-      <a href="{{ url_for('stats_page') }}" style="font-size:13px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all 0.15s;">📈 Stats</a>
-      <a href="{{ url_for('about') }}" style="font-size:13px;font-weight:500;color:var(--text-dim);text-decoration:none;padding:6px 10px;border-radius:8px;transition:all 0.15s;">ℹ️ À propos</a>
+      <a href="{{ url_for('qa_dashboard') }}">🧪 QA Test</a>
+      <a href="{{ url_for('jobs_clotures') }}">📋 Clôturés</a>
+      <a href="{{ url_for('monitoring_page') }}">📊 Monitor</a>
+      <a href="{{ url_for('stats_page') }}">📈 Stats</a>
+      <a href="{{ url_for('about') }}">ℹ️ À propos</a>
       <span id="balance-header" style="font-size:11px;font-weight:500;color:var(--text-dim);font-family:'JetBrains Mono',monospace;margin-left:4px;white-space:nowrap;"><span class="bal-prefix">API AI</span> $<span class="bal-amount">⟳</span></span>
     </nav>
     <div class="header-right">
@@ -1817,16 +1808,7 @@ function updateStage(jobId, stage) {
       var dd = document.getElementById('user-dropdown');
       if (dd) dd.classList.remove('open');
     }
-    var more = document.getElementById('nav-more-drop');
-    if (more && !e.target.closest('.nav-more')) {
-      more.style.display = 'none';
-    }
   });
-
-  window.toggleMore = function() {
-    var dd = document.getElementById('nav-more-drop');
-    dd.style.display = dd.style.display === 'none' ? '' : 'none';
-  };
 
   window.logout = function() {
     fetch('/api/auth/logout', {method:'POST'}).then(() => location.reload());
