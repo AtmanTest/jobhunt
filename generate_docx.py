@@ -63,7 +63,7 @@ add_mixed_line([
 # ═══ PROFIL ═══
 section_heading('Profil')
 p = doc.add_paragraph(
-    "Consultant QA Senior avec 12+ ans d'expérience dans des projets de transformation "
+    "Senior QA — 12+ ans d'expérience sur projets complexes (web, mobile, ERP, bancaire) "
     "digitale, conformité réglementaire et applications cloud/mobile. Expert en pilotage "
     "des recettes fonctionnelles, gestion des cycles de non-régression et structuration "
     "des processus qualité. Expérience en banque, hospitality, SaaS, santé et cybersécurité. "

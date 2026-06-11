@@ -13,7 +13,7 @@ CV = {
     "linkedin": "https://www.linkedin.com/in/thasin-j-47582635/",
     "website": "",
     "summary": (
-        "12+ years of experience in QA engineering across banking, hospitality, "
+        "Senior QA — 12+ years of experience on complex projects (web, mobile, ERP, banking) "
         "healthcare, cloud, and construction. Certified PSPO and ISTQB-trained. "
         "Expert in test strategy, regulatory compliance, automation, and Agile "
         "methodologies. Currently expanding into AI, prompt engineering, and "
