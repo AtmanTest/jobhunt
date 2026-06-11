@@ -41,36 +41,36 @@
   .lang-fr.active, .lang-en.active { display: block; }
 
   /* ── Header ── */
-  .hdr { margin-bottom: 24px; display: flex; align-items: flex-start; gap: 24px; }
+  .hdr { margin-bottom: 18px; display: flex; align-items: flex-start; gap: 24px; }
   .hdr-text { flex: 1; }
   .hdr-photo { flex: 0 0 110px; }
   .hdr-photo img { width: 110px; height: 110px; border-radius: 8px; object-fit: cover; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-  .hdr-name { font-size: 28px; font-weight: 800; color: #111; letter-spacing: -0.5px; }
-  .hdr-title { font-size: 13px; color: #1a4a9e; margin-top: 4px; font-weight: 600; }
-  .hdr-contact { font-size: 11px; color: #555; margin-top: 7px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .hdr-name { font-size: 24px; font-weight: 800; color: #111; letter-spacing: -0.5px; }
+  .hdr-title { font-size: 12px; color: #1a4a9e; margin-top: 3px; font-weight: 600; }
+  .hdr-contact { font-size: 10px; color: #555; margin-top: 5px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
   .hdr-contact a { color: #555; text-decoration: none; word-break: break-all; }
   .hdr-contact a:hover { color: #1a4a9e; text-decoration: underline; }
   .hdr-contact .dot { color: #ccc; }
 
   /* ── Sections ── */
-  .sec { margin-bottom: 14px; }
+  .sec { margin-bottom: 12px; }
   .sec-title {
     font-size: 12px; font-weight: 700; text-transform: uppercase;
     letter-spacing: 1.2px; color: #1a2744;
-    padding-bottom: 4px; margin-bottom: 10px;
+    padding-bottom: 3px; margin-bottom: 8px;
     border-bottom: 2px solid #1a2744;
   }
 
   /* ── Summary ── */
-  .summary { font-size: 11px; color: #333; line-height: 1.4; margin-bottom: 4px; }
+  .summary { font-size: 10.5px; color: #333; line-height: 1.35; margin-bottom: 2px; }
   .proj-d { font-size: 10px; color: #333; line-height: 1.45; margin: 3px 0 0 0; }
   .proj-gh { font-size: 10px; opacity: .55; text-decoration: none; }
   .proj-gh:hover { opacity: 1; text-decoration: underline; }
 
   /* ── Skills rows ── */
-  .skills-rows { display: flex; flex-direction: column; gap: 3px; margin-top: 1px; }
+  .skills-rows { display: flex; flex-direction: column; gap: 1px; margin-top: 0; }
   .skill-row {
-    display: flex; align-items: flex-start; gap: 10px; padding-bottom: 8px;
+    display: flex; align-items: flex-start; gap: 10px; padding-bottom: 6px;
     border-bottom: 1px solid #edf0f5; break-inside: avoid;
   }
   .skill-row:last-child { border-bottom: none; }
@@ -88,27 +88,28 @@
   }
 
   /* ── Experience ── */
-  .exp { margin-bottom: 3px; break-inside: avoid; page-break-inside: avoid; overflow: hidden; }
-  .exp-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; margin-bottom: 2px; }
-  .exp-co { font-size: 12px; font-weight: 700; color: #111; }
-  .exp-date { font-size: 10px; font-weight: 500; color: #888; white-space: nowrap; }
-  .exp-ro { font-size: 11px; font-weight: 600; color: #1a4a9e; margin-bottom: 2px; }
-  .exp-desc { font-size: 9.5px; color: #444; line-height: 1.2; }
+  .exp { margin-bottom: 2px; break-inside: avoid; page-break-inside: avoid; overflow: hidden; }
+  .exp-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px; margin-bottom: 1px; }
+  .exp-co { font-size: 11px; font-weight: 700; color: #111; }
+  .exp-date { font-size: 9px; font-weight: 500; color: #888; white-space: nowrap; }
+  .exp-ro { font-size: 10px; font-weight: 600; color: #1a4a9e; margin-bottom: 1px; }
+  .exp-desc { font-size: 9px; color: #444; line-height: 1.15; }
   .exp-desc ul { list-style: none; padding: 0; margin: 0; }
-  .exp-desc li { padding-left: 14px; margin-bottom: 1px; position: relative; }
+  .exp-desc li { padding-left: 14px; margin-bottom: 0; position: relative; }
   .exp-desc li::before { content: '▸'; position: absolute; left: 0; color: #1a4a9e; font-size: 10px; top: 1px; }
-  .exp-env { font-size: 9.5px; color: #888; margin-top: 2px; font-style: italic; }
+  .exp-env { font-size: 9px; color: #888; margin-top: 1px; font-style: italic; }
 
   /* ── Projects ── */
-  .proj { margin-bottom: 7px; }
-  .proj-n { font-size: 12px; font-weight: 600; color: #111; }
+  .proj { margin-bottom: 6px; }
+  .proj-n { font-size: 11px; font-weight: 600; color: #111; }
   .proj-n a { color: #1a4a9e; text-decoration: none; }
   .proj-n a:hover { text-decoration: underline; }
-  .proj-d { font-size: 12px; color: #555; margin-top: 2px; line-height: 1.5; }
+  .proj-d { font-size: 10px; color: #555; margin-top: 1px; line-height: 1.4; }
 
   /* ── Certs ── */
   .certs-list { columns: 2; column-gap: 20px; }
-  .cert { font-size: 10px; color: #444; padding: 2px 0; }
+  .cert a { color: #1a4a9e !important; }
+  .cert { font-size: 9.5px; color: #444; padding: 1px 0; }
   .cert .yr { color: #888; font-size: 11px; }
 
   /* ── Languages ── */
@@ -119,8 +120,9 @@
   @media print {
     .top-nav { display: none; }
     body { background: #fff; }
-    .cv-wrap { box-shadow: none; margin: 0; border-radius: 0; padding: 32px 36px 24px; max-width: 100%; }
+    .cv-wrap { box-shadow: none; margin: 0; border-radius: 0; padding: 18px 24px 18px; max-width: 100%; }
     @page { margin: 0; size: A4; }
+    .sec:last-child { margin-bottom: 0; }
   }
   @media (max-width: 768px) {
     .cv-wrap { padding: 28px 20px 24px; max-width: 100%; }
@@ -390,7 +392,7 @@
 
     <div class="proj">
       <div class="proj-n"><a href="https://jobhunt-1-ar3w.onrender.com" target="_blank">JobHunt — dashboard QA piloté par IA</a> <a href="https://github.com/AtmanTest/jobhunt" target="_blank" class="proj-gh">GitHub</a></div>
-      <div class="proj-d">Scraper <strong>multi-sources</strong> emploi (LinkedIn, Free-Work, 7+ plateformes) avec <strong>matching CV</strong> et génération de lettres de motivation. Render + CI/CD. <em>Python, Flask, DeepSeek.</em></div>
+      <div class="proj-d">Pipeline de scraping <strong>multi-sources orchestré par crons horaires</strong> (LinkedIn, Free-Work, Indeed, Malt, 8+ plateformes). <strong>Moteur de matching CV/offres</strong> avec scoring /100, détection de doublons et analyse TJM par marché. Auto-enrichissement IA des offres (tech stack, salaire). Génération automatisée de lettres de motivation. Alertes email via polling IMAP et rapports hebdomadaires. Dashboard temps réel. Suite complète de tests : <strong>83 tests unitaires/intégration</strong>, <strong>19 scénarios BDD Gherkin</strong>, tests Playwright E2E. CI/CD GitHub Actions + Render. Auto-healing du pipeline. <em>Python, Flask, DeepSeek.</em></div>
     </div>
   </div>
 
@@ -398,7 +400,7 @@
     <div class="sec-title">Formations</div>
     <div class="certs-list">
       <div class="cert"><strong>ISTQB</strong> — Fondation du test logiciel <span class="yr">· Learning Tree, 2015</span></div>
-      <div class="cert"><strong>SQL</strong> — fondamentaux &amp; avancé</div>
+
     </div>
   </div>
 
@@ -412,6 +414,7 @@
       <div class="cert"><strong>Introduction to AI</strong> <span class="yr">· 🔗 <a href="https://www.coursera.org/account/accomplishments/verify/2CKOHAZJQF8U" target="_blank" style="color:inherit;text-decoration:underline;">Certificat Coursera</a>, 2025</span></div>
       <div class="cert"><strong>Basic SQL Syntax</strong> <span class="yr">· 🔗 <a href="https://www.coursera.org/account/accomplishments/verify/4OEVH2E3WN6Z" target="_blank" style="color:inherit;text-decoration:underline;">Certificat Coursera</a>, 2025</span></div>
       <div class="cert"><strong>Becoming an SAP Professional</strong> <span class="yr">· 🔗 <a href="https://www.coursera.org/account/accomplishments/verify/XCSKJ6UP8DTP" target="_blank" style="color:inherit;text-decoration:underline;">Certificat Coursera</a>, 2025</span></div>
+      <div class="cert"><strong>Emotional Intelligence in Leadership</strong> <span class="yr">· 🔗 <a href="https://www.coursera.org/account/accomplishments/verify/JNR9XMHGX03P" target="_blank" style="color:inherit;text-decoration:underline;">Certificat Coursera</a>, 2025</span></div>
       <div class="cert"><strong>API Testing Journey With Postman Tool</strong> <span class="yr">· 🔗 <a href="https://www.coursera.org/account/accomplishments/verify/C9AWHOYPKVBI" target="_blank" style="color:inherit;text-decoration:underline;">Certificat Coursera</a>, 2025</span></div>
     </div>
   </div>
@@ -631,7 +634,7 @@
 
     <div class="proj">
       <div class="proj-n"><a href="https://jobhunt-1-ar3w.onrender.com" target="_blank">JobHunt — AI-Powered QA Job Dashboard</a> <a href="https://github.com/AtmanTest/jobhunt" target="_blank" class="proj-gh">GitHub</a></div>
-      <div class="proj-d">Multi-source job scraper (LinkedIn, Free-Work, 7+ platforms) with <strong>CV matching</strong> and cover letter generation. Render + CI/CD. <em>Python, Flask, DeepSeek.</em></div>
+      <div class="proj-d"><strong>Multi-source scraping pipeline</strong> orchestrated by <strong>hourly crons</strong> (LinkedIn, Free-Work, Indeed, Malt, 8+ platforms). <strong>CV/job matching engine</strong> with scoring /100, duplicate detection and market-rate TJM analysis. AI auto-enrichment (tech stack, salary). Automated cover letter generation. Email alerts via IMAP polling and weekly reports. Real-time dashboard. Full test suite: <strong>83 unit/integration tests</strong>, <strong>19 BDD Gherkin scenarios</strong>, Playwright E2E tests. CI/CD GitHub Actions + Render. Self-healing pipeline. <em>Python, Flask, DeepSeek.</em></div>
     </div>
   </div>
 
@@ -652,6 +655,7 @@
       <div class="cert">Introduction to AI <span class="yr">· 🔗 <a href="https://www.coursera.org/account/accomplishments/verify/2CKOHAZJQF8U" target="_blank" style="color:inherit;text-decoration:underline;">Certificat Coursera</a>, 2025</span></div>
       <div class="cert">Basic SQL Syntax <span class="yr">· 🔗 <a href="https://www.coursera.org/account/accomplishments/verify/4OEVH2E3WN6Z" target="_blank" style="color:inherit;text-decoration:underline;">Certificat Coursera</a>, 2025</span></div>
       <div class="cert">Becoming an SAP Professional <span class="yr">· 🔗 <a href="https://www.coursera.org/account/accomplishments/verify/XCSKJ6UP8DTP" target="_blank" style="color:inherit;text-decoration:underline;">Certificat Coursera</a>, 2025</span></div>
+      <div class="cert">Emotional Intelligence in Leadership <span class="yr">· 🔗 <a href="https://www.coursera.org/account/accomplishments/verify/JNR9XMHGX03P" target="_blank" style="color:inherit;text-decoration:underline;">Certificat Coursera</a>, 2025</span></div>
       <div class="cert">API Testing Journey With Postman Tool <span class="yr">· 🔗 <a href="https://www.coursera.org/account/accomplishments/verify/C9AWHOYPKVBI" target="_blank" style="color:inherit;text-decoration:underline;">Certificat Coursera</a>, 2025</span></div>
     </div>
   </div>
