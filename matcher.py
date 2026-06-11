@@ -1,5 +1,4 @@
 """Matching CV <-> offres, TJM, skills gap, doublons, stats sources."""
-import difflib
 import re
 from collections import Counter
 
@@ -148,29 +147,59 @@ def analyze_tjm(job):
     }
 
 
+def _tokenize(text):
+    """Tokenize text into a set of normalized words."""
+    return set(text.lower().split())
+
+def _jaccard_sim(a, b):
+    """Jaccard similarity between two token sets."""
+    if not a or not b:
+        return 0.0
+    inter = a & b
+    union = a | b
+    return len(inter) / len(union) if union else 0.0
+
 def detect_duplicates(jobs):
-    """Regroupe les jobs similaires (même titre + même boîte)."""
+    """Regroupe les jobs similaires (même titre + même boîte).
+    
+    Utilise Jaccard similarity sur tokens, avec pré-groupement par 
+    premier mot-clé du titre pour éviter O(n²) sur tous les jobs.
+    """
+    if not jobs:
+        return []
+
+    # Pre-compute token sets
+    titles = [_tokenize(j.get("title", "")) for j in jobs]
+    companies = [_tokenize(j.get("company", "")) for j in jobs]
+
+    # Group by first keyword of title to reduce comparisons
+    buckets = {}
+    for i, t in enumerate(titles):
+        key = next((w for w in t if w not in {"senior", "lead", "test", "qa", "quality",
+                   "engineer", "manager", "consultant", "h/f", "f/h", "h/", "f/",
+                   "automation", "software", "engineer", "ingénieur", "consultant"}), 
+                   next(iter(t), "zzz"))
+        buckets.setdefault(key, []).append(i)
+
     groups = []
     used = set()
-    for i, a in enumerate(jobs):
-        if i in used:
-            continue
-        group = [a]
-        used.add(i)
-        for j, b in enumerate(jobs):
-            if j in used or j <= i:
+    for bucket in buckets.values():
+        for i, a_idx in enumerate(bucket):
+            if a_idx in used:
                 continue
-            ratio = difflib.SequenceMatcher(
-                None, a.get("title", "").lower(), b.get("title", "").lower()
-            ).ratio()
-            comp_ratio = difflib.SequenceMatcher(
-                None, a.get("company", "").lower(), b.get("company", "").lower()
-            ).ratio()
-            if ratio > 0.85 and comp_ratio > 0.8:
-                group.append(b)
-                used.add(j)
-        if len(group) > 1:
-            groups.append(group)
+            group = [jobs[a_idx]]
+            used.add(a_idx)
+            at, ac = titles[a_idx], companies[a_idx]
+            for b_idx in bucket[i+1:]:
+                if b_idx in used:
+                    continue
+                t_sim = _jaccard_sim(at, titles[b_idx])
+                c_sim = _jaccard_sim(ac, companies[b_idx])
+                if t_sim > 0.6 and c_sim > 0.5:
+                    group.append(jobs[b_idx])
+                    used.add(b_idx)
+            if len(group) > 1:
+                groups.append(group)
     return groups
 
 
