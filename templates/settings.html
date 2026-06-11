@@ -6,71 +6,8 @@
 <title>Paramètres — JobHunt{% if env_label %} · {{ env_label }}{% endif %}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/theme.css">
 <style>
-  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-  :root {
-    --bg: #07070d; --bg-alt: #0c0c16; --card: #12121e;
-    --card-hover: #181828; --border: #1e1e32; --border-light: #2a2a44;
-    --text: #e8e8f0; --text-dim: #8888a8; --text-muted: #55557a;
-    --accent: #7c6cf0; --accent-dim: #5a4bc0; --accent-glow: rgba(124,108,240,0.12);
-    --green: #00d68f; --orange: #ff9f43; --red: #ff6b6b; --blue: #54a0ff;
-    --radius: 12px; --radius-lg: 16px;
-  }
-  body {
-    font-family: 'Inter', -apple-system, sans-serif;
-    background: var(--bg); color: var(--text);
-    min-height: 100vh;
-  }
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  .bg-grid {
-    position: fixed; inset: 0; z-index: 0;
-    background-image:
-      linear-gradient(rgba(124,108,240,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(124,108,240,0.03) 1px, transparent 1px);
-    background-size: 60px 60px;
-    pointer-events: none;
-  }
-  .bg-glow {
-    position: fixed; top: -40vh; left: -20vw;
-    width: 80vw; height: 80vh;
-    background: radial-gradient(ellipse, rgba(124,108,240,0.06) 0%, transparent 70%);
-    pointer-events: none; z-index: 0;
-    animation: glow-drift 12s ease-in-out infinite alternate;
-  }
-  @keyframes glow-drift {
-    0% { transform: translate(0,0) scale(1); }
-    100% { transform: translate(10vw,5vh) scale(1.2); }
-  }
-
-  .app { position:relative; z-index:1; min-height:100vh; }
-
-  .header {
-    position: sticky; top:0; z-index:100;
-    padding: 0 32px; height: 60px;
-    display: flex; align-items: center; justify-content: space-between;
-    background: rgba(7,7,13,0.85);
-    backdrop-filter: blur(20px) saturate(1.4);
-    border-bottom: 1px solid var(--border);
-  }
-  .header-logo {
-    font-size: 16px; font-weight: 800;
-    background: linear-gradient(135deg, var(--accent), #a89bff);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    letter-spacing: -0.5px;
-  }
-  .header-logo span { font-weight: 400; -webkit-text-fill-color: var(--text-dim); }
-  .header-nav { display: flex; gap: 4px; align-items: center; }
-  .header-nav a {
-    padding: 6px 14px; border-radius: 8px; text-decoration: none;
-    font-size: 13px; font-weight: 500; color: var(--text-dim);
-    transition: all 0.2s;
-  }
-  .header-nav a:hover { color: var(--text); background: var(--card); }
-  .header-nav a.active { color: var(--accent); background: var(--accent-glow); }
-
   .header-right { display: flex; align-items: center; gap: 14px; }
 
   /* ── User Menu ── */
@@ -250,6 +187,7 @@
     </nav>
   </div>
   <div class="header-right">
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Basculer thème">☀️</button>
     <div class="user-menu" id="user-menu">
       <button class="user-trigger" id="user-trigger" onclick="toggleDropdown()">
         <div class="user-avatar" id="nav-avatar">—</div>
@@ -463,6 +401,14 @@ function logout() {
 }
 
 init();
+</script>
+<script>
+(function(){
+  var theme = localStorage.getItem('jh-theme') || '';
+  var btn = document.getElementById('theme-btn');
+  if(theme==='light'){document.documentElement.setAttribute('data-theme','light');btn.textContent='🌙';}
+  window.toggleTheme=function(){var t=document.documentElement.getAttribute('data-theme');if(t==='light'){document.documentElement.removeAttribute('data-theme');localStorage.setItem('jh-theme','');btn.textContent='☀️';}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('jh-theme','light');btn.textContent='🌙';}};
+})();
 </script>
 </body>
 </html>

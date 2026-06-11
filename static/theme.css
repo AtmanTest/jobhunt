@@ -1,0 +1,204 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   JobHunt — Global Theme (Dark / Light)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Dark theme (default) ── */
+:root {
+  --bg: #07070d;
+  --bg-alt: #0c0c16;
+  --card: #12121e;
+  --card-hover: #181828;
+  --card-alt: #0a0a14;
+  --border: #1e1e32;
+  --border-light: #2a2a44;
+  --text: #e8e8f0;
+  --text-dim: #8888a8;
+  --text-muted: #55557a;
+  --accent: #7c6cf0;
+  --accent-dim: #5a4bc0;
+  --accent-glow: rgba(124,108,240,0.12);
+  --accent-glow-strong: rgba(124,108,240,0.2);
+  --green: #00d68f;
+  --green-dim: rgba(0,214,143,0.12);
+  --orange: #ff9f43;
+  --red: #ff6b6b;
+  --red-dim: rgba(255,107,107,0.1);
+  --gold: #ffd93d;
+  --blue: #54a0ff;
+  --blue-dim: rgba(84,160,255,0.08);
+  --glass: rgba(18,18,30,0.8);
+  --header-bg: rgba(7,7,13,0.85);
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-sm: 8px;
+}
+
+/* ── Light theme ── */
+[data-theme="light"] {
+  --bg: #f0f2f5;
+  --bg-alt: #e8ecf0;
+  --card: #ffffff;
+  --card-hover: #f5f6f8;
+  --card-alt: #f8f9fb;
+  --border: #dce0e7;
+  --border-light: #e6e9ef;
+  --text: #1a1d23;
+  --text-dim: #5a6070;
+  --text-muted: #8a92a5;
+  --accent: #5a4bc0;
+  --accent-dim: #4a3db5;
+  --accent-glow: rgba(90,75,192,0.08);
+  --accent-glow-strong: rgba(90,75,192,0.14);
+  --green: #059669;
+  --green-dim: rgba(5,150,105,0.08);
+  --orange: #d97706;
+  --red: #dc2626;
+  --red-dim: rgba(220,38,38,0.06);
+  --gold: #ca8a04;
+  --blue: #2563eb;
+  --blue-dim: rgba(37,99,235,0.06);
+  --glass: rgba(255,255,255,0.85);
+  --header-bg: rgba(255,255,255,0.92);
+  --shadow: 0 8px 32px rgba(0,0,0,0.1);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-sm: 8px;
+}
+
+/* ── Base styles ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.25s, color 0.25s;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { opacity: 0.85; }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+::selection { background: var(--accent); color: #fff; }
+
+/* ── Animated background (dashboard-style) ── */
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(124,108,240,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,108,240,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+.bg-glow {
+  position: fixed; top: -40vh; left: -20vw;
+  width: 80vw; height: 80vh;
+  background: radial-gradient(ellipse, rgba(124,108,240,0.06) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+  animation: glow-drift 12s ease-in-out infinite alternate;
+}
+.bg-glow-2 {
+  position: fixed; bottom: -30vh; right: -10vw;
+  width: 60vw; height: 60vh;
+  background: radial-gradient(ellipse, rgba(0,214,143,0.04) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+  animation: glow-drift-2 15s ease-in-out infinite alternate;
+}
+@keyframes glow-drift {
+  0% { transform: translate(0,0) scale(1); }
+  100% { transform: translate(10vw,5vh) scale(1.2); }
+}
+@keyframes glow-drift-2 {
+  0% { transform: translate(0,0) scale(1); }
+  100% { transform: translate(-8vw,-5vh) scale(1.15); }
+}
+
+/* ── Header / Nav ── */
+.header {
+  position: sticky; top: 0; z-index: 100;
+  height: 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  background: var(--header-bg);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.header-logo {
+  font-size: 14px; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), #a89bff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+}
+.header-logo span { font-weight: 400; -webkit-text-fill-color: var(--text-dim); }
+
+.header-nav { display: flex; gap: 2px; align-items: center; }
+.header-nav a {
+  padding: 5px 12px; border-radius: 6px; text-decoration: none;
+  font-size: 12px; font-weight: 500; color: var(--text-dim);
+  transition: all 0.2s; white-space: nowrap;
+}
+.header-nav a:hover { color: var(--text); background: var(--card); }
+.header-nav a.active { color: var(--accent); background: var(--accent-glow); }
+
+.header-right { display: flex; align-items: center; gap: 8px; }
+
+/* ── Theme toggle ── */
+.theme-toggle {
+  width: 32px; height: 32px; border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-dim);
+  font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.theme-toggle:hover {
+  border-color: var(--accent);
+  color: var(--text);
+  background: var(--card-hover);
+  transform: scale(1.05);
+}
+
+/* ── Main content area ── */
+.main-wrap {
+  position: relative; z-index: 1;
+  padding: 16px 24px;
+  max-width: 1200px; margin: 0 auto;
+}
+.main-wrap-wide { max-width: 1400px; }
+.main-wrap-narrow { max-width: 900px; }
+
+/* ── Utility classes ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.text-dim { color: var(--text-dim); }
+.text-muted { color: var(--text-muted); }
+.text-green { color: var(--green); }
+.text-orange { color: var(--orange); }
+.text-red { color: var(--red); }
+.text-accent { color: var(--accent); }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .header { padding: 0 12px; height: 44px; }
+  .header-nav a { padding: 4px 8px; font-size: 11px; }
+  .main-wrap { padding: 12px; }
+}

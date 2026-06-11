@@ -6,34 +6,11 @@
 <title>Thasin Jahangir — CV</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/theme.css">
 <style>
-  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #f5f5f5; color: #1a1a1a; line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
-    font-size: 14px;
-  }
-
-  .top-nav {
-    position: sticky; top:0; z-index:100; height: 44px;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 24px; background: rgba(255,255,255,0.92);
-    backdrop-filter: blur(12px); border-bottom: 1px solid #e8ecf0;
-    overflow-x: auto; -webkit-overflow-scrolling: touch;
-  }
-  .top-nav-inner { display: flex; align-items: center; gap: 2px; white-space: nowrap; }
-  .top-nav a { font-size: 12px; font-weight: 500; color: #8a92a5; text-decoration: none; padding: 4px 10px; border-radius: 6px; transition: all 0.15s; }
-  .top-nav a:hover { color: #1a1d23; background: #f0f2f5; }
-  .top-nav a.active { color: #1a2744; background: #e8eef8; }
-  .lang-toggle { display: inline-flex; gap: 2px; background: #e8ecf0; border-radius: 5px; padding: 2px; margin-left: 6px; }
-  .lang-toggle button { padding: 2px 9px; border: none; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer; font-family: inherit; background: transparent; color: #8a92a5; transition: all 0.15s; }
-  .lang-toggle button.active { background: #1a2744; color: #fff; }
-  .pdf-btn { font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 6px; background: #1a2744; color: #fff !important; border: none; cursor: pointer; }
-
   .cv-wrap {
     max-width: 820px; margin: 18px auto 28px;
-    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    background: var(--card); box-shadow: var(--shadow-sm);
     border-radius: 2px; padding: 24px 32px 20px;
   }
 
@@ -44,26 +21,26 @@
   .hdr { margin-bottom: 18px; display: flex; align-items: flex-start; gap: 24px; }
   .hdr-text { flex: 1; }
   .hdr-photo { flex: 0 0 110px; }
-  .hdr-photo img { width: 110px; height: 110px; border-radius: 8px; object-fit: cover; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-  .hdr-name { font-size: 24px; font-weight: 800; color: #111; letter-spacing: -0.5px; }
-  .hdr-title { font-size: 12px; color: #1a4a9e; margin-top: 3px; font-weight: 600; }
-  .hdr-contact { font-size: 10px; color: #555; margin-top: 5px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-  .hdr-contact a { color: #555; text-decoration: none; word-break: break-all; }
-  .hdr-contact a:hover { color: #1a4a9e; text-decoration: underline; }
-  .hdr-contact .dot { color: #ccc; }
+  .hdr-photo img { width: 110px; height: 110px; border-radius: 8px; object-fit: cover; display: block; box-shadow: var(--shadow-sm); }
+  .hdr-name { font-size: 24px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+  .hdr-title { font-size: 12px; color: var(--accent); margin-top: 3px; font-weight: 600; }
+  .hdr-contact { font-size: 10px; color: var(--text-dim); margin-top: 5px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .hdr-contact a { color: var(--text-dim); text-decoration: none; word-break: break-all; }
+  .hdr-contact a:hover { color: var(--accent); text-decoration: underline; }
+  .hdr-contact .dot { color: var(--text-muted); }
 
   /* ── Sections ── */
   .sec { margin-bottom: 12px; }
   .sec-title {
     font-size: 12px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1.2px; color: #1a2744;
+    letter-spacing: 1.2px; color: var(--accent);
     padding-bottom: 3px; margin-bottom: 8px;
-    border-bottom: 2px solid #1a2744;
+    border-bottom: 2px solid var(--accent);
   }
 
   /* ── Summary ── */
-  .summary { font-size: 10.5px; color: #333; line-height: 1.35; margin-bottom: 2px; }
-  .proj-d { font-size: 10px; color: #333; line-height: 1.45; margin: 3px 0 0 0; }
+  .summary { font-size: 10.5px; color: var(--text-dim); line-height: 1.35; margin-bottom: 2px; }
+  .proj-d { font-size: 10px; color: var(--text-dim); line-height: 1.45; margin: 3px 0 0 0; }
   .proj-gh { font-size: 10px; opacity: .55; text-decoration: none; }
   .proj-gh:hover { opacity: 1; text-decoration: underline; }
 
@@ -71,17 +48,17 @@
   .skills-rows { display: flex; flex-direction: column; gap: 1px; margin-top: 0; }
   .skill-row {
     display: flex; align-items: flex-start; gap: 10px; padding-bottom: 6px;
-    border-bottom: 1px solid #edf0f5; break-inside: avoid;
+    border-bottom: 1px solid var(--border); break-inside: avoid;
   }
   .skill-row:last-child { border-bottom: none; }
   .skill-row-icon {
     flex: 0 0 26px; width: 26px; height: 26px; border-radius: 50%;
-    background: #f0f2f5; display: flex; align-items: center; justify-content: center; margin-top: 1px;
+    background: var(--bg-alt); display: flex; align-items: center; justify-content: center; margin-top: 1px;
   }
-  .skill-row-icon svg { width: 14px; height: 14px; fill: none; stroke: #1a2744; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .skill-row-icon svg { width: 14px; height: 14px; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .skill-row-body { flex: 1; min-width: 0; }
-  .skill-row-title { font-size: 9.5px; font-weight: 700; color: #1a2744; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-  .skill-row-items { font-size: 9px; color: #333; line-height: 1.65; }
+  .skill-row-title { font-size: 9.5px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .skill-row-items { font-size: 9px; color: var(--text-dim); line-height: 1.65; }
   @media (max-width: 480px) {
     .skill-row { flex-direction: column; align-items: flex-start; gap: 4px; }
     .skill-row-icon { margin-top: 0; }
@@ -90,35 +67,49 @@
   /* ── Experience ── */
   .exp { margin-bottom: 2px; break-inside: avoid; page-break-inside: avoid; overflow: hidden; }
   .exp-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px; margin-bottom: 1px; }
-  .exp-co { font-size: 11px; font-weight: 700; color: #111; }
-  .exp-date { font-size: 9px; font-weight: 500; color: #888; white-space: nowrap; }
-  .exp-ro { font-size: 10px; font-weight: 600; color: #1a4a9e; margin-bottom: 1px; }
-  .exp-desc { font-size: 9px; color: #444; line-height: 1.15; }
+  .exp-co { font-size: 11px; font-weight: 700; color: var(--text); }
+  .exp-date { font-size: 9px; font-weight: 500; color: var(--text-muted); white-space: nowrap; }
+  .exp-ro { font-size: 10px; font-weight: 600; color: var(--accent); margin-bottom: 1px; }
+  .exp-desc { font-size: 9px; color: var(--text-dim); line-height: 1.15; }
   .exp-desc ul { list-style: none; padding: 0; margin: 0; }
   .exp-desc li { padding-left: 14px; margin-bottom: 0; position: relative; }
-  .exp-desc li::before { content: '▸'; position: absolute; left: 0; color: #1a4a9e; font-size: 10px; top: 1px; }
-  .exp-env { font-size: 9px; color: #888; margin-top: 1px; font-style: italic; }
+  .exp-desc li::before { content: '\u25b8'; position: absolute; left: 0; color: var(--accent); font-size: 10px; top: 1px; }
+  .exp-env { font-size: 9px; color: var(--text-muted); margin-top: 1px; font-style: italic; }
 
   /* ── Projects ── */
   .proj { margin-bottom: 6px; }
-  .proj-n { font-size: 11px; font-weight: 600; color: #111; }
-  .proj-n a { color: #1a4a9e; text-decoration: none; }
+  .proj-n { font-size: 11px; font-weight: 600; color: var(--text); }
+  .proj-n a { color: var(--accent); text-decoration: none; }
   .proj-n a:hover { text-decoration: underline; }
-  .proj-d { font-size: 10px; color: #555; margin-top: 1px; line-height: 1.4; }
+  .proj-d { font-size: 10px; color: var(--text-dim); margin-top: 1px; line-height: 1.4; }
 
   /* ── Certs ── */
   .certs-list { columns: 2; column-gap: 20px; }
-  .cert a { color: #1a4a9e !important; }
-  .cert { font-size: 9.5px; color: #444; padding: 1px 0; }
-  .cert .yr { color: #888; font-size: 11px; }
+  .cert a { color: var(--accent) !important; }
+  .cert { font-size: 9.5px; color: var(--text-dim); padding: 1px 0; }
+  .cert .yr { color: var(--text-muted); font-size: 11px; }
 
   /* ── Languages ── */
   .lang-row { display: flex; gap: 24px; flex-wrap: wrap; }
-  .lang-row span { font-size: 12.5px; color: #444; }
-  .lang-row .lvl { color: #888; }
+  .lang-row span { font-size: 12.5px; color: var(--text-dim); }
+  .lang-row .lvl { color: var(--text-muted); }
+
+  /* ── Language toggle ── */
+  .lang-toggle { display: inline-flex; gap: 2px; background: var(--border); border-radius: 5px; padding: 2px; }
+  .lang-toggle button {
+    padding: 2px 9px; border: none; border-radius: 4px; font-size: 10px; font-weight: 700;
+    cursor: pointer; font-family: inherit; background: transparent;
+    color: var(--text-dim); transition: all 0.15s;
+  }
+  .lang-toggle button.active { background: var(--accent); color: #fff; }
+
+  .pdf-btn {
+    font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 6px;
+    background: var(--accent); color: #fff !important; border: none; cursor: pointer;
+  }
 
   @media print {
-    .top-nav { display: none; }
+    .header { display: none; }
     body { background: #fff; }
     .cv-wrap { box-shadow: none; margin: 0; border-radius: 0; padding: 18px 24px 18px; max-width: 100%; }
     @page { margin: 0; size: A4; }
@@ -132,10 +123,6 @@
     .hdr-name { font-size: 22px; }
     .hdr-photo { flex: 0 0 90px; }
     .hdr-photo img { width: 90px; height: 90px; }
-    .top-nav { padding: 0 14px; height: 40px; }
-    .top-nav a { font-size: 11px; padding: 3px 8px; }
-    .lang-toggle button { font-size: 9px; padding: 1px 7px; }
-    .pdf-btn { font-size: 10px; padding: 3px 10px; }
   }
   @media (max-width: 480px) {
     .cv-wrap { padding: 20px 14px 18px; margin: 12px 8px 24px; max-width: 100%; width: auto; }
@@ -169,16 +156,14 @@
     .exp-desc { font-size: 10.5px; }
     .summary { font-size: 11px; }
     .skill-tag { font-size: 10px; padding: 2px 6px; }
-    .top-nav a { font-size: 10px; padding: 2px 6px; }
-    .lang-toggle button { font-size: 8px; padding: 1px 5px; }
-    .pdf-btn { font-size: 9px; padding: 2px 8px; }
   }
 </style>
 </head>
 <body>
 
-<div class="top-nav">
-  <div class="top-nav-inner">
+<div class="header">
+  <div class="header-logo">JobHunt <span>CV</span></div>
+  <nav class="header-nav">
     <a href="{{ url_for('index') }}">Dashboard</a>
     <a href="#" class="active">CV</a>
     <a href="{{ url_for('qa_dashboard') }}">QA</a>
@@ -186,8 +171,11 @@
       <button class="active" onclick="switchLang('fr')" id="btn-fr">FR</button>
       <button onclick="switchLang('en')" id="btn-en">EN</button>
     </span>
+  </nav>
+  <div class="header-right">
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Basculer thème">☀️</button>
+    <a href="#" onclick="window.print()" class="pdf-btn">📄 Exporter PDF</a>
   </div>
-  <div><a href="#" onclick="window.print()" class="pdf-btn">📄 Exporter PDF</a></div>
 </div>
 
 <div class="cv-wrap">
@@ -681,6 +669,14 @@ function switchLang(lang) {
   document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
   document.getElementById('btn-en').classList.toggle('active', lang === 'en');
 }
+</script>
+<script>
+(function(){
+  var theme = localStorage.getItem('jh-theme') || '';
+  var btn = document.getElementById('theme-btn');
+  if(theme==='light'){document.documentElement.setAttribute('data-theme','light');btn.textContent='🌙';}
+  window.toggleTheme=function(){var t=document.documentElement.getAttribute('data-theme');if(t==='light'){document.documentElement.removeAttribute('data-theme');localStorage.setItem('jh-theme','');btn.textContent='☀️';}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('jh-theme','light');btn.textContent='🌙';}};
+})();
 </script>
 
 </body>

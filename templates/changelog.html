@@ -6,12 +6,8 @@
     <title>JobHunt — Changelog{% if env_label %} · {{ env_label }}{% endif %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/theme.css">
     <style>
-        :root { --bg: #0f0f13; --card: #1a1a24; --border: #2a2a3a; --text: #e4e4ef; --text-dim: #8888a0; --accent: #6c5ce7; --green: #00d68f; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-        .header { border-bottom: 1px solid var(--border); padding: 14px 32px; display: flex; align-items: center; background: rgba(15,15,19,0.95); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; }
-        .header-logo { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, var(--accent), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .container { max-width: 800px; margin: 0 auto; padding: 40px 32px; }
         h1 { font-size: 24px; margin-bottom: 24px; }
         .changelog { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px 32px; }
@@ -19,15 +15,18 @@
         .changelog h3 { font-size: 14px; color: var(--text); margin: 16px 0 8px; }
         .changelog ul { padding-left: 20px; margin-bottom: 12px; }
         .changelog li { font-size: 13px; color: var(--text-dim); line-height: 1.7; margin-bottom: 4px; }
-        .changelog code { background: rgba(108,92,231,0.12); color: var(--accent); padding: 1px 5px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+        .changelog code { background: var(--accent-glow); color: var(--accent); padding: 1px 5px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
         .changelog a { color: var(--accent); }
         .changelog p { font-size: 13px; color: var(--text-dim); line-height: 1.6; margin-bottom: 8px; }
     </style>
 </head>
 <body>
-<div class="header">
-    <span class="header-logo">⚡ JobHunt{% if env_label %} · {{ env_label }}{% endif %} — Changelog v{{ version }}</span>
-</div>
+<header class="header">
+    <a href="{{ url_for('index') }}" class="header-logo" style="text-decoration:none;">⚡ JobHunt{% if env_label %} · {{ env_label }}{% endif %} — Changelog v{{ version }}</a>
+    <div class="header-right">
+        <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Basculer thème">☀️</button>
+    </div>
+</header>
 <div class="container">
     <h1>📋 Changelog</h1>
     <div class="changelog">
@@ -37,5 +36,13 @@
         <a href="{{ url_for('index') }}" style="color:var(--accent);text-decoration:none;font-size:13px;">← Retour au Dashboard</a>
     </div>
 </div>
+<script>
+(function(){
+  var theme = localStorage.getItem('jh-theme') || '';
+  var btn = document.getElementById('theme-btn');
+  if(theme==='light'){document.documentElement.setAttribute('data-theme','light');btn.textContent='🌙';}
+  window.toggleTheme=function(){var t=document.documentElement.getAttribute('data-theme');if(t==='light'){document.documentElement.removeAttribute('data-theme');localStorage.setItem('jh-theme','');btn.textContent='☀️';}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('jh-theme','light');btn.textContent='🌙';}};
+})();
+</script>
 </body>
 </html>

@@ -6,6 +6,7 @@
 <title>JobHunt{% if env_label %} · {{ env_label }}{% endif %} — Marché QA Freelance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/theme.css">
 <style>
   *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
   :root {
@@ -1000,6 +1001,7 @@
       <span id="balance-header" style="font-size:11px;font-weight:500;color:var(--text-dim);font-family:'JetBrains Mono',monospace;margin-left:4px;white-space:nowrap;"><span class="bal-prefix">API AI</span> $<span class="bal-amount">⟳</span></span>
     </nav>
     <div class="header-right">
+      <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Basculer thème">☀️</button>
       <button class="refresh-btn" onclick="window.location.href='{{ url_for('refresh') }}';this.textContent='⏳';" title="Rafraîchir les offres">↻</button>
       <div class="user-menu" id="user-menu">
         <button class="user-trigger" id="user-trigger">
@@ -2072,6 +2074,18 @@ function resetSwipeCard(card) {
 
 // Init swipe on page load after filter prefs
 setTimeout(loadSwipePref, 200);
+</script>
+<script>
+(function(){
+  var theme = localStorage.getItem('jh-theme') || '';
+  var btn = document.getElementById('theme-btn');
+  if(theme==='light'){document.documentElement.setAttribute('data-theme','light');if(btn)btn.textContent='🌙';}
+  window.toggleTheme=function(){
+    var t=document.documentElement.getAttribute('data-theme');
+    if(t==='light'){document.documentElement.removeAttribute('data-theme');localStorage.setItem('jh-theme','');var b=document.getElementById('theme-btn');if(b)b.textContent='☀️';}
+    else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('jh-theme','light');var b=document.getElementById('theme-btn');if(b)b.textContent='🌙';}
+  };
+})();
 </script>
 </body>
 </html>
