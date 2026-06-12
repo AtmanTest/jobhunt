@@ -224,12 +224,12 @@
     font-size: 11px; color: var(--text-dim); margin-top: 4px;
   }
 
-  /* ── Engine / Marketing Pipeline ── */
+  /* ── Engine / Pipeline Data Flow ── */
   .engine-section {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 28px 32px;
+    padding: 32px 32px 28px;
     margin-bottom: 20px;
     position: relative;
     overflow: hidden;
@@ -239,28 +239,67 @@
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #6c5ce7, #e17055, #00b894, #74b9ff, #a89bff);
+    background: linear-gradient(90deg, #6c5ce7, #fd79a8, #00b894, #74b9ff, #6c5ce7);
+    background-size: 200% 100%;
+    animation: engineBorderFlow 4s ease-in-out infinite;
   }
-  .engine-header { text-align: center; margin-bottom: 28px; }
+  @keyframes engineBorderFlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .engine-section::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 15% 25%, rgba(108,92,231,0.04) 0%, transparent 50%),
+      radial-gradient(circle at 85% 60%, rgba(0,184,148,0.03) 0%, transparent 50%),
+      radial-gradient(circle at 50% 80%, rgba(116,185,255,0.03) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .engine-header { text-align: center; margin-bottom: 24px; position: relative; z-index: 1; }
   .engine-badge {
-    display: inline-block;
-    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
-    color: var(--accent);
-    background: rgba(108,92,231,0.12);
-    padding: 3px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.8px;
+    color: #a29bfe;
+    background: rgba(108,92,231,0.1);
+    border: 1px solid rgba(108,92,231,0.2);
+    padding: 4px 14px;
     border-radius: 20px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+  }
+  .engine-badge .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #00b894;
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,184,148,0.6); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(0,184,148,0); }
   }
   .engine-title {
-    font-size: 22px; font-weight: 800;
-    letter-spacing: -0.5px;
+    font-size: 24px; font-weight: 800;
+    letter-spacing: -0.8px;
     color: var(--text);
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+  }
+  .engine-title span.accent-gradient {
+    background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
   .engine-subtitle {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-dim);
     font-weight: 400;
+    max-width: 620px;
+    margin: 0 auto;
+    line-height: 1.6;
   }
   .engine-subtitle strong { color: var(--accent); }
 
@@ -268,128 +307,271 @@
   .cron-row {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 0;
     justify-content: center;
-    margin-bottom: 20px;
-    padding: 12px 20px;
-    background: var(--bg-alt);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    margin-bottom: 28px;
+    position: relative;
+    z-index: 1;
   }
   .cron-item {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
+    gap: 6px;
+    padding: 14px 24px;
+    background: rgba(108,92,231,0.04);
+    border: 1px solid rgba(108,92,231,0.12);
+    border-radius: 12px;
+    min-width: 130px;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
   }
-  .cron-icon { font-size: 18px; }
+  .cron-item:hover {
+    border-color: rgba(108,92,231,0.35);
+    background: rgba(108,92,231,0.07);
+    transform: translateY(-2px);
+  }
+  .cron-icon {
+    font-size: 22px;
+    margin-bottom: 2px;
+  }
   .cron-sched {
-    font-weight: 700;
+    font-size: 11px; font-weight: 700;
     color: var(--text);
     white-space: nowrap;
+    letter-spacing: -0.2px;
   }
   .cron-desc {
+    font-size: 10px;
     color: var(--text-dim);
-    font-weight: 400;
+    text-align: center;
+    line-height: 1.4;
   }
-  .cron-div {
-    width: 1px;
-    height: 24px;
-    background: var(--border);
+  .cron-connector {
+    display: flex;
+    align-items: center;
     flex-shrink: 0;
+    width: 40px;
+    height: 2px;
+    position: relative;
+  }
+  .cron-connector::before {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(108,92,231,0.3), rgba(108,92,231,0.1));
+  }
+  .cron-connector::after {
+    content: '◆';
+    font-size: 5px;
+    color: rgba(108,92,231,0.3);
+    position: absolute;
+    right: -2px;
   }
   @media (max-width: 768px) {
     .cron-row { flex-direction: column; gap: 8px; }
-    .cron-div { width: 40px; height: 1px; }
+    .cron-connector { width: 2px; height: 24px; }
+    .cron-connector::before { width: 1px; height: 100%; background: linear-gradient(180deg, rgba(108,92,231,0.3), rgba(108,92,231,0.1)); }
+    .cron-connector::after { content: '◆'; font-size: 5px; top: -4px; right: auto; left: -2px; }
+  }
+
+  /* ── Pipeline Flow ── */
+  .pipeline-wrap {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 24px;
   }
   .pipeline {
     display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 0;
     justify-content: center;
+    flex-wrap: wrap;
   }
   .pipeline-step {
     flex: 1;
-    min-width: 170px;
-    max-width: 230px;
+    min-width: 155px;
+    max-width: 210px;
     background: var(--bg-alt);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 16px 16px;
-    text-align: center;
     position: relative;
-    transition: all 0.25s;
+    padding: 20px 14px 16px;
+    text-align: center;
+    transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
   }
+  .pipeline-step:first-child {
+    border-radius: 14px 0 0 14px;
+    border-right: none;
+  }
+  .pipeline-step:last-child {
+    border-radius: 0 14px 14px 0;
+    border-left: none;
+  }
+  .pipeline-step:not(:first-child):not(:last-child) {
+    border-left: none;
+    border-right: none;
+  }
+  .pipeline-step::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: -1px; right: -1px;
+    height: 2px;
+    background: var(--step-color, var(--accent));
+    opacity: 0;
+    transition: opacity 0.35s;
+  }
+  .pipeline-step:hover::before { opacity: 1; }
   .pipeline-step:hover {
     border-color: var(--step-color, var(--accent));
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.3), 0 0 0 1px var(--step-color, transparent);
+    z-index: 2;
   }
-  .step-icon { font-size: 28px; margin-bottom: 8px; }
+  .pipeline-step:hover + .pipeline-step {
+    border-left-color: var(--step-color, var(--border));
+  }
+
+  .step-icon {
+    font-size: 30px;
+    margin-bottom: 8px;
+    display: block;
+    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--step-color, var(--accent)) 20%, transparent));
+  }
   .step-num {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; font-weight: 700;
+    font-size: 9px; font-weight: 700;
     color: var(--step-color, var(--accent));
-    margin-bottom: 4px;
+    margin-bottom: 6px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
   }
-  .step-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
-  .step-desc { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
-  .pipeline-arrow {
-    flex-shrink: 0;
-    padding-top: 48px;
+  .step-title {
+    font-size: 14px; font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .step-desc {
+    font-size: 10.5px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* Pipeline connector between steps */
+  .pipeline-gap {
+    flex: 0 0 28px;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
+    position: relative;
   }
-  .pipeline-arrow svg {
-    width: 36px;
-    height: 32px;
-    overflow: visible;
+  .pipeline-gap .conn-line {
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--border), var(--accent-dim, rgba(108,92,231,0.25)), var(--border));
+    position: relative;
   }
-  .pipeline-arrow .arrow-line {
-    stroke: var(--text-muted);
-    stroke-width: 2;
-    stroke-linecap: round;
-    fill: none;
+  .pipeline-gap .conn-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    position: absolute;
+    opacity: 0.4;
   }
-  .pipeline-arrow .arrow-glow {
-    stroke: var(--accent);
-    stroke-width: 4;
-    stroke-linecap: round;
-    fill: none;
-    opacity: 0.15;
+  .pipeline:hover .pipeline-gap .conn-dot {
+    animation: connPulse 1.2s ease-in-out infinite;
   }
-  .pipeline-arrow .arrow-head {
-    fill: var(--text-muted);
+  @keyframes connPulse {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.9; transform: scale(1.3); }
   }
-  .pipeline:hover .pipeline-arrow .arrow-line {
-    stroke: var(--accent);
-    transition: stroke 0.4s;
+
+  /* Tech tags inside pipeline steps */
+  .step-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    margin-top: 10px;
   }
-  .pipeline:hover .pipeline-arrow .arrow-head {
-    fill: var(--accent);
-    transition: fill 0.4s;
+  .step-tech span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(108,92,231,0.07);
+    border: 1px solid rgba(108,92,231,0.1);
+    color: var(--text-dim);
+    letter-spacing: 0.2px;
   }
-  .engine-footer { margin-top: 8px; }
+  .pipeline-step:hover .step-tech span {
+    background: color-mix(in srgb, var(--step-color, var(--accent)) 12%, transparent);
+    border-color: color-mix(in srgb, var(--step-color, var(--accent)) 20%, transparent);
+    color: var(--text);
+  }
+
+  @media (max-width: 900px) {
+    .pipeline { flex-direction: column; align-items: center; }
+    .pipeline-step {
+      max-width: 100%;
+      width: 100%;
+      border-radius: 10px !important;
+      border: 1px solid var(--border) !important;
+      margin-bottom: 0;
+    }
+    .pipeline-step:not(:last-child) { border-bottom: none !important; border-radius: 10px 10px 0 0 !important; }
+    .pipeline-step:last-child { border-radius: 0 0 10px 10px !important; }
+    .pipeline-gap {
+      flex: 0 0 20px;
+      width: 100%;
+    }
+    .pipeline-gap .conn-line {
+      width: 2px;
+      height: 20px;
+      background: linear-gradient(180deg, var(--border), var(--accent-dim, rgba(108,92,231,0.25)), var(--border));
+    }
+  }
+
+  /* ── Engine Footer – QA Badge + Stats ── */
+  .engine-footer { margin-top: 8px; position: relative; z-index: 1; }
   .test-badge {
     display: flex;
     align-items: center;
-    gap: 14px;
-    background: rgba(0,184,148,0.08);
-    border: 1px solid rgba(0,184,148,0.2);
-    border-radius: var(--radius);
+    gap: 16px;
+    background: linear-gradient(135deg, rgba(0,184,148,0.06), rgba(0,184,148,0.02));
+    border: 1px solid rgba(0,184,148,0.15);
+    border-radius: 12px;
     padding: 14px 20px;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
   }
-  .test-icon { font-size: 26px; }
+  .test-badge::after {
+    content: '</>';
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 48px;
+    font-weight: 900;
+    color: rgba(0,184,148,0.04);
+    position: absolute;
+    right: 12px;
+    top: -4px;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .test-icon { font-size: 28px; flex-shrink: 0; }
   .test-info { flex: 1; }
   .test-label { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
   .test-result { font-size: 15px; font-weight: 700; color: var(--green); }
-  .test-meta { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+  .test-result .test-count { font-family: 'JetBrains Mono', monospace; }
+  .test-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 3px;
+    letter-spacing: -0.2px;
+  }
   .engine-stats-row {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     justify-content: center;
     flex-wrap: wrap;
   }
@@ -397,26 +579,45 @@
     text-align: center;
     background: var(--bg-alt);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px 18px;
-    min-width: 100px;
+    border-radius: 10px;
+    padding: 10px 16px;
+    min-width: 90px;
+    flex: 1;
+    max-width: 130px;
+    transition: all 0.25s;
+  }
+  .e-stat:hover {
+    border-color: rgba(108,92,231,0.3);
+    background: rgba(108,92,231,0.04);
+    transform: translateY(-2px);
   }
   .e-num {
     display: block;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 20px; font-weight: 800;
-    color: var(--accent);
+    font-size: 22px; font-weight: 800;
+    background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
-  .e-num.purple-color { color: var(--accent); }
+  .e-num.purple-color {
+    background: linear-gradient(135deg, #fd79a8, #e84393);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
   .e-label {
-    font-size: 10px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 1px; color: var(--text-dim); margin-top: 2px;
+    font-size: 9px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1.2px; color: var(--text-dim); margin-top: 3px;
     display: block;
   }
+
   @media (max-width: 768px) {
-    .pipeline { flex-direction: column; align-items: center; }
-    .pipeline-arrow { transform: rotate(90deg); padding-top: 0; }
-    .pipeline-step { max-width: 100%; }
+    .engine-section { padding: 24px 16px 20px; }
+    .cron-connector { width: 2px; height: 20px; }
+    .engine-stats-row { gap: 8px; }
+    .e-stat { min-width: 70px; padding: 8px 10px; }
+    .e-num { font-size: 18px; }
   }
 
   /* ── Balance Chip ── */
@@ -1064,68 +1265,65 @@
       </a>
     </div>
 
-  <!-- ENGINES: Marketing Pipeline -->
+  <!-- ENGINES: Pipeline Data Flow -->
   <div class="engine-section">
     <div class="engine-header">
-      <div class="engine-badge">⚡ Temps réel</div>
-      <h2 class="engine-title">Le Moteur — Comment ça marche</h2>
+      <div class="engine-badge"><span class="dot"></span> Temps réel</div>
+      <h2 class="engine-title">Le Moteur — <span class="accent-gradient">Comment ça marche</span></h2>
       <p class="engine-subtitle">Orchestré par <strong>crons autonomes</strong> — IA agentique qui scrape, match et priorise les meilleures offres QA pour toi <strong>24h/24</strong></p>
     </div>
 
     <!-- Cron Scheduler Row -->
     <div class="cron-row">
-      <div class="cron-item"><span class="cron-icon">🔄</span><span class="cron-sched">Toutes les heures · scraping</span><span class="cron-desc">LinkedIn, Free-Work, Indeed, Malt, WTJ, RemoteOK</span></div>
-      <div class="cron-div"></div>
-      <div class="cron-item"><span class="cron-icon">📊</span><span class="cron-sched">Lundi 9h · bilan hebdo</span><span class="cron-desc">Nouvelles offres, tendances TJM, état du pipeline</span></div>
-      <div class="cron-div"></div>
-      <div class="cron-item"><span class="cron-icon">📬</span><span class="cron-sched">Tous les 3 jours · alertes</span><span class="cron-desc">Nouveaux top matches, offres clôturées</span></div>
+      <div class="cron-item">
+        <span class="cron-icon">🔄</span>
+        <span class="cron-sched">Toutes les heures</span>
+        <span class="cron-desc">Scraping · LinkedIn, Free-Work, Indeed, Malt, WTJ, RemoteOK</span>
+      </div>
+      <div class="cron-connector"></div>
+      <div class="cron-item">
+        <span class="cron-icon">📊</span>
+        <span class="cron-sched">Lundi 9h</span>
+        <span class="cron-desc">Bilan hebdo · nouvelles offres, tendances TJM, pipeline</span>
+      </div>
+      <div class="cron-connector"></div>
+      <div class="cron-item">
+        <span class="cron-icon">📬</span>
+        <span class="cron-sched">Tous les 3 jours</span>
+        <span class="cron-desc">Alertes · top matches, offres clôturées</span>
+      </div>
     </div>
 
-    <div class="pipeline">
-      <div class="pipeline-step" style="--step-color:#6c5ce7;">
-        <div class="step-icon">🕸️</div>
-        <div class="step-num">01</div>
-        <div class="step-title">Sources</div>
-        <div class="step-desc">Scraping multi-sources sur machine locale dédiée : LinkedIn, Welcome to the Jungle, Free-Work, RemoteOK, We Work Remotely, Indeed, emploitic — 8 marchés actifs simultanément (France, Suisse, Luxembourg, Dubaï, Singapour). + Réception par email d'offres de missions QHSE/QA envoyées directement par les recruteurs.</div>
-      </div>
-      <div class="pipeline-arrow">
-        <svg viewBox="0 0 36 32">
-          <line class="arrow-glow" x1="2" y1="16" x2="30" y2="16"/>
-          <line class="arrow-line" x1="2" y1="16" x2="30" y2="16"/>
-          <polygon class="arrow-head" points="30,12 34,16 30,20"/>
-        </svg>
-      </div>
-      <div class="pipeline-step" style="--step-color:#e17055;">
-        <div class="step-icon">🧹</div>
-        <div class="step-num">02</div>
-        <div class="step-title">IA de scoring</div>
-        <div class="step-desc">Moteur de matching intelligent : analyse du titre, description, compétences et localisation. Scoring automatisé avec poids variables pour chaque critère.</div>
-      </div>
-      <div class="pipeline-arrow">
-        <svg viewBox="0 0 36 32">
-          <line class="arrow-glow" x1="2" y1="16" x2="30" y2="16"/>
-          <line class="arrow-line" x1="2" y1="16" x2="30" y2="16"/>
-          <polygon class="arrow-head" points="30,12 34,16 30,20"/>
-        </svg>
-      </div>
-      <div class="pipeline-step" style="--step-color:#00b894;">
-        <div class="step-icon">🎯</div>
-        <div class="step-num">03</div>
-        <div class="step-title">Filtrage</div>
-        <div class="step-desc">Dédoublonnage automatique, exclusion des offres hors périmètre (jeux vidéo, pharma, non-QA). Détection auto vs manuel via IA.</div>
-      </div>
-      <div class="pipeline-arrow">
-        <svg viewBox="0 0 36 32">
-          <line class="arrow-glow" x1="2" y1="16" x2="30" y2="16"/>
-          <line class="arrow-line" x1="2" y1="16" x2="30" y2="16"/>
-          <polygon class="arrow-head" points="30,12 34,16 30,20"/>
-        </svg>
-      </div>
-      <div class="pipeline-step" style="--step-color:#74b9ff;">
-        <div class="step-icon"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/></svg></div>
-        <div class="step-num">04</div>
-        <div class="step-title">Notification</div>
-        <div class="step-desc">Rafraîchissement quotidien automatisé. Jobs du jour, Hot Picks (priorité max), Top Matches. Alertes WhatsApp temps réel, rapports hebdomadaires, affichage temps réel dans le dashboard.</div>
+    <!-- Pipeline Steps -->
+    <div class="pipeline-wrap">
+      <div class="pipeline">
+        <div class="pipeline-step" style="--step-color:#6c5ce7;">
+          <span class="step-icon">🕸️</span>
+          <div class="step-num">01 · Sources</div>
+          <div class="step-desc">Scraping multi-sources sur machine locale dédiée : LinkedIn, Welcome to the Jungle, Free-Work, RemoteOK, We Work Remotely, Indeed, emploitic — 8 marchés actifs simultanément (France, Suisse, Luxembourg, Dubaï, Singapour). + Réception par email d'offres de missions QHSE/QA envoyées directement par les recruteurs.</div>
+          <div class="step-tech"><span>cron</span><span>python</span><span>scrapy</span></div>
+        </div>
+        <div class="pipeline-gap"><div class="conn-line"><div class="conn-dot"></div></div></div>
+        <div class="pipeline-step" style="--step-color:#e17055;">
+          <span class="step-icon">🧹</span>
+          <div class="step-num">02 · Scoring</div>
+          <div class="step-desc">Moteur de matching intelligent : analyse du titre, description, compétences et localisation. Scoring automatisé avec poids variables pour chaque critère.</div>
+          <div class="step-tech"><span>nlp</span><span>tf-idf</span><span>jaccard</span></div>
+        </div>
+        <div class="pipeline-gap"><div class="conn-line"><div class="conn-dot"></div></div></div>
+        <div class="pipeline-step" style="--step-color:#00b894;">
+          <span class="step-icon">🎯</span>
+          <div class="step-num">03 · Filtrage</div>
+          <div class="step-desc">Dédoublonnage automatique, exclusion des offres hors périmètre (jeux vidéo, pharma, non-QA). Détection auto vs manuel via IA.</div>
+          <div class="step-tech"><span>dedup</span><span>llm</span><span>classifier</span></div>
+        </div>
+        <div class="pipeline-gap"><div class="conn-line"><div class="conn-dot"></div></div></div>
+        <div class="pipeline-step" style="--step-color:#74b9ff;">
+          <span class="step-icon"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/></svg></span>
+          <div class="step-num">04 · Notification</div>
+          <div class="step-desc">Rafraîchissement quotidien automatisé. Jobs du jour, Hot Picks (priorité max), Top Matches. Alertes WhatsApp temps réel, rapports hebdomadaires, affichage temps réel dans le dashboard.</div>
+          <div class="step-tech"><span>whatsapp</span><span>cron</span><span>push</span></div>
+        </div>
       </div>
     </div>
 
@@ -1135,7 +1333,7 @@
         <div class="test-icon">🧪</div>
         <div class="test-info">
           <div class="test-label">Pipeline QA — Tests complets</div>
-          <div class="test-result">✅ 83 unit/intégration · 19 BDD · Playwright E2E</div>
+          <div class="test-result">✅ <span class="test-count">83</span> unit/intégration · <span class="test-count">19</span> BDD · Playwright E2E</div>
           <div class="test-meta">pytest · BDD Gherkin · scraping, scoring, filtrage, API, cron, frontend, régression, enrichissement</div>
         </div>
       </div>
