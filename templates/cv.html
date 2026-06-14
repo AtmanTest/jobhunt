@@ -65,15 +65,15 @@
   }
 
   /* ── Experience ── */
-  .exp { margin-bottom: 2px; break-inside: avoid; page-break-inside: avoid; overflow: hidden; }
+  .exp { margin-bottom: 6px; break-inside: avoid; page-break-inside: avoid; overflow: hidden; }
+  .exp.page-break { page-break-before: always; break-before: page; }
   .exp-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px; margin-bottom: 1px; }
   .exp-co { font-size: 11px; font-weight: 700; color: var(--text); }
   .exp-date { font-size: 9px; font-weight: 500; color: var(--text-muted); white-space: nowrap; }
   .exp-ro { font-size: 10px; font-weight: 600; color: var(--accent); margin-bottom: 1px; }
-  .exp-desc { font-size: 9px; color: var(--text-dim); line-height: 1.15; }
-  .exp-desc ul { list-style: none; padding: 0; margin: 0; }
-  .exp-desc li { padding-left: 14px; margin-bottom: 0; position: relative; }
-  .exp-desc li::before { content: '\u25b8'; position: absolute; left: 0; color: var(--accent); font-size: 10px; top: 1px; }
+  .exp-desc { font-size: 9px; color: var(--text-dim); line-height: 1.3; }
+  .exp-desc ul { list-style: disc; padding: 0; margin: 0 0 0 17px; }
+  .exp-desc li { margin-bottom: 0; }
   .exp-env { font-size: 9px; color: var(--text-muted); margin-top: 1px; font-style: italic; }
 
   /* ── Projects ── */
@@ -233,7 +233,7 @@
         <div class="skill-row-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
         <div class="skill-row-body">
           <div class="skill-row-title">Outils &amp; Environnements</div>
-          <div class="skill-row-items">Jira · Xray · Zephyr · TestRail · Confluence · ServiceNow · SQL Oracle · Mainframe · Charles Proxy · Crashlytics · Dynatrace · Redmine · SAP BPC · SAP HANA · Windows / macOS / Linux · Android / iOS · VMware</div>
+          <div class="skill-row-items">Jira · Xray · Zephyr · TestRail · Confluence · ServiceNow · SQL Oracle · Mainframe · Charles Proxy · Crashlytics · Dynatrace · Redmine · SAP BPC · SAP HANA · BrowserStack (tests multi-appareils) · Windows / macOS / Linux · Android / iOS · VMware</div>
         </div>
       </div>
       <div class="skill-row">
@@ -247,7 +247,7 @@
         <div class="skill-row-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
         <div class="skill-row-body">
           <div class="skill-row-title">Savoir-être</div>
-          <div class="skill-row-items">Rigueur · Sens du détail · Esprit analytique · Autonomie · Proactivité · Communication claire · Collaboration avec les équipes métier et techniques · Capacité de priorisation · Curiosité technique · Orientation qualité</div>
+          <div class="skill-row-items">Rigueur · Sens du détail · Esprit analytique · Autonomie · Proactivité · Communication claire · Collaboration avec les équipes métier et techniques · Capacité de priorisation · Curiosité technique · Orientation qualité · Empathique · Accessible · Bienveillant</div>
         </div>
       </div>
     </div>
@@ -289,33 +289,35 @@
 
     <div class="exp">
       <div class="exp-head">
-        <span class="exp-co">Accor — Applications mobiles internationales</span>
+        <span class="exp-co">Accor — Applications mobiles internationales (Android & iOS)</span>
         <span class="exp-date">Sept. 2019 — Déc. 2022 · Paris</span>
       </div>
       <div class="exp-ro">Référent QA Mobile — Consultant</div>
       <div class="exp-desc"><ul>
-        <li>Référent QA sur applications <strong>Android/iOS</strong> déployées dans 100+ pays : validation fonctionnelle, UAT et non-régression.</li>
-        <li>Concevoir, planifier et exécuter des campagnes de <strong>tests fonctionnels</strong>, <strong>de régression</strong> et de compatibilité multi-versions Android/iOS ; rédiger et maintenir les <strong>plans de test</strong>, <strong>cahiers de recette</strong>, <strong>cas de tests</strong>, <strong>scénarios de test</strong> en priorisant selon les risques et l'impact métier.</li>
-        <li>Co-construire les <strong>user stories</strong> avec PO et développeurs pour renforcer la testabilité.</li>
-        <li>Formaliser les scénarios critiques en <strong>Gherkin</strong> pour l'alignement avec l'<strong>automatisation mobile</strong>.</li>
-        <li>Valider les flux transactionnels multi-appareils/multi-langues, reporting à la direction produit.</li>
+        <li>Référent QA sur applications <strong>Android/iOS</strong> déployées dans 100+ pays — validation fonctionnelle, <strong>UAT</strong> et non-régression en cycles Agile.</li>
+        <li>Valider la <strong>compatibilité multi-devices et multi-OS</strong> des nouvelles versions mobiles sur <strong>BrowserStack</strong> et devices réels (Android, iOS), couvrant plusieurs versions d'OS et résolutions d'écran.</li>
+        <li>Concevoir et exécuter des campagnes de <strong>tests fonctionnels</strong>, <strong>régression</strong> et <strong>compatibilité cross-device</strong> sur un périmètre multi-appareils et multi-environnements.</li>
+        <li>Co-construire les <strong>user stories</strong> avec PO et développeurs pour renforcer la testabilité dès la conception.</li>
+        <li>Formaliser les scénarios critiques en <strong>Gherkin</strong> pour l'alignement avec l'<strong>automatisation mobile (Appium)</strong>.</li>
+        <li>Valider les flux transactionnels multi-appareils/multi-langues — reporting <strong>Go/No-Go</strong> à la direction produit.</li>
       </ul></div>
-      <div class="exp-env">Environnement : Jira, Xray, <strong>Gherkin</strong>, Charles Proxy, Crashlytics, Android, iOS, Confluence.</div>
+      <div class="exp-env">Environnement : Jira, Xray, <strong>Gherkin</strong>, <strong>BrowserStack</strong>, Charles Proxy, Crashlytics, Android, iOS, Confluence.</div>
     </div>
 
-    <div class="exp">
+    <div class="exp page-break" style="page-break-before: always;">
       <div class="exp-head">
-        <span class="exp-co">Oodrive — <strong>Cloud souverain</strong> B2B</span>
+        <span class="exp-co">Oodrive — Cloud souverain B2B (WebSynchro, PostFiles, BoardNox)</span>
         <span class="exp-date">Janv. 2017 — Avr. 2019 · Paris</span>
       </div>
       <div class="exp-ro">Ingénieur Qualité Logiciel / Responsable QA</div>
       <div class="exp-desc"><ul>
-        <li>Responsable qualité sur applications critiques <strong>B2B/B2C</strong> cloud et desktop : <strong>WebSynchro</strong> (synchronisation fichiers), <strong>PostFiles</strong> (partage sécurisé), <strong>BoardNox</strong> (solution de gouvernance pour comités de direction / CA).</li>
-        <li>Concevoir, planifier et exécuter des campagnes de <strong>tests fonctionnels</strong>, <strong>de régression</strong>, de compatibilité multi-navigateurs et responsive ; rédiger et maintenir les <strong>plans de test</strong>, <strong>cahiers de recette</strong>, <strong>cas de tests</strong>, <strong>scénarios de test</strong> en priorisant selon les risques et l'impact métier.</li>
-        <li>Structurer les pratiques QA : templates, critères, gestion des anomalies dans <strong>Jira/Zephyr</strong>.</li>
-        <li><strong>Support N3</strong> grands comptes, introduction <strong>automatisation Ranorex</strong>, et collaboration <strong>équipes dev/support/PO</strong>.</li>
+        <li>Responsable qualité sur les applications critiques <strong>B2B/B2C</strong> du cloud souverain français : <strong>BoardNox</strong> (dématérialisation sécurisée des réunions de comités de direction et conseils d'administration — documents chiffrés, traçables, contrôlés à chaque accès), <strong>WebSynchro</strong> (synchronisation chiffrée des fichiers entre poste et cloud — travail hors ligne et à distance), <strong>PostFiles</strong> (envoi de fichiers lourds sans limite de taille via Outlook — pièces jointes transformées en liens sécurisés).</li>
+        <li>Valider la <strong>compatibilité multi-OS</strong> des applications client lourd (WebSynchro, PostFiles) sur plusieurs versions Windows/macOS via un parc de <strong>machines virtuelles Nutanix</strong>.</li>
+        <li>Tester la compatibilité <strong>multi-navigateurs</strong> de BoardNox (Chrome, Firefox, Edge, Safari) et la <strong>compatibilité Outlook</strong> (plusieurs versions) pour le greffon PostFiles.</li>
+        <li>Structurer les pratiques QA : templates de plans de test, critères d'entrée/sortie, gestion des anomalies dans <strong>Jira/Zephyr</strong>.</li>
+        <li><strong>Support N3</strong> grands comptes et introduction de l'<strong>automatisation Ranorex</strong> pour les cycles de régression.</li>
       </ul></div>
-      <div class="exp-env">Environnement : Jira, Zephyr, <strong>Ranorex</strong>, Confluence, <strong>Windows, macOS, Linux</strong>.</div>
+      <div class="exp-env">Environnement : Jira, Zephyr, <strong>Ranorex</strong>, <strong>Nutanix</strong>, VMware, Windows, macOS, Linux, Outlook, Confluence.</div>
     </div>
 
     <div class="exp">
@@ -470,7 +472,7 @@
         <div class="skill-row-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
         <div class="skill-row-body">
           <div class="skill-row-title">Tools &amp; Environments</div>
-          <div class="skill-row-items">Jira · Xray · Zephyr · TestRail · Confluence · ServiceNow · SQL Oracle · Mainframe · Charles Proxy · Crashlytics · Dynatrace · Redmine · SAP BPC · SAP HANA · Windows / macOS / Linux · Android / iOS · VMware</div>
+          <div class="skill-row-items">Jira · Xray · Zephyr · TestRail · Confluence · ServiceNow · SQL Oracle · Mainframe · Charles Proxy · Crashlytics · Dynatrace · Redmine · SAP BPC · SAP HANA · BrowserStack (multi-device testing) · Windows / macOS / Linux · Android / iOS · VMware</div>
         </div>
       </div>
       <div class="skill-row">
@@ -484,7 +486,7 @@
         <div class="skill-row-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
         <div class="skill-row-body">
           <div class="skill-row-title">Soft Skills</div>
-          <div class="skill-row-items">Rigor · Attention to detail · Analytical mindset · Autonomy · Proactivity · Clear communication · Cross-team collaboration · Prioritization · Technical curiosity · Quality mindset</div>
+          <div class="skill-row-items">Rigor · Attention to detail · Analytical mindset · Autonomy · Proactivity · Clear communication · Cross-team collaboration · Prioritization · Technical curiosity · Quality mindset · Empathetic · Approachable · Personable</div>
         </div>
       </div>
     </div>
@@ -526,37 +528,35 @@
 
     <div class="exp">
       <div class="exp-head">
-        <span class="exp-co">Accor — Mobile Apps (100+ countries)</span>
+        <span class="exp-co">Accor — Mobile Apps (Android & iOS, 100+ countries)</span>
         <span class="exp-date">Sep. 2019 — Dec. 2022 · Paris</span>
       </div>
       <div class="exp-ro">Mobile QA Lead — Consultant · Product Division</div>
       <div class="exp-desc"><ul>
-        <li><strong>QA lead</strong> for customer-facing Android/iOS apps deployed in <strong>100+ countries</strong> — functional validation, <strong>UAT</strong> and <strong>regression</strong> in <strong>Agile Scrum</strong> (2-week sprints).</li>
-        <li><strong>Test case design</strong> from user stories, campaign execution, defect tracking and retesting on the electronic invoicing scope.</li>
-        <li>Co-created <strong>User Stories</strong> with the Product Owner and developers to ensure feature testability from the design phase onward.</li>
-        <li>Authored <strong>100% of critical test cases in Gherkin</strong>, delivering full executable coverage of booking, loyalty, and payment journeys.</li>
-        <li>Validated mission-critical transaction flows — <strong>cross-device</strong>, <strong>multilingual</strong>, backend-integrated — with <strong>Go/No-Go reporting</strong> to product leadership.</li>
-        <li><strong>Contributed to Appium test enrichment</strong>: assisted automation engineers in defining <strong>smoke tests</strong> for mobile regression cycles.</li>
-        <li><strong>Close collaboration</strong> with Developers, Scrum Master, Product Owner, Technical Lead, Backend team, and QA Manager.</li>
-        </ul></div>
-      <div class="exp-env">Environment: Jira, Xray, Gherkin, Charles Proxy, Crashlytics, Android, iOS, Confluence</div>
+        <li><strong>QA lead</strong> for Android/iOS apps deployed in <strong>100+ countries</strong> — functional validation, <strong>UAT</strong> and regression in Agile Scrum.</li>
+        <li>Validated <strong>multi-device and multi-OS compatibility</strong> of new mobile builds using <strong>BrowserStack</strong> and real devices (Android, iOS), covering multiple OS versions and screen resolutions.</li>
+        <li>Designed and executed <strong>functional</strong>, <strong>regression</strong> and <strong>cross-device compatibility</strong> campaigns across a multi-device, multi-environment scope.</li>
+        <li>Co-created <strong>User Stories</strong> with PO and developers to ensure testability from the design phase.</li>
+        <li>Authored critical scenarios in <strong>Gherkin</strong> for alignment with <strong>mobile automation (Appium)</strong>.</li>
+        <li>Validated cross-device, multilingual transaction flows — <strong>Go/No-Go reporting</strong> to product leadership.</li>
+      </ul></div>
+      <div class="exp-env">Environment: Jira, Xray, <strong>Gherkin</strong>, <strong>BrowserStack</strong>, Charles Proxy, Crashlytics, Android, iOS, Confluence.</div>
     </div>
 
-    <div class="exp">
+    <div class="exp page-break" style="page-break-before: always;">
       <div class="exp-head">
-        <span class="exp-co">Oodrive — Sovereign Cloud B2B</span>
+        <span class="exp-co">Oodrive — Sovereign Cloud B2B (WebSynchro, PostFiles, BoardNox)</span>
         <span class="exp-date">Jan. 2017 — Apr. 2019 · Paris</span>
       </div>
       <div class="exp-ro">QA Lead — Software Quality Engineer</div>
       <div class="exp-desc"><ul>
-        <li><strong>Owned quality</strong> for critical B2B/B2C applications on the French sovereign cloud — <strong>functional and regression test plans</strong> across multiple platforms (Windows, macOS, Linux).</li>
-        <li><strong>Test case design</strong> from user stories, campaign execution, defect tracking and retesting on the electronic invoicing scope.</li>
-        <li><strong>Structured QA processes</strong>: standardized test plan templates, defined entry/exit criteria, formalized <strong>defect management</strong> in Jira/Zephyr.</li>
-        <li>Delivered <strong>L3 enterprise support</strong> — diagnosis, reproducibility, targeted escalation.</li>
-        <li>Introduced <strong>regression test automation</strong> with Ranorex, reducing major release validation cycles.</li>
-        <li><strong>Close collaboration</strong> with the development team, Manager, Technical Support, and Product Owner.</li>
-        </ul></div>
-      <div class="exp-env">Environment: Jira, Zephyr, Ranorex, Confluence, Windows, macOS, Linux</div>
+        <li>Owned <strong>quality</strong> for critical B2B/B2C applications on the French sovereign cloud: <strong>BoardNox</strong> (secure dematerialization of board and executive committee meetings — encrypted, traceable, access-controlled documents), <strong>WebSynchro</strong> (encrypted file sync between workstation and cloud — offline and remote work), <strong>PostFiles</strong> (unlimited-size file sharing via Outlook — attachments transformed into secure links).</li>
+        <li>Validated <strong>multi-OS compatibility</strong> of thick client applications (WebSynchro, PostFiles) across multiple Windows/macOS versions using a <strong>Nutanix VM farm</strong>.</li>
+        <li>Performed <strong>cross-browser compatibility testing</strong> for BoardNox (Chrome, Firefox, Edge, Safari) and <strong>Outlook compatibility</strong> (multiple versions) for the PostFiles plugin.</li>
+        <li>Structured QA practices: test plan templates, entry/exit criteria, defect management in <strong>Jira/Zephyr</strong>.</li>
+        <li>Provided <strong>L3 enterprise support</strong> and introduced <strong>Ranorex automation</strong> for regression cycles.</li>
+      </ul></div>
+      <div class="exp-env">Environment: Jira, Zephyr, <strong>Ranorex</strong>, <strong>Nutanix</strong>, VMware, Windows, macOS, Linux, Outlook, Confluence.</div>
     </div>
 
     <div class="exp">
