@@ -46,14 +46,14 @@
       "is_qa": 1,
       "applied": 0,
       "created_at": "2026-06-15 14:01:32",
-      "tech_stack": null,
-      "seniority": null,
-      "contract_type": "mission/freelance",
-      "remote_type": "",
+      "tech_stack": "[\"IBM Maximo\", \"Squash\", \"Jira\", \"JSON\", \"XML\"]",
+      "seniority": "senior",
+      "contract_type": null,
+      "remote_type": null,
       "salary_min": null,
       "salary_max": null,
       "currency": null,
-      "ai_enriched": 0,
+      "ai_enriched": 1,
       "saved": 0,
       "applied_at": null,
       "viewed": 0,
@@ -6401,5 +6401,5 @@
       "pipeline_stage": "dismissed"
     }
   ],
-  "exported_at": "2026-06-15T16:01:32.789647"
+  "exported_at": "2026-06-15T17:01:42.100468"
 }
