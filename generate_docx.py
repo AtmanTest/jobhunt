@@ -53,7 +53,7 @@ add_mixed_line([
 add_mixed_line([
     ('Paris & Remote', 9, RGBColor(0x66,0x66,0x66), False),
     (' · ', 9, RGBColor(0x66,0x66,0x66), False),
-    ('07 69 78 72 13', 9, RGBColor(0x66,0x66,0x66), False),
+    ('06 10 74 39 50', 9, RGBColor(0x66,0x66,0x66), False),
     (' · ', 9, RGBColor(0x66,0x66,0x66), False),
     ('thasin@live.com', 9, RGBColor(0x66,0x66,0x66), False),
     (' · ', 9, RGBColor(0x66,0x66,0x66), False),
