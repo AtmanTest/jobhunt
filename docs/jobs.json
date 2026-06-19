@@ -14,14 +14,14 @@
       "is_qa": 1,
       "applied": 0,
       "created_at": "2026-06-19 09:01:23",
-      "tech_stack": null,
-      "seniority": null,
-      "contract_type": "mission/freelance",
-      "remote_type": "",
+      "tech_stack": "[\"JIRA\", \"Talend\", \"Magento\", \"Mirakl\", \"Akeneo\", \"Next.js\"]",
+      "seniority": "senior",
+      "contract_type": "freelance",
+      "remote_type": null,
       "salary_min": null,
       "salary_max": null,
       "currency": null,
-      "ai_enriched": 0,
+      "ai_enriched": 1,
       "saved": 0,
       "applied_at": null,
       "viewed": 0,
@@ -6401,5 +6401,5 @@
       "pipeline_stage": "new"
     }
   ],
-  "exported_at": "2026-06-19T11:01:23.706002"
+  "exported_at": "2026-06-19T12:01:30.804524"
 }
