@@ -142,14 +142,14 @@
       "is_qa": 1,
       "applied": 0,
       "created_at": "2026-06-21 08:01:16",
-      "tech_stack": null,
-      "seniority": null,
-      "contract_type": "ambig\u00fce",
-      "remote_type": "",
+      "tech_stack": "[\"Jira\"]",
+      "seniority": "mid",
+      "contract_type": null,
+      "remote_type": null,
       "salary_min": null,
       "salary_max": null,
       "currency": null,
-      "ai_enriched": 0,
+      "ai_enriched": 1,
       "saved": 0,
       "applied_at": null,
       "viewed": 0,
@@ -6401,5 +6401,5 @@
       "pipeline_stage": "new"
     }
   ],
-  "exported_at": "2026-06-21T10:01:17.092037"
+  "exported_at": "2026-06-21T11:01:26.906320"
 }
