@@ -12,6 +12,14 @@ import os
 import re
 
 
+def _clean_cdata(text):
+    """Strip CDATA/SGML wrappers that leak from RSS feeds."""
+    if not text:
+        return text
+    text = re.sub(r'<!\[CDATA\[|\]\]>', '', text)
+    return text.strip()
+
+
 SOURCES = [
     {
         "name": "RemoteOK",
@@ -342,6 +350,7 @@ def fetch_linkedin_rss():
                 root = ET.fromstring(resp.text)
                 for item in root.iter("item"):
                     title = item.findtext("title", "")
+                    title = _clean_cdata(title)
                     title_lower = title.lower()
                     if not any(k in title_lower for k in filter_keywords):
                         continue
@@ -1638,6 +1647,7 @@ def fetch_indeed():
                         title_el = item.find("title")
                         if title_el:
                             title = title_el.get_text(strip=True)
+                        title = _clean_cdata(title)
 
                         link = ""
                         link_el = item.find("link")
@@ -1650,6 +1660,7 @@ def fetch_indeed():
                         desc_el = item.find("description") or item.find("summary")
                         if desc_el:
                             desc = desc_el.get_text(strip=True)
+                            desc = _clean_cdata(desc)
 
                         location = "France"
                         salary = ""
