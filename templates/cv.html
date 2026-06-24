@@ -659,8 +659,8 @@ function switchLang(lang) {
 (function(){
   var theme = localStorage.getItem('jh-theme') || '';
   var btn = document.getElementById('theme-btn');
-  if(theme==='light'){document.documentElement.setAttribute('data-theme','light');btn.textContent='🌙';}
-  window.toggleTheme=function(){var t=document.documentElement.getAttribute('data-theme');if(t==='light'){document.documentElement.removeAttribute('data-theme');localStorage.setItem('jh-theme','');btn.textContent='☀️';}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('jh-theme','light');btn.textContent='🌙';}};
+  if(theme==='dark'){document.documentElement.removeAttribute('data-theme');btn.textContent='☀️';}else{document.documentElement.setAttribute('data-theme','light');btn.textContent='🌙';}
+  window.toggleTheme=function(){var t=document.documentElement.getAttribute('data-theme');if(t==='light'){document.documentElement.removeAttribute('data-theme');localStorage.setItem('jh-theme','dark');btn.textContent='☀️';}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('jh-theme','');btn.textContent='🌙';}};
 })();
 </script>
 
