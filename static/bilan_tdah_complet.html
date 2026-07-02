@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bilan TDAH Adulte — Questionnaire Complet</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    padding: 20px;
+    line-height: 1.5;
+  }
+  .container { max-width: 860px; margin: 0 auto; }
+
+  /* Header */
+  .banner {
+    background: linear-gradient(135deg, #1a365d 0%, #2563eb 50%, #3b82f6 100%);
+    color: #fff;
+    padding: 36px 28px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .banner h1 { font-size: 26px; margin-bottom: 4px; }
+  .banner p { opacity: .85; font-size: 14px; }
+  .banner .meta { margin-top: 12px; font-size: 12px; opacity: .6; }
+
+  /* Global Result */
+  .global-card {
+    background: linear-gradient(135deg, #1e3a5f, #2c5282);
+    color: #fff;
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .global-card h2 { font-size: 18px; margin-bottom: 4px; opacity: .9; }
+  .global-card .big-score { font-size: 64px; font-weight: 800; line-height: 1; margin: 8px 0; }
+  .global-card .sub { font-size: 13px; opacity: .65; }
+  .global-bar-bg { background: rgba(255,255,255,.15); height: 10px; border-radius: 5px; margin: 14px 0; overflow: hidden; }
+  .global-bar-fill { height: 100%; border-radius: 5px; transition: width .8s ease; width: 0%; }
+
+  /* Score summary grid */
+  .score-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .score-summary .item {
+    background: rgba(255,255,255,.1);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+  }
+  .score-summary .item .val { font-size: 22px; font-weight: 700; }
+  .score-summary .item .lbl { font-size: 10px; opacity: .7; text-transform: uppercase; letter-spacing: .5px; }
+
+  .global-interp {
+    font-size: 14px;
+    margin-top: 10px;
+    padding: 14px;
+    background: rgba(255,255,255,.08);
+    border-radius: 8px;
+  }
+
+  /* Section (test module) */
+  .section {
+    background: #fff;
+    border-radius: 14px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background .15s;
+    border-bottom: 1px solid transparent;
+  }
+  .section-header:hover { background: #f7fafc; }
+  .section-header h3 { font-size: 15px; color: #1a365d; }
+  .section-header h3 small { font-weight: 400; font-size: 12px; color: #888; display: block; margin-top: 2px; }
+  .section-header .toggle { font-size: 18px; color: #999; transition: transform .2s; }
+  .section-header .toggle.open { transform: rotate(180deg); }
+  .section-body { display: none; padding: 0 20px 20px; }
+  .section-body.open { display: block; }
+  .section-desc {
+    font-size: 13px;
+    color: #666;
+    padding: 12px 14px;
+    background: #f7fafc;
+    border-radius: 8px;
+    margin: 12px 0;
+    border-left: 3px solid #2563eb;
+  }
+
+  /* Questions */
+  .q-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .q-item:last-child { border-bottom: none; }
+  .q-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 7px;
+    color: #1e293b;
+  }
+  .q-label .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px; height: 20px;
+    background: #e2e8f0;
+    color: #475569;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 6px;
+    flex-shrink: 0;
+  }
+  .q-item.screener .num { background: #2563eb; color: #fff; }
+  .q-item.screener .q-label { color: #1e40af; }
+
+  /* Radio grid */
+  .rg {
+    display: flex;
+    gap: 3px;
+    flex-wrap: wrap;
+  }
+  .rg label {
+    flex: 1;
+    min-width: 52px;
+    text-align: center;
+    padding: 5px 3px;
+    font-size: 10.5px;
+    color: #64748b;
+    background: #f8fafc;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all .12s;
+    position: relative;
+  }
+  .rg label:hover { background: #e2e8f0; }
+  .rg input { display: none; }
+
+  .rg label.r0 input:checked  + span { background: #22c55e; }
+  .rg label.r1 input:checked  + span { background: #86efac; }
+  .rg label.r2 input:checked  + span { background: #fde047; }
+  .rg label.r3 input:checked  + span { background: #fb923c; }
+  .rg label.r4 input:checked  + span { background: #ef4444; }
+  .rg label input:checked + span {
+    color: #fff;
+    display: block;
+    border-radius: 3px;
+    padding: 0 2px;
+  }
+  .rg label:has(input:checked) { border-color: #2563eb; background: #eff6ff; }
+
+  /* Section Score */
+  .section-score {
+    margin-top: 14px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    display: none;
+    text-align: center;
+  }
+  .section-score.show { display: block; }
+  .section-score .ss-num { font-size: 28px; font-weight: 700; }
+  .section-score .ss-interp { font-size: 12px; color: #666; margin-top: 4px; }
+  .ss-bar-bg { background: #e2e8f0; height: 6px; border-radius: 3px; margin: 8px 0; overflow: hidden; }
+  .ss-bar-fill { height: 100%; border-radius: 3px; transition: width .5s ease; width: 0%; }
+
+  .ss-green  { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .ss-green  .ss-num { color: #16a34a; }
+  .ss-green  .ss-bar-fill { background: #22c55e; }
+  .ss-orange { background: #fff7ed; border: 1px solid #fed7aa; }
+  .ss-orange .ss-num { color: #ea580c; }
+  .ss-orange .ss-bar-fill { background: #f97316; }
+  .ss-red    { background: #fef2f2; border: 1px solid #fecaca; }
+  .ss-red    .ss-num { color: #dc2626; }
+  .ss-red    .ss-bar-fill { background: #ef4444; }
+
+  /* Sub-scores inline */
+  .subscores {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .subscores .pill {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: #f1f5f9;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .subscores .pill b { font-size: 14px; }
+
+  .status-badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  .badge-green  { background: #dcfce7; color: #16a34a; }
+  .badge-orange { background: #ffedd5; color: #ea580c; }
+  .badge-red    { background: #fee2e2; color: #dc2626; }
+
+  /* Footer */
+  footer {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    margin-top: 16px;
+    text-align: center;
+    font-size: 12px;
+    color: #94a3b8;
+    border: 1px solid #e2e8f0;
+  }
+  footer strong { color: #1e293b; }
+
+  .btn-reset {
+    background: none;
+    border: 1px solid #cbd5e1;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #64748b;
+    margin-top: 10px;
+  }
+  .btn-reset:hover { background: #f1f5f9; color: #334155; }
+
+  @media (max-width: 600px) {
+    body { padding: 10px; }
+    .banner { padding: 24px 16px; }
+    .banner h1 { font-size: 20px; }
+    .global-card { padding: 20px; }
+    .global-card .big-score { font-size: 44px; }
+    .section-body { padding: 0 14px 14px; }
+    .rg label { min-width: 42px; font-size: 9.5px; padding: 4px 2px; }
+    .score-summary { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="banner">
+    <h1>🧠 Bilan TDAH Adulte — Complet</h1>
+    <p>7 questionnaires validés · ~100 items · Auto-évaluation exhaustive</p>
+    <div class="meta">ASRS · WURS-25 · DSM-5 · Brown EF · Fonctionnel · Comorbidités</div>
+  </div>
+
+  <!-- ═══ RÉSULTAT GLOBAL ═══ -->
+  <div class="global-card" id="globalBox">
+    <h2>📊 Résultat Global</h2>
+    <div class="big-score" id="globalScore">—%</div>
+    <div class="sub">Score composite pondéré (tous tests)</div>
+    <div class="global-bar-bg"><div class="global-bar-fill" id="globalBar"></div></div>
+    <div class="score-summary" id="globalSummary"></div>
+    <div class="global-interp" id="globalInterp">
+      Répondez aux questionnaires ci-dessous pour obtenir votre évaluation complète.
+    </div>
+    <button class="btn-reset" onclick="resetAll()">🔄 Tout effacer</button>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- SECTION 1 : ASRS-v1.1 (6 + 18) -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h3>1. ASRS-v1.1 <small>Adult ADHD Self-Report Scale · OMS · 18 questions</small></h3>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body open">
+      <div class="section-desc">
+        <strong>Consigne :</strong> Pour chaque question, choisissez la fréquence qui correspond le mieux aux <strong>6 derniers mois</strong>.
+        Les questions 1 à 6 (fond bleu) sont le dépistage rapide ASRS Part A.
+      </div>
+      <div id="q_asrs"></div>
+      <div class="subscores">
+        <span class="pill">Part A (dépistage) : <b id="asrsA">0</b>/24</span>
+        <span class="pill">Part B : <b id="asrsB">0</b>/48</span>
+        <span class="pill">Total : <b id="asrsTotal">0</b>/72</span>
+        <span class="pill" id="asrsScreenBadge"></span>
+      </div>
+      <div class="section-score" id="score_asrs">
+        <div class="ss-num" id="asrsScoreNum">0/72</div>
+        <div class="ss-bar-bg"><div class="ss-bar-fill" id="asrsBar"></div></div>
+        <div class="ss-interp" id="asrsInterp">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- SECTION 2 : WURS-25 (childhood) -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h3>2. WURS-25 <small>Wender Utah Rating Scale · Rétrospectif enfant/adolescent · 25 questions</small></h3>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="section-desc">
+        <strong>Consigne :</strong> Repensez à votre <strong>enfance et adolescence (8-18 ans)</strong>. À quelle fréquence chaque comportement vous correspondait-il ?
+      </div>
+      <div id="q_wurs"></div>
+      <div class="subscores">
+        <span class="pill">Score : <b id="wursTotal">0</b>/100</span>
+        <span class="pill" id="wursBadge"></span>
+      </div>
+      <div class="section-score" id="score_wurs">
+        <div class="ss-num" id="wursScoreNum">0/100</div>
+        <div class="ss-bar-bg"><div class="ss-bar-fill" id="wursBar"></div></div>
+        <div class="ss-interp" id="wursInterp">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- SECTION 3 : DSM-5 Critères diagnostiques -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h3>3. DSM-5-TR <small>Critères diagnostiques officiels · 18 items</small></h3>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="section-desc">
+        <strong>Consigne :</strong> Cochez la fréquence sur les <strong>6 derniers mois</strong>. Selon le DSM-5-TR, le seuil diagnostique pour l'adulte est de <strong>≥5 critères</strong> dans au moins une catégorie (inattention ou hyperactivité/impulsivité), avec des symptômes présents avant 12 ans.
+      </div>
+      <div id="q_dsm"></div>
+      <div class="subscores">
+        <span class="pill">Inattention : <b id="dsmInatt">0</b>/9</span>
+        <span class="pill">Hyper/Impuls : <b id="dsmHyp">0</b>/9</span>
+        <span class="pill">Total critères : <b id="dsmCritTotal">0</b>/18</span>
+        <span class="pill" id="dsmBadge"></span>
+      </div>
+      <div class="section-score" id="score_dsm">
+        <div class="ss-num" id="dsmScoreNum">0/72</div>
+        <div class="ss-bar-bg"><div class="ss-bar-fill" id="dsmBar"></div></div>
+        <div class="ss-interp" id="dsmInterp">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- SECTION 4 : Brown Executive Function -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h3>4. Brown EF / ADD <small>Fonctions exécutives · 25 questions</small></h3>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="section-desc">
+        <strong>Consigne :</strong> À quelle fréquence chaque situation s'applique-t-elle à vous <strong>dans la vie quotidienne actuelle</strong> ?
+        Explore 5 clusters : organisation, attention, mémoire de travail, régulation émotionnelle, action.
+      </div>
+      <div id="q_brown"></div>
+      <div class="subscores">
+        <span class="pill">Organisation : <b id="brOrg">0</b>/20</span>
+        <span class="pill">Attention : <b id="brAtt">0</b>/20</span>
+        <span class="pill">Mémoire travail : <b id="brMem">0</b>/20</span>
+        <span class="pill">Régulation émo : <b id="brEmo">0</b>/20</span>
+        <span class="pill">Action : <b id="brAct">0</b>/20</span>
+        <span class="pill">Total EF : <b id="brTotal">0</b>/100</span>
+      </div>
+      <div class="section-score" id="score_brown">
+        <div class="ss-num" id="brownScoreNum">0/100</div>
+        <div class="ss-bar-bg"><div class="ss-bar-fill" id="brownBar"></div></div>
+        <div class="ss-interp" id="brownInterp">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- SECTION 5 : Rejet / Sensibilité -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h3>5. RSD / Sensibilité au rejet <small>Rejection Sensitive Dysphoria · 8 questions</small></h3>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="section-desc">
+        <strong>Consigne :</strong> La dysphorie sensible au rejet (RSD) est fréquemment associée au TDAH. Elle se caractérise par une réaction émotionnelle intense et brutale face à une critique, un rejet ou un échec perçu.
+      </div>
+      <div id="q_rsd"></div>
+      <div class="subscores">
+        <span class="pill">Score RSD : <b id="rsdTotal">0</b>/32</span>
+        <span class="pill" id="rsdBadge"></span>
+      </div>
+      <div class="section-score" id="score_rsd">
+        <div class="ss-num" id="rsdScoreNum">0/32</div>
+        <div class="ss-bar-bg"><div class="ss-bar-fill" id="rsdBar"></div></div>
+        <div class="ss-interp" id="rsdInterp">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- SECTION 6 : Impact Fonctionnel -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h3>6. Impact Fonctionnel <small>Repercussions du TDAH sur la vie quotidienne · 10 questions</small></h3>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="section-desc">
+        <strong>Consigne :</strong> Dans quelle mesure les symptômes TDAH <strong>impactent-ils</strong> chaque domaine de votre vie ?
+      </div>
+      <div id="q_func"></div>
+      <div class="subscores">
+        <span class="pill">Score impact : <b id="funcTotal">0</b>/40</span>
+        <span class="pill" id="funcBadge"></span>
+      </div>
+      <div class="section-score" id="score_func">
+        <div class="ss-num" id="funcScoreNum">0/40</div>
+        <div class="ss-bar-bg"><div class="ss-bar-fill" id="funcBar"></div></div>
+        <div class="ss-interp" id="funcInterp">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- SECTION 7 : Comorbidités -->
+  <!-- ════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h3>7. Comorbidités fréquentes <small>Anxiété · Humeur · Sommeil · 10 questions</small></h3>
+      <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="section-desc">
+        <strong>Consigne :</strong> Ces facteurs ne font pas partie du diagnostic TDAH mais sont très fréquemment associés et peuvent aggraver les symptômes.
+      </div>
+      <div id="q_como"></div>
+      <div class="subscores">
+        <span class="pill">Anxiété : <b id="comAnx">0</b>/12</span>
+        <span class="pill">Humeur : <b id="comHum">0</b>/12</span>
+        <span class="pill">Sommeil : <b id="comSom">0</b>/16</span>
+      </div>
+      <div class="section-score" id="score_como">
+        <div class="ss-num" id="comoScoreNum">0/40</div>
+        <div class="ss-bar-bg"><div class="ss-bar-fill" id="comoBar"></div></div>
+        <div class="ss-interp" id="comoInterp">—</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <strong>⚠️ Avis important :</strong> Ce bilan est un outil d'<strong>auto-évaluation et de sensibilisation</strong>, pas un diagnostic médical.
+    Seul un professionnel de santé (psychiatre, neurologue) peut poser un diagnostic de TDAH après un bilan clinique complet.
+    <br><br>
+    Références : ASRS-v1.1 (Kessler et al. 2005) · WURS (Ward, Wender & Reimherr 1993) · DSM-5-TR (APA 2022) · Brown ADD Scales (Brown 1996) · RSD (Dodson 2020)
+  </footer>
+</div>
+
+<script>
+// ════════════════════ DATA ════════════════════
+
+const FREQ = [
+  { label: 'Jamais', short: '0' },
+  { label: 'Rarement', short: '1' },
+  { label: 'Parfois', short: '2' },
+  { label: 'Souvent', short: '3' },
+  { label: 'Très souvent', short: '4' },
+];
+
+// ─── 1. ASRS-v1.1 (18 questions) ───
+// Part A (1-6, screener), Part B (7-18)
+const ASRS_Q = [
+  { id: 'asrs', q: 'Difficulté à finaliser les derniers détails d\'un projet après les parties stimulantes', part: 'A', scr: true },
+  { id: 'asrs', q: 'Difficulté à vous mettre en ordre pour une tâche qui demande de l\'organisation', part: 'A', scr: true },
+  { id: 'asrs', q: 'Difficulté à vous souvenir de rendez-vous ou d\'obligations', part: 'A', scr: true },
+  { id: 'asrs', q: 'Évitement ou procrastination des tâches qui demandent beaucoup de réflexion', part: 'A', scr: true },
+  { id: 'asrs', q: 'Agitation des mains/pieds quand vous devez rester assis', part: 'A', scr: true },
+  { id: 'asrs', q: 'Sensation d\'être survolté·e, poussé·e par un moteur', part: 'A', scr: true },
+  { id: 'asrs', q: 'Erreurs d\'inattention dans le travail ou les études', part: 'B', scr: false },
+  { id: 'asrs', q: 'Difficulté à maintenir l\'attention sur une tâche', part: 'B', scr: false },
+  { id: 'asrs', q: 'Impression de ne pas écouter quand on vous parle directement', part: 'B', scr: false },
+  { id: 'asrs', q: 'Vous commencez des tâches sans les terminer et passez à autre chose', part: 'B', scr: false },
+  { id: 'asrs', q: 'Difficulté à organiser vos tâches et activités', part: 'B', scr: false },
+  { id: 'asrs', q: 'Vous perdez des objets nécessaires (clés, téléphone, documents)', part: 'B', scr: false },
+  { id: 'asrs', q: 'Vous êtes facilement distrait·e par des stimuli externes', part: 'B', scr: false },
+  { id: 'asrs', q: 'Vous oubliez des activités quotidiennes (rendez-vous, tâches)', part: 'B', scr: false },
+  { id: 'asrs', q: 'Vous vous levez en situation où rester assis est attendu', part: 'B', scr: false },
+  { id: 'asrs', q: 'Sensation d\'agitation intérieure, besoin de bouger', part: 'B', scr: false },
+  { id: 'asrs', q: 'Difficulté à faire des activités calmes et tranquilles', part: 'B', scr: false },
+  { id: 'asrs', q: 'Vous parlez excessivement, interrompez ou finissez les phrases des autres', part: 'B', scr: false },
+];
+
+// ─── 2. WURS-25 (childhood) ───
+const WURS_Q = [
+  { id: 'wurs', q: 'Manque d\'attention, tendance à rêvasser' },
+  { id: 'wurs', q: 'Prise de risques, tendance à agir sans réfléchir' },
+  { id: 'wurs', q: 'Irritabilité, colères fréquentes' },
+  { id: 'wurs', q: 'Difficulté à rester en place, agitation' },
+  { id: 'wurs', q: 'Impulsivité dans les décisions' },
+  { id: 'wurs', q: 'Difficulté à suivre des consignes ou des règles' },
+  { id: 'wurs', q: 'Sautes d\'humeur fréquentes et rapides' },
+  { id: 'wurs', q: 'Difficulté à terminer ce qui était commencé' },
+  { id: 'wurs', q: 'Sentiment d\'être différent des autres enfants' },
+  { id: 'wurs', q: 'Tendance à s\'énerver ou être frustré·e facilement' },
+  { id: 'wurs', q: 'Résultats scolaires en dessous du potentiel' },
+  { id: 'wurs', q: 'Difficulté à rester concentré·e en classe' },
+  { id: 'wurs', q: 'Comportement perturbateur en classe' },
+  { id: 'wurs', q: 'Manque de popularité, difficultés sociales' },
+  { id: 'wurs', q: 'Faible estime de soi, manque de confiance' },
+  { id: 'wurs', q: 'Tendance à tout prendre à cœur' },
+  { id: 'wurs', q: 'Tendance à être excessif·ve dans ses réactions' },
+  { id: 'wurs', q: 'Difficulté à respecter les tours de parole' },
+  { id: 'wurs', q: 'Oublis fréquents (devoirs, affaires, consignes)' },
+  { id: 'wurs', q: 'Bavardage excessif, difficulté à rester silencieux·se' },
+  { id: 'wurs', q: 'Opposition, tendance à contester l\'autorité' },
+  { id: 'wurs', q: 'Tendance à être distrait·e par des choses sans importance' },
+  { id: 'wurs', q: 'Difficulté à s\'organiser (cartable, chambre, emploi du temps)' },
+  { id: 'wurs', q: 'Sentiment de ne pas être à la hauteur' },
+  { id: 'wurs', q: 'Envie de bouger constamment, hyperactivité motrice' },
+];
+
+// ─── 3. DSM-5 (18 items) ───
+const DSM_Q = [
+  // Inattention (0-8)
+  { id: 'dsm', q: 'Manque d\'attention aux détails ou erreurs d\'inattention (travail, études)', type: 'I' },
+  { id: 'dsm', q: 'Difficulté à maintenir l\'attention dans les tâches ou les jeux', type: 'I' },
+  { id: 'dsm', q: 'Semble ne pas écouter quand on lui parle directement', type: 'I' },
+  { id: 'dsm', q: 'Ne termine pas les tâches, ne suit pas les instructions', type: 'I' },
+  { id: 'dsm', q: 'Difficultés d\'organisation dans les tâches et activités', type: 'I' },
+  { id: 'dsm', q: 'Évite ou repousse les tâches qui demandent un effort mental soutenu', type: 'I' },
+  { id: 'dsm', q: 'Perd fréquemment les objets nécessaires aux activités', type: 'I' },
+  { id: 'dsm', q: 'Facilement distrait·e par des stimuli externes', type: 'I' },
+  { id: 'dsm', q: 'Oublis fréquents dans les activités quotidiennes', type: 'I' },
+  // Hyperactivité/Impulsivité (9-17)
+  { id: 'dsm', q: 'Agitation : bouge les mains/pieds, se tortille sur son siège', type: 'H' },
+  { id: 'dsm', q: 'Se lève souvent quand rester assis·e est requis', type: 'H' },
+  { id: 'dsm', q: 'Sensation d\'agitation ou incapacité à rester calme', type: 'H' },
+  { id: 'dsm', q: 'Difficulté à s\'engager dans des activités calmes', type: 'H' },
+  { id: 'dsm', q: 'Sensation d\'être survolté·e, « poussé·e par un moteur »', type: 'H' },
+  { id: 'dsm', q: 'Parle excessivement', type: 'H' },
+  { id: 'dsm', q: 'Lâche la réponse avant la fin de la question', type: 'H' },
+  { id: 'dsm', q: 'Difficulté à attendre son tour', type: 'H' },
+  { id: 'dsm', q: 'Interrompt ou impose sa présence aux autres', type: 'H' },
+];
+
+// ─── 4. Brown Executive Function (25) ───
+// 5 clusters: org(0-4), att(5-9), mem(10-14), emo(15-19), act(20-24)
+const BROWN_Q = [
+  // Organisation
+  { id: 'br', q: 'Difficulté à organiser les tâches, les projets, les priorités', cl: 'org' },
+  { id: 'br', q: 'Procrastination sur des tâches importantes', cl: 'org' },
+  { id: 'br', q: 'Difficulté à estimer le temps nécessaire pour une tâche', cl: 'org' },
+  { id: 'br', q: 'Environnement de travail/maison souvent en désordre', cl: 'org' },
+  { id: 'br', q: 'Difficulté à suivre un emploi du temps ou un planning', cl: 'org' },
+  // Attention
+  { id: 'br', q: 'Difficulté à rester concentré·e pendant une lecture', cl: 'att' },
+  { id: 'br', q: 'Lisez plusieurs fois la même phrase sans la comprendre', cl: 'att' },
+  { id: 'br', q: 'Facilement distrait·e par des pensées internes (rêverie)', cl: 'att' },
+  { id: 'br', q: 'Difficulté à suivre une conversation sans décrocher', cl: 'att' },
+  { id: 'br', q: 'Vous faites plusieurs choses à la fois sans en finir aucune', cl: 'att' },
+  // Mémoire de travail
+  { id: 'br', q: 'Oubliez ce que vous alliez dire ou faire il y a 2 secondes', cl: 'mem' },
+  { id: 'br', q: 'Difficulté à retenir des instructions même simples', cl: 'mem' },
+  { id: 'br', q: 'Oubliez rapidement ce que vous venez d\'apprendre', cl: 'mem' },
+  { id: 'br', q: 'Difficulté à faire deux choses mentalement en même temps', cl: 'mem' },
+  { id: 'br', q: 'Vous relisez 3 fois un mail avant de l\'envoyer (ou pas)', cl: 'mem' },
+  // Régulation émotionnelle
+  { id: 'br', q: 'Émotions intenses, réactions disproportionnées par rapport à la situation', cl: 'emo' },
+  { id: 'br', q: 'Frustration rapide face aux petits obstacles quotidiens', cl: 'emo' },
+  { id: 'br', q: 'Difficulté à vous calmer après une émotion forte', cl: 'emo' },
+  { id: 'br', q: 'Hypersensibilité aux critiques ou aux remarques', cl: 'emo' },
+  { id: 'br', q: 'Variations d\'humeur rapides dans la journée', cl: 'emo' },
+  // Action / Monitoring
+  { id: 'br', q: 'Agir sans penser aux conséquences (achats, décisions impulsives)', cl: 'act' },
+  { id: 'br', q: 'Difficulté à ralentir et réfléchir avant de parler ou agir', cl: 'act' },
+  { id: 'br', q: 'Comportements de recherche de stimulation / ennui rapide', cl: 'act' },
+  { id: 'br', q: 'Difficulté à vous auto-corriger pendant une tâche', cl: 'act' },
+  { id: 'br', q: 'Impatience générale, horripilation des files d\'attente', cl: 'act' },
+];
+
+// ─── 5. RSD (Rejection Sensitive Dysphoria) ───
+const RSD_Q = [
+  { id: 'rsd', q: 'Réaction émotionnelle intense et brutale face à une critique perçue (même constructive)' },
+  { id: 'rsd', q: 'Peur intense du rejet qui vous pousse à éviter les situations sociales' },
+  { id: 'rsd', q: 'Sensation physique de douleur ou de brûlure quand vous vous sentez rejeté·e' },
+  { id: 'rsd', q: 'Vous repensez des heures ou des jours à une remarque négative' },
+  { id: 'rsd', q: 'Tendance à interpréter des commentaires neutres comme des critiques' },
+  { id: 'rsd', q: 'Évitement de situations où vous pourriez échouer (par perfectionnisme extrême)' },
+  { id: 'rsd', q: 'Colère ou tristesse soudaine quand quelqu\'un vous déçoit ou vous ignore' },
+  { id: 'rsd', q: 'Besoins excessifs de réassurance : vous demandez si « tout va bien »' },
+];
+
+// ─── 6. Impact Fonctionnel (10) ───
+const FUNC_Q = [
+  { id: 'func', q: 'Travail / études : productivité, ponctualité, progression de carrière' },
+  { id: 'func', q: 'Relations amoureuses : conflits, communication, stabilité' },
+  { id: 'func', q: 'Relations familiales : tensions, oublis, absence d\'écoute' },
+  { id: 'func', q: 'Amitiés : maintien des liens, réponse aux messages, disponibilité' },
+  { id: 'func', q: 'Finances : gestion du budget, retards de paiement, achats impulsifs' },
+  { id: 'func', q: 'Tâches domestiques : ménage, courses, administration, rangement' },
+  { id: 'func', q: 'Santé : rendez-vous médicaux oubliés, alimentation, sommeil' },
+  { id: 'func', q: 'Estime de soi : sentiment d\'échec, culpabilité, honte' },
+  { id: 'func', q: 'Conduite / sécurité : excès de vitesse, accrochages, distractibilité' },
+  { id: 'func', q: 'Gestion des émotions : conflits, imprévisibilité, sur-réactions' },
+];
+
+// ─── 7. Comorbidités (10) ───
+// Anxiety (0-2), Mood (3-5), Sleep (6-9)
+const COMO_Q = [
+  { id: 'como', q: 'Sensation de nervosité, d\'anxiété ou d\'inquiétude excessive', type: 'anx' },
+  { id: 'como', q: 'Difficulté à arrêter de ruminer / spirale de pensées négatives', type: 'anx' },
+  { id: 'como', q: 'Attaques de panique, palpitations, oppression thoracique', type: 'anx' },
+  { id: 'como', q: 'Sentiment de tristesse, de vide ou de déprime persistante', type: 'hum' },
+  { id: 'como', q: 'Perte d\'intérêt ou de plaisir pour les activités habituelles', type: 'hum' },
+  { id: 'como', q: 'Fatigue intense, manque d\'énergie malgré le sommeil', type: 'hum' },
+  { id: 'como', q: 'Difficulté à vous endormir le soir (cerveau qui tourne en boucle)', type: 'som' },
+  { id: 'como', q: 'Réveils nocturnes fréquents, sommeil non réparateur', type: 'som' },
+  { id: 'como', q: 'Vous êtes du soir : difficulté à vous lever, pic d\'activité la nuit', type: 'som' },
+  { id: 'como', q: 'Cauchemars, sommeil agité, grincement des dents', type: 'som' },
+];
+
+// ════════════════════ RENDER ════════════════════
+
+function renderQuestions(containerId, questions, nOptions) {
+  const c = document.getElementById(containerId);
+  let html = '';
+  questions.forEach((q, i) => {
+    const extraClass = q.scr ? 'screener' : '';
+    html += `<div class="q-item ${extraClass}">`;
+    html += `<span class="q-label"><span class="num">${i+1}</span> ${q.q}</span>`;
+    html += `<div class="rg">`;
+    for (let j = 0; j < nOptions; j++) {
+      html += `<label class="r${j}"><input type="radio" name="${q.id}_${i}" value="${j}" onchange="recalc()"><span>${FREQ[j].short}</span></label>`;
+    }
+    html += `</div></div>`;
+  });
+  c.innerHTML = html;
+}
+
+function getValue(name, idx) {
+  const el = document.querySelector(`input[name="${name}_${idx}"]:checked`);
+  return el ? parseInt(el.value) : null;
+}
+
+function sumValues(name, count) {
+  let s = 0, all = true;
+  for (let i = 0; i < count; i++) {
+    const v = getValue(name, i);
+    if (v === null) { all = false; break; }
+    s += v;
+  }
+  return all ? s : null;
+}
+
+function sumRange(name, start, count) {
+  let s = 0, all = true;
+  for (let i = start; i < start + count; i++) {
+    const v = getValue(name, i);
+    if (v === null) { all = false; break; }
+    s += v;
+  }
+  return all ? s : null;
+}
+
+function countThreshold(name, start, count, thr) {
+  let n = 0, all = true;
+  for (let i = start; i < start + count; i++) {
+    const v = getValue(name, i);
+    if (v === null) { all = false; break; }
+    if (v >= thr) n++;
+  }
+  return all ? n : null;
+}
+
+// ─── SECTION TOGGLE ───
+
+function toggleSection(header) {
+  const body = header.nextElementSibling;
+  const icon = header.querySelector('.toggle');
+  body.classList.toggle('open');
+  icon.classList.toggle('open');
+}
+
+// ─── SCORING ───
+
+function recalc() {
+  // === ASRS (0-17) ===
+  const asrsA = sumRange('asrs', 0, 6);
+  const asrsB = sumRange('asrs', 6, 12);
+  if (asrsA !== null && asrsB !== null) {
+    document.getElementById('asrsA').textContent = asrsA;
+    document.getElementById('asrsB').textContent = asrsB;
+    document.getElementById('asrsTotal').textContent = asrsA + asrsB;
+
+    // Screener: Part A items 1-3 ≥4, items 4-6 ≥5
+    let screenCount = 0;
+    for (let i = 0; i < 6; i++) {
+      const v = getValue('asrs', i);
+      if (v === null) { screenCount = -1; break; }
+      if (i < 3 ? v >= 4 : v >= 5) screenCount++;
+    }
+    const badge = document.getElementById('asrsScreenBadge');
+    if (screenCount >= 4) {
+      badge.innerHTML = '<span class="status-badge badge-red">Dépistage +</span>';
+    } else if (screenCount >= 2) {
+      badge.innerHTML = '<span class="status-badge badge-orange">Dépistage ±</span>';
+    } else {
+      badge.innerHTML = '<span class="status-badge badge-green">Dépistage -</span>';
+    }
+
+    const total = asrsA + asrsB;
+    const el = document.getElementById('score_asrs');
+    el.classList.add('show');
+    document.getElementById('asrsScoreNum').textContent = `${total}/72`;
+    const pct = (total / 72) * 100;
+    document.getElementById('asrsBar').style.width = `${pct}%`;
+    const ip = document.getElementById('asrsInterp');
+    if (total >= 50) {
+      ip.textContent = '🔴 Score très élevé — fortement évocateur d\'un TDAH. Consultation recommandée.'; el.className = 'section-score show ss-red';
+    } else if (total >= 32) {
+      ip.textContent = '🟡 Score modéré à élevé — des symptômes significatifs sont rapportés.'; el.className = 'section-score show ss-orange';
+    } else {
+      ip.textContent = '🟢 Score faible — peu de symptômes TDAH rapportés.'; el.className = 'section-score show ss-green';
+    }
+  } else {
+    document.getElementById('score_asrs').classList.remove('show');
+  }
+
+  // === WURS (0-24) ===
+  const wurs = sumValues('wurs', 25);
+  if (wurs !== null) {
+    document.getElementById('wursTotal').textContent = wurs;
+    const badge = document.getElementById('wursBadge');
+    badge.innerHTML = wurs >= 46
+      ? '<span class="status-badge badge-red">Seuil TDAH +</span>'
+      : wurs >= 30
+        ? '<span class="status-badge badge-orange">Seuil limite</span>'
+        : '<span class="status-badge badge-green">Sous le seuil</span>';
+
+    const el = document.getElementById('score_wurs');
+    el.classList.add('show');
+    document.getElementById('wursScoreNum').textContent = `${wurs}/100`;
+    const pct = (wurs / 100) * 100;
+    document.getElementById('wursBar').style.width = `${pct}%`;
+    const ip = document.getElementById('wursInterp');
+    if (wurs >= 46) {
+      ip.textContent = '🔴 Score rétrospectif élevé — symptômes TDAH très probables dans l\'enfance.'; el.className = 'section-score show ss-red';
+    } else if (wurs >= 30) {
+      ip.textContent = '🟡 Score rétrospectif modéré — des symptômes étaient présents.'; el.className = 'section-score show ss-orange';
+    } else {
+      ip.textContent = '🟢 Score rétrospectif faible — peu de symptômes dans l\'enfance.'; el.className = 'section-score show ss-green';
+    }
+  } else {
+    document.getElementById('score_wurs').classList.remove('show');
+  }
+
+  // === DSM-5 ===
+  const dsmI = countThreshold('dsm', 0, 9, 3);
+  const dsmH = countThreshold('dsm', 9, 9, 3);
+  const dsmSum = sumValues('dsm', 18);
+  if (dsmI !== null && dsmH !== null) {
+    document.getElementById('dsmInatt').textContent = dsmI;
+    document.getElementById('dsmHyp').textContent = dsmH;
+    document.getElementById('dsmCritTotal').textContent = dsmI + dsmH;
+    const badge = document.getElementById('dsmBadge');
+    const diag = dsmI >= 5 && dsmH >= 5 ? 'Mixte (I+H)' : dsmI >= 5 ? 'À prédominance inattentive' : dsmH >= 5 ? 'À prédominance hyperactive' : 'Critères non remplis';
+    badge.innerHTML = dsmI >= 5 || dsmH >= 5
+      ? `<span class="status-badge badge-red">${diag}</span>`
+      : `<span class="status-badge badge-green">${diag}</span>`;
+
+    if (dsmSum !== null) {
+      const el = document.getElementById('score_dsm');
+      el.classList.add('show');
+      document.getElementById('dsmScoreNum').textContent = `${dsmSum}/72`;
+      const pct = (dsmSum / 72) * 100;
+      document.getElementById('dsmBar').style.width = `${pct}%`;
+      const ip = document.getElementById('dsmInterp');
+      if (dsmI >= 5 || dsmH >= 5) {
+        ip.textContent = '🔴 Les critères diagnostiques DSM-5-TR sont remplis. Une consultation spécialisée est nécessaire.'; el.className = 'section-score show ss-red';
+      } else if (dsmI >= 3 || dsmH >= 3) {
+        ip.textContent = '🟡 Plusieurs critères présents sans atteindre le seuil. Surveillance recommandée.'; el.className = 'section-score show ss-orange';
+      } else {
+        ip.textContent = '🟢 Peu de critères DSM-5 cochés.'; el.className = 'section-score show ss-green';
+      }
+    }
+  } else {
+    document.getElementById('score_dsm').classList.remove('show');
+  }
+
+  // === Brown EF ===
+  const brOrg = sumRange('br', 0, 5);
+  const brAtt = sumRange('br', 5, 5);
+  const brMem = sumRange('br', 10, 5);
+  const brEmo = sumRange('br', 15, 5);
+  const brAct = sumRange('br', 20, 5);
+  if (brOrg !== null && brAtt !== null && brMem !== null && brEmo !== null && brAct !== null) {
+    const total = brOrg + brAtt + brMem + brEmo + brAct;
+    document.getElementById('brOrg').textContent = brOrg;
+    document.getElementById('brAtt').textContent = brAtt;
+    document.getElementById('brMem').textContent = brMem;
+    document.getElementById('brEmo').textContent = brEmo;
+    document.getElementById('brAct').textContent = brAct;
+    document.getElementById('brTotal').textContent = total;
+
+    const el = document.getElementById('score_brown');
+    el.classList.add('show');
+    document.getElementById('brownScoreNum').textContent = `${total}/100`;
+    const pct = (total / 100) * 100;
+    document.getElementById('brownBar').style.width = `${pct}%`;
+    const ip = document.getElementById('brownInterp');
+    if (total >= 65) {
+      ip.textContent = '🔴 Dysfonction exécutive significative — profil très évocateur d\'un TDAH.'; el.className = 'section-score show ss-red';
+    } else if (total >= 40) {
+      ip.textContent = '🟡 Dysfonction exécutive modérée — plusieurs domaines impactés.'; el.className = 'section-score show ss-orange';
+    } else {
+      ip.textContent = '🟢 Fonctions exécutives dans la norme.'; el.className = 'section-score show ss-green';
+    }
+  } else {
+    document.getElementById('score_brown').classList.remove('show');
+  }
+
+  // === RSD ===
+  const rsd = sumValues('rsd', 8);
+  if (rsd !== null) {
+    document.getElementById('rsdTotal').textContent = rsd;
+    const badge = document.getElementById('rsdBadge');
+    badge.innerHTML = rsd >= 22
+      ? '<span class="status-badge badge-red">RSD élevé</span>'
+      : rsd >= 14
+        ? '<span class="status-badge badge-orange">RSD modéré</span>'
+        : '<span class="status-badge badge-green">RSD faible</span>';
+
+    const el = document.getElementById('score_rsd');
+    el.classList.add('show');
+    document.getElementById('rsdScoreNum').textContent = `${rsd}/32`;
+    const pct = (rsd / 32) * 100;
+    document.getElementById('rsdBar').style.width = `${pct}%`;
+    const ip = document.getElementById('rsdInterp');
+    if (rsd >= 22) {
+      ip.textContent = '🔴 Sensibilité au rejet très élevée — fréquemment associée au TDAH.'; el.className = 'section-score show ss-red';
+    } else if (rsd >= 14) {
+      ip.textContent = '🟡 Sensibilité au rejet modérée.'; el.className = 'section-score show ss-orange';
+    } else {
+      ip.textContent = '🟢 Faible sensibilité au rejet.'; el.className = 'section-score show ss-green';
+    }
+  } else {
+    document.getElementById('score_rsd').classList.remove('show');
+  }
+
+  // === Impact Fonctionnel ===
+  const func = sumValues('func', 10);
+  if (func !== null) {
+    document.getElementById('funcTotal').textContent = func;
+    const badge = document.getElementById('funcBadge');
+    badge.innerHTML = func >= 28
+      ? '<span class="status-badge badge-red">Impact sévère</span>'
+      : func >= 16
+        ? '<span class="status-badge badge-orange">Impact modéré</span>'
+        : '<span class="status-badge badge-green">Impact faible</span>';
+
+    const el = document.getElementById('score_func');
+    el.classList.add('show');
+    document.getElementById('funcScoreNum').textContent = `${func}/40`;
+    const pct = (func / 40) * 100;
+    document.getElementById('funcBar').style.width = `${pct}%`;
+    const ip = document.getElementById('funcInterp');
+    if (func >= 28) {
+      ip.textContent = '🔴 Impact fonctionnel sévère — le TDAH affecte significativement votre vie quotidienne.'; el.className = 'section-score show ss-red';
+    } else if (func >= 16) {
+      ip.textContent = '🟡 Impact fonctionnel modéré.'; el.className = 'section-score show ss-orange';
+    } else {
+      ip.textContent = '🟢 Impact fonctionnel faible.'; el.className = 'section-score show ss-green';
+    }
+  } else {
+    document.getElementById('score_func').classList.remove('show');
+  }
+
+  // === Comorbidités ===
+  const comAnx = sumRange('como', 0, 3);
+  const comHum = sumRange('como', 3, 3);
+  const comSom = sumRange('como', 6, 4);
+  if (comAnx !== null && comHum !== null && comSom !== null) {
+    const total = comAnx + comHum + comSom;
+    document.getElementById('comAnx').textContent = comAnx;
+    document.getElementById('comHum').textContent = comHum;
+    document.getElementById('comSom').textContent = comSom;
+
+    const el = document.getElementById('score_como');
+    el.classList.add('show');
+    document.getElementById('comoScoreNum').textContent = `${total}/40`;
+    const pct = (total / 40) * 100;
+    document.getElementById('comoBar').style.width = `${pct}%`;
+    const ip = document.getElementById('comoInterp');
+    if (total >= 24) {
+      ip.textContent = '🔴 Comorbidités significatives — anxiété, humeur ou sommeil impactés. À explorer avec un professionnel.'; el.className = 'section-score show ss-red';
+    } else if (total >= 12) {
+      ip.textContent = '🟡 Quelques comorbidités présentes.'; el.className = 'section-score show ss-orange';
+    } else {
+      ip.textContent = '🟢 Peu de comorbidités rapportées.'; el.className = 'section-score show ss-green';
+    }
+  } else {
+    document.getElementById('score_como').classList.remove('show');
+  }
+
+  updateGlobal();
+}
+
+function updateGlobal() {
+  const asrs = sumValues('asrs', 18);
+  const wurs = sumValues('wurs', 25);
+  const dsm = sumValues('dsm', 18);
+  const brown = (() => { const o=sumRange('br',0,5);const a=sumRange('br',5,5);const m=sumRange('br',10,5);const e=sumRange('br',15,5);const c=sumRange('br',20,5); return (o!==null&&a!==null&&m!==null&&e!==null&&c!==null)?o+a+m+e+c:null; })();
+  const rsd = sumValues('rsd', 8);
+  const func = sumValues('func', 10);
+
+  if (asrs !== null && wurs !== null && dsm !== null && brown !== null && rsd !== null && func !== null) {
+    const n1 = (asrs / 72) * 100;
+    const n2 = (wurs / 100) * 100;
+    const n3 = (dsm / 72) * 100;
+    const n4 = (brown / 100) * 100;
+    const n5 = (rsd / 32) * 100;
+    const n6 = (func / 40) * 100;
+
+    // Poids: ASRS (30%), WURS (15%), DSM (25%), Brown (15%), RSD (5%), Fonctionnel (10%)
+    const avg = Math.round(n1 * 0.30 + n2 * 0.15 + n3 * 0.25 + n4 * 0.15 + n5 * 0.05 + n6 * 0.10);
+
+    document.getElementById('globalScore').textContent = `${avg}%`;
+    document.getElementById('globalBar').style.width = `${avg}%`;
+
+    // Summary grid
+    document.getElementById('globalSummary').innerHTML = `
+      <div class="item"><div class="val">${Math.round(n1)}%</div><div class="lbl">ASRS</div></div>
+      <div class="item"><div class="val">${Math.round(n2)}%</div><div class="lbl">WURS</div></div>
+      <div class="item"><div class="val">${Math.round(n3)}%</div><div class="lbl">DSM-5</div></div>
+      <div class="item"><div class="val">${Math.round(n4)}%</div><div class="lbl">Brown EF</div></div>
+      <div class="item"><div class="val">${Math.round(n5)}%</div><div class="lbl">RSD</div></div>
+      <div class="item"><div class="val">${Math.round(n6)}%</div><div class="lbl">Impact</div></div>
+    `;
+
+    const interp = document.getElementById('globalInterp');
+    if (avg >= 70) {
+      interp.innerHTML = '🔴 <strong>Probabilité TDAH très élevée.</strong> Tous les tests convergent vers des signes forts et cohérents.<br><br>✅ Actions : Consultez un psychiatre spécialisé TDAH pour un bilan diagnostique complet. Apportez ces résultats à votre consultation.';
+    } else if (avg >= 45) {
+      interp.innerHTML = '🟡 <strong>Probabilité TDAH modérée à élevée.</strong> Des signes significatifs sont présents dans plusieurs domaines.<br><br>✅ Actions : Un avis médical est conseillé. Certains tests sont au-dessus du seuil, d\'autres non — une évaluation clinique permettra de clarifier.';
+    } else if (avg >= 25) {
+      interp.innerHTML = '🟠 <strong>Quelques signes évocateurs.</strong> Certains domaines sont impactés sans atteindre un profil TDAH complet.<br><br>✅ Actions : Si des difficultés persistent, explorez d\'autres causes (anxiété, sommeil, humeur) avec un professionnel. Surveillez l\'évolution.';
+    } else {
+      interp.innerHTML = '🟢 <strong>Probabilité TDAH faible.</strong> Peu de signes évocateurs sur l\'ensemble des tests.<br><br>✅ Actions : Si vous rencontrez des difficultés, d\'autres causes peuvent être explorées (trouble anxieux, dépressif, trouble du sommeil).';
+    }
+  } else {
+    document.getElementById('globalScore').textContent = '—%';
+    document.getElementById('globalBar').style.width = '0%';
+    document.getElementById('globalSummary').innerHTML = '';
+    document.getElementById('globalInterp').textContent = 'Répondez aux questionnaires ci-dessous pour obtenir votre évaluation complète.';
+  }
+}
+
+function resetAll() {
+  document.querySelectorAll('input[type="radio"]').forEach(el => el.checked = false);
+  recalc();
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ════════════════════ INIT ════════════════════
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderQuestions('q_asrs', ASRS_Q, 5);
+  renderQuestions('q_wurs', WURS_Q, 5);
+  renderQuestions('q_dsm', DSM_Q, 5);
+  renderQuestions('q_brown', BROWN_Q, 5);
+  renderQuestions('q_rsd', RSD_Q, 5);
+  renderQuestions('q_func', FUNC_Q, 5);
+  renderQuestions('q_como', COMO_Q, 5);
+});
+</script>
+</body>
+</html>
