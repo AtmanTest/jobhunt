@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Bilan TDAH — ASRS + WFIRS-S + WSR</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f0f2f5;color:#1a1a2e;padding:16px;line-height:1.5;-webkit-text-size-adjust:100%}
+  .cw{max-width:880px;margin:0 auto}
+  .bn{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#2563eb 100%);color:#fff;padding:26px 18px;border-radius:14px;margin-bottom:16px;text-align:center}
+  .bn h1{font-size:20px;margin-bottom:3px}
+  .bn p{opacity:.8;font-size:12.5px}
+  .bn .meta{margin-top:6px;font-size:10px;opacity:.5}
+  .srch{background:#fff;border-radius:12px;margin-bottom:14px;padding:10px 14px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:8px}
+  .srch input{flex:1;border:none;outline:none;font-size:13px;padding:6px 0;background:transparent;-webkit-appearance:none}
+  .srch .cnt{font-size:10px;color:#94a3b8;white-space:nowrap}
+  .gc{background:linear-gradient(135deg,#1e3a5f,#2c5282);color:#fff;border-radius:14px;padding:20px;margin-bottom:16px;text-align:center}
+  .gc h2{font-size:15px;opacity:.9;margin-bottom:2px}
+  .gc .bg{font-size:48px;font-weight:800;line-height:1;margin:4px 0}
+  .gc .sb{font-size:11px;opacity:.55}
+  .gc .bb{background:rgba(255,255,255,.15);height:8px;border-radius:5px;margin:10px 0;overflow:hidden}
+  .gc .bf{height:100%;border-radius:5px;transition:width .8s ease;width:0%}
+  .gc .gs{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:4px;margin-bottom:10px}
+  .gc .gs .gi{background:rgba(255,255,255,.07);border-radius:5px;padding:6px;text-align:center}
+  .gc .gs .gi .gv{font-size:16px;font-weight:700}
+  .gc .gs .gi .gl{font-size:8.5px;opacity:.6;text-transform:uppercase}
+  .gc .ip{font-size:12px;margin-top:6px;padding:10px;background:rgba(255,255,255,.06);border-radius:7px}
+  .sc{background:#fff;border-radius:12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);border:1px solid #e2e8f0;overflow:hidden}
+  .sh{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;border-bottom:1px solid transparent}
+  .sh:active{background:#f1f5f9}
+  .sh h3{font-size:13px;color:#1e3a5f}
+  .sh h3 small{font-weight:400;font-size:10.5px;color:#888;display:block;margin-top:1px}
+  .sh .to{font-size:14px;color:#999;transition:transform .2s}
+  .sh .to.op{transform:rotate(180deg)}
+  .sb{display:none;padding:0 14px 14px}
+  .sb.op{display:block}
+  .sd{font-size:12px;color:#555;padding:8px 10px;background:#f8fafc;border-radius:6px;margin:8px 0;border-left:3px solid #2563eb}
+  .qi{padding:8px 0;border-bottom:1px solid #f1f5f9}
+  .qi:last-child{border-bottom:none}
+  .ql{display:block;font-size:12px;font-weight:500;margin-bottom:5px;color:#1e293b}
+  .ql .num{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;background:#e2e8f0;color:#475569;border-radius:50%;font-size:9px;font-weight:600;margin-right:4px}
+  .qi.sr .ql .num{background:#2563eb;color:#fff}
+  .qi.sr .ql{color:#1e40af}
+  .rg{display:flex;gap:2px;flex-wrap:wrap}
+  .rg label{flex:1;min-width:40px;text-align:center;padding:4px 2px;font-size:9.5px;color:#64748b;background:#f8fafc;border-radius:4px;cursor:pointer;border:1.5px solid transparent;transition:all .1s}
+  .rg label:hover{background:#e2e8f0}
+  .rg input{display:none}
+  .rg label input:checked+span{color:#fff;display:block;border-radius:3px;padding:1px 2px}
+  .rg label.r0 input:checked+span{background:#22c55e}
+  .rg label.r1 input:checked+span{background:#86efac;color:#166534!important}
+  .rg label.r2 input:checked+span{background:#fde047;color:#854d0e!important}
+  .rg label.r3 input:checked+span{background:#fb923c}
+  .rg label.r4 input:checked+span{background:#ef4444}
+  .rg label:has(input:checked){border-color:#2563eb;background:#eff6ff}
+  .ssc{margin-top:10px;padding:10px 14px;border-radius:8px;display:none;text-align:center}
+  .ssc.shw{display:block}
+  .ssc .sn{font-size:22px;font-weight:700}
+  .ssc .si{font-size:11px;color:#555;margin-top:3px}
+  .ssc .sbb{background:#e2e8f0;height:4px;border-radius:2px;margin:5px 0;overflow:hidden}
+  .ssc .sbf{height:100%;transition:width .5s ease;width:0%}
+  .sg{background:#f0fdf4;border:1px solid #bbf7d0}
+  .sg .sn{color:#16a34a}.sg .sbf{background:#22c55e}
+  .so{background:#fff7ed;border:1px solid #fed7aa}
+  .so .sn{color:#ea580c}.so .sbf{background:#f97316}
+  .sr{background:#fef2f2;border:1px solid #fecaca}
+  .sr .sn{color:#dc2626}.sr .sbf{background:#ef4444}
+  .sp{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+  .sp .pi{font-size:10px;padding:2px 7px;border-radius:8px;background:#f1f5f9;display:inline-flex;align-items:center;gap:2px}
+  .sp .pi b{font-size:12px}
+  .bdg{display:inline-block;font-size:9px;padding:1px 6px;border-radius:6px;font-weight:600}
+  .bd-g{background:#dcfce7;color:#16a34a}
+  .bd-o{background:#ffedd5;color:#ea580c}
+  .bd-r{background:#fee2e2;color:#dc2626}
+  .bd-b{background:#dbeafe;color:#2563eb}
+  .br{background:none;border:1px solid #cbd5e1;padding:4px 12px;border-radius:5px;font-size:11px;cursor:pointer;color:#64748b;margin-top:6px}
+  .br:hover{background:#f1f5f9;color:#334155}
+  .subsc{font-size:10.5px;color:#555;background:#f8fafc;border-radius:4px;padding:4px 8px;margin:4px 0;display:flex;flex-wrap:wrap;gap:4px}
+  .subsc .tag{background:#e2e8f0;padding:1px 5px;border-radius:3px;font-size:9.5px}
+  .subsc .tag.t-pos{background:#fecaca;color:#dc2626}
+  .subsc .tag.t-lim{background:#fed7aa;color:#c2410c}
+  .subsc .tag.t-neg{background:#bbf7d0;color:#16a34a}
+  ft{display:block;background:#fff;border-radius:12px;padding:16px;margin-top:12px;text-align:center;font-size:10.5px;color:#94a3b8;border:1px solid #e2e8f0}
+  ft strong{color:#1e293b}
+  @media(max-width:600px){
+    body{padding:8px}
+    .bn{padding:18px 12px}
+    .bn h1{font-size:17px}
+    .gc{padding:16px}
+    .gc .bg{font-size:36px}
+    .sb{padding:0 10px 10px}
+    .rg label{min-width:34px;font-size:8.5px;padding:3px 1px}
+    .gc .gs{grid-template-columns:repeat(auto-fill,minmax(90px,1fr))}
+  }
+</style>
+</head>
+<body>
+<div class="cw">
+
+<div class="bn">
+  <h1>🧠 Bilan TDAH Adulte</h1>
+  <p>ASRS-v1.1 · WFIRS-S · WSR — Basé sur les instruments CADDRA/OMS</p>
+  <div class="meta">Version française officielle · Seuils diagnostiques réels</div>
+</div>
+
+<div class="srch">
+  <span>🔍</span>
+  <input type="search" id="si" placeholder="Chercher une question..." oninput="fq()">
+  <span class="cnt" id="scnt"></span>
+</div>
+
+<div class="gc" id="gb">
+  <h2>📊 Résumé</h2>
+  <div class="bg" id="gsMain">—</div>
+  <div class="sb" id="gsSub">Répondez aux questionnaires ci-dessous</div>
+  <div class="bb"><div class="bf" id="gsBar"></div></div>
+  <div class="gs" id="gsGrid"></div>
+  <div class="ip" id="gsInterp">Complétez les 3 instruments pour voir votre profil complet.</div>
+  <button class="br" onclick="ra()">🔄 Tout effacer</button>
+</div>
+
+<!-- ═══════════ ASRS-v1.1 (18 questions) ═══════════ -->
+<div class="sc">
+  <div class="sh" onclick="ts(this)">
+    <h3>1. ASRS-v1.1 <small>OMS — 18 Q · Partie A dépistage + Partie B</small></h3>
+    <span class="to">▼</span>
+  </div>
+  <div class="sb op">
+    <div class="sd">Consigne : Cochez la case qui décrit le mieux vos 6 derniers mois. Les 6 premières questions (fond bleu) sont le dépistage ASRS Part A.</div>
+    <div id="q_asrs"></div>
+    <div class="sp" id="sp_asrs"></div>
+    <div class="subsc" id="sub_asrs"></div>
+    <div class="ssc" id="sc_asrs"><div class="sn" id="sn_asrs"></div><div class="sbb"><div class="sbf" id="sb_asrs"></div></div><div class="si" id="si_asrs"></div></div>
+  </div>
+</div>
+
+<!-- ═══════════ WFIRS-S (Weiss Functional Impairment) ═══════════ -->
+<div class="sc">
+  <div class="sh" onclick="ts(this)">
+    <h3>2. WFIRS-S <small>Weiss Functional Impairment Rating Scale — 7 domaines</small></h3>
+    <span class="to">▼</span>
+  </div>
+  <div class="sb">
+    <div class="sd">Consigne : Encerclez le chiffre qui décrit le mieux les effets de vos troubles émotionnels ou de comportement sur chaque item pendant le dernier mois.</div>
+    <div id="q_wfirs"></div>
+    <div class="sp" id="sp_wfirs"></div>
+    <div class="subsc" id="sub_wfirs"></div>
+    <div class="ssc" id="sc_wfirs"><div class="sn" id="sn_wfirs"></div><div class="sbb"><div class="sbf" id="sb_wfirs"></div></div><div class="si" id="si_wfirs"></div></div>
+  </div>
+</div>
+
+<!-- ═══════════ WSR (Weiss Symptom Record) ═══════════ -->
+<div class="sc">
+  <div class="sh" onclick="ts(this)">
+    <h3>3. WSR <small>Weiss Symptom Record — Check-up complet</small></h3>
+    <span class="to">▼</span>
+  </div>
+  <div class="sb">
+    <div class="sd">Consigne : Cochez la case qui s'applique le mieux. Les symptômes notés 2 ou 3 sont positifs (seuil diagnostique ≥6/9 pour TDAH).</div>
+    <div id="q_wsr"></div>
+    <div class="sp" id="sp_wsr"></div>
+    <div class="subsc" id="sub_wsr"></div>
+    <div class="ssc" id="sc_wsr"><div class="sn" id="sn_wsr"></div><div class="sbb"><div class="sbf" id="sb_wsr"></div></div><div class="si" id="si_wsr"></div></div>
+  </div>
+</div>
+
+<ft>
+<strong>⚠️ Avis important :</strong> Outil d'auto-évaluation, pas un diagnostic médical. Seul un psychiatre peut poser un diagnostic de TDAH.<br><br>
+Réf. : ASRS-v1.1 OMS ©2003 · WFIRS-S & WSR ©UBC 2011 (Weiss) · CADDRA 2011
+</ft>
+</div>
+
+<script>
+const F=[{l:'Jamais',s:'0'},{l:'Rarement',s:'1'},{l:'Parfois',s:'2'},{l:'Souvent',s:'3'},{l:'Très souvent',s:'4'}];
+const F4=[{l:'Jamais ou pas du tout',s:'0'},{l:'Quelques fois/un peu',s:'1'},{l:'Souvent/moyennement',s:'2'},{l:'Très souvent/beaucoup',s:'3'}];
+const F42=[{l:'Non (0)',s:'0'},{l:'À l\'occasion (1)',s:'1'},{l:'Moyennement (2)',s:'2'},{l:'Beaucoup (3)',s:'3'}];
+const F5=[{l:'Jamais',s:'0'},{l:'Rarement',s:'1'},{l:'Quelques fois',s:'2'},{l:'Souvent',s:'3'},{l:'Très souvent',s:'4'}];
+
+// ═══ 1. ASRS-v1.1 ═══
+const ASRS = [
+  {q:'Difficultés à finaliser les derniers détails d\'un projet après les parties stimulantes',p:'A',sc:true},
+  {q:'Difficultés à mettre les choses en ordre pour une tâche qui demande organisation',p:'A',sc:true},
+  {q:'Difficultés à vous rappeler vos rendez-vous ou obligations',p:'A',sc:true},
+  {q:'Éviter ou remettre à plus tard les tâches qui demandent beaucoup de réflexion',p:'A',sc:true},
+  {q:'Remuer ou tortiller les mains/pieds quand vous devez rester assis longtemps',p:'A',sc:true},
+  {q:'Vous sentir excessivement actif, comme entraîné par un moteur',p:'A',sc:true},
+  {q:'Fautes d\'étourderie sur un projet ennuyeux ou difficile',p:'B'},
+  {q:'Difficultés à vous concentrer sur un travail ennuyeux ou répétitif',p:'B'},
+  {q:'Difficultés à vous concentrer sur les propos de votre interlocuteur',p:'B'},
+  {q:'Égarer des choses ou difficultés à les retrouver',p:'B'},
+  {q:'Distrait par l\'activité ou le bruit autour de vous',p:'B'},
+  {q:'Quitter votre siège pendant réunions où rester assis est attendu',p:'B'},
+  {q:'Difficultés à vous tenir tranquille',p:'B'},
+  {q:'Difficultés à vous détendre et vous reposer',p:'B'},
+  {q:'Parler de façon excessive en société',p:'B'},
+  {q:'Terminer les phrases de vos interlocuteurs avant qu\'ils finissent',p:'B'},
+  {q:'Difficultés à attendre votre tour',p:'B'},
+  {q:'Interrompre les gens quand ils sont occupés',p:'B'},
+];
+
+// ═══ 2. WFIRS-S ═══
+const WFIRS = {
+  title:'WFIRS-S',
+  groups:[
+    {name:'A. Famille', desc:'Difficultés familiales', items:[
+      'Nuire aux relations avec les membres de votre famille',
+      'Causer des problèmes dans votre couple',
+      'Faire que vous comptez sur les autres pour faire les choses à votre place',
+      'Causer des querelles familiales',
+      'Empêcher la famille de s\'amuser ensemble',
+      'Nuire à votre habileté à vous occuper de votre famille',
+      'Causer des difficultés à trouver le juste équilibre des besoins familiaux',
+      'Empêcher de rester calme ou d\'éviter de vous fâcher',
+    ]},
+    {name:'B. Travail', desc:'Vie professionnelle', items:[
+      'Difficulté à effectuer ce qui est demandé',
+      'Rendement de travail affecté',
+      'Problèmes avec votre supérieur(e)',
+      'Difficulté à maintenir un emploi',
+      'Congédiement ou perte d\'emploi',
+      'Difficulté à travailler en groupe',
+      'Manque du travail, absentéisme',
+      'Arriver en retard',
+      'Difficulté à entreprendre de nouvelles tâches',
+      'Difficulté à atteindre votre plein potentiel',
+      'Faibles évaluations de rendement',
+    ]},
+    {name:'C. École', desc:'Études/formation', items:[
+      'Difficulté à prendre des notes',
+      'Difficulté à compléter vos devoirs ou projets',
+      'Difficulté à effectuer adéquatement vos travaux',
+      'Problèmes avec votre enseignant(e)',
+      'Problèmes avec le personnel administratif',
+      'Difficulté à maintenir le niveau scolaire requis',
+      'Absentéisme, ne pas se présenter aux cours',
+      'Arriver en retard',
+      'Difficulté à atteindre votre plein potentiel',
+      'Résultats scolaires instables',
+    ]},
+    {name:'D. Vie quotidienne', desc:'Aptitudes à la vie quotidienne', items:[
+      'Usage abusif de la télé, ordinateur ou jeux vidéos',
+      'Problèmes d\'hygiène personnelle',
+      'Difficulté à vous préparer à temps le matin',
+      'Difficulté à vous préparer au coucher',
+      'Problèmes de nutrition',
+      'Problèmes sexuels',
+      'Troubles du sommeil',
+      'Accident ou blessure',
+      'Inactivité physique',
+      'Difficulté à respecter les rendez-vous médicaux/dentistes',
+      'Difficulté avec les tâches ménagères',
+      'Difficulté à gérer vos finances',
+    ]},
+    {name:'E. Concept de soi', desc:'Image de soi', items:[
+      'Mauvaise perception de vous-même',
+      'Frustré(e) face à vous-même',
+      'Sentiment de découragement',
+      'Insatisfait(e) de votre vie',
+      'Impression d\'être incompétent(e)',
+    ]},
+    {name:'F. Social', desc:'Fonctionnement social', items:[
+      'Argumenter avec les autres',
+      'Difficulté à coopérer avec les autres',
+      'Difficulté à vous entendre avec les autres',
+      'Difficulté à vous amuser avec les autres',
+      'Difficulté à avoir des activités de loisirs',
+      'Difficulté à vous faire de nouveaux amis',
+      'Difficulté à maintenir vos amitiés',
+      'Tenir des propos inappropriés',
+      'Plaintes des voisins',
+    ]},
+    {name:'G. Risques', desc:'Comportements à risque', items:[
+      'Conduite automobile agressive',
+      'Faire autre chose en conduisant',
+      'Rages au volant',
+      'Détruire ou endommager des biens',
+      'Poser des gestes illicites',
+      'Ennuis avec la police',
+      'Cigarette',
+      'Marijuana',
+      'Consommation d\'alcool',
+      'Consommation de drogues illicites',
+      'Relations sexuelles non protégées',
+      'Comportement sexuel inapproprié',
+      'Être agressif(ve) physiquement',
+      'Être agressif(ve) verbalement',
+    ]},
+  ]
+};
+
+// ═══ 3. WSR (Weiss Symptom Record) ═══
+const WSR = {
+  title:'WSR',
+  groups:[
+    {name:'TDAH — Inattention', diag:'314.00', seuil:6, seuilMax:9, items:[
+      'Commet des erreurs d\'inattention',
+      'Difficulté à rester attentif à la tâche ou dans les activités plaisantes',
+      'Ne semble pas écouter quand on lui parle',
+      'Difficulté à suivre les instructions et à terminer la tâche',
+      'Est désorganisé dans ses tâches et activités',
+      'Attend la dernière minute, évite les tâches à effort mental soutenu',
+      'Perd des choses',
+      'Est facilement distrait',
+      'Tendance à oublier dans la vie de tous les jours',
+    ]},
+    {name:'TDAH — Hyperactivité/Impulsivité', diag:'314.01', seuil:6, seuilMax:9, items:[
+      'S\'agite ou bouge sur son siège',
+      'Difficulté à rester en place ou assis',
+      'A la bougeotte',
+      'Difficulté à rester silencieux dans les activités calmes',
+      'Toujours en action, comme « poussé par un moteur »',
+      'Parle trop',
+      'Répond avant la fin de la question',
+      'Difficulté à attendre son tour',
+      'Tendance à interrompre ou déranger les autres',
+    ]},
+    {name:'Opposition/Provocation', diag:'313.81', seuil:4, seuilMax:8, items:[
+      'Perd le contrôle de ses humeurs',
+      'Argumente avec les adultes',
+      'Est défiant ou refuse de suivre les consignes',
+      'Embête les autres délibérément',
+      'Blâme les autres plutôt que lui-même',
+      'Est susceptible',
+      'Est colérique ou rancunier',
+      'Est méchant ou cherche à se venger',
+    ]},
+    {name:'Tics', diag:'307.2', seuil:1, seuilMax:2, items:[
+      'Mouvements involontaires répétés (clignement, contraction)',
+      'Sons involontaires répétitifs (raclement, renifflement)',
+    ]},
+    {name:'Conduites', diag:'312.8', seuil:3, seuilMax:15, items:[
+      'Intimide ou menace les autres',
+      'Débute des altercations physiques',
+      'A utilisé une arme',
+      'Est cruel envers les personnes',
+      'Est cruel envers les animaux',
+      'A volé la personne qu\'il confrontait',
+      'A forcé une personne à une activité sexuelle',
+      'Met le feu intentionnellement',
+      'Détruit les biens des autres',
+      'S\'est introduit dans une maison ou immeuble',
+      'Ment pour obtenir ce qu\'il veut ou éviter des responsabilités',
+      'Vole sans confronter la victime',
+      'Ne rentre pas le soir malgré le couvre-feu',
+      'A fugué la nuit au moins 2 fois',
+      'S\'absente de l\'école ou du travail',
+    ]},
+    {name:'Dépression', diag:'296.2/3', seuil:5, seuilMax:9, seuilNote:'(≥5/9 > 2 sem.)', items:[
+      'Se sentir triste, malheureux ou dépressif',
+      'Perte d\'intérêt, démotivation',
+      'Se sentir sans valeur',
+      'Moins d\'énergie, moins productif',
+      'Sans espoir, pessimiste face au futur',
+      'Culpabilité excessif ou auto-accusation',
+      'Pensées d\'automutilation ou de suicide',
+      'Retrait social',
+      'Perte ou gain de poids significatif',
+      'Changement dans le sommeil',
+      'Agité ou léthargique, ralenti',
+      'Changement dans la concentration',
+    ]},
+    {name:'Manie', diag:'296.0/5/6', seuil:3, seuilMax:7, seuilNote:'(≥3 > 1 sem.)', items:[
+      'Variations importantes d\'humeur',
+      'Augmentation soudaine de l\'estime de soi',
+      'Baisse du besoin de sommeil',
+      'Pensées rapides',
+      'Parle trop, discours sous pression',
+      'Augmentation soudaine de motivation, agité',
+      'Activités à haut risque (dépenses, promiscuité)',
+    ]},
+    {name:'Anxiété', diag:'300.x', seuil:1, seuilMax:10, items:[
+      'Se tracasse concernant la santé, les proches, les catastrophes',
+      'Incapable de relaxer, nerveux',
+      'Douleurs chroniques inexpliquées',
+      'Pensées étranges incontrôlables / rituels répétés',
+      'Attaques de panique soudaines avec anxiété intense',
+      'Extrêmement timide, refuse de faire devant les autres',
+      'Refuse d\'aller à l\'école/travail, peur de la séparation',
+      'Peurs irrationnelles qui interfèrent avec les activités',
+      'Tire ses cheveux/sourcils, ronge ses ongles',
+      'Refuse de parler en public mais parle à la maison (mutisme)',
+    ]},
+    {name:'Habiletés sociales', diag:'299', seuil:3, seuilMax:12, items:[
+      'Ne maintient pas le contact visuel',
+      'Difficulté à se faire des amis',
+      'Difficulté à partager spontanément les émotions positives',
+      'Difficulté à se connecter sur le plan émotif',
+      'Retard de langage ou absence de communication',
+      'Problèmes de communication',
+      'Voix bizarre (monotone, sans tonalité)',
+      'Pensée concrète, abstraction pauvre',
+      'Idées fixes intenses dans un champ d\'intérêt',
+      'Routines/rituels rigides même non fonctionnels',
+      'Préoccupé par des objets ou parties d\'objet',
+      'Maniérismes moteurs répétitifs',
+    ]},
+    {name:'Psychose', diag:'295', seuil:1, seuilMax:6, items:[
+      'Idées bizarres, désorganisées',
+      'Entend des voix ou voit des choses qui ne sont pas là',
+      'Convaincu que les autres sont contre lui',
+      'Croit lire dans les pensées ou vice versa',
+      'Croit que la télévision parle spécifiquement de lui',
+      'Idées fixes en dehors de la réalité / entraves illogiques',
+    ]},
+    {name:'Sommeil', diag:'307.4', seuil:4, seuilMax:14, items:[
+      'Agité ou léthargique, au ralenti',
+      'Difficulté à s\'endormir',
+      'Difficulté à rester endormi',
+      'Profil de sommeil anormal le jour',
+      'S\'endort sans avertissement de jour',
+      'Somnambulisme',
+      'Cauchemars',
+      'S\'endort tard et se réveille tard',
+      'Changements quotidiens d\'horaire de sommeil',
+      'Ronflement excessif',
+      'Jambes sans repos en essayant de s\'endormir',
+      'Coups de pied brusques pendant le sommeil',
+      'Difficulté à respirer pendant le sommeil',
+    ]},
+    {name:'Substances', diag:'', seuil:1, seuilMax:5, items:[
+      'Alcool en excès (>2 verres/jr, >4 à la fois)',
+      'Fume la cigarette',
+      'Utilise quotidiennement de la marijuana',
+      'Utilise d\'autres drogues',
+      'Abus de médicaments sous prescription',
+    ]},
+    {name:'Alimentaire', diag:'307', seuil:1, seuilMax:6, items:[
+      'Vomit après les repas ou mange par excès',
+      'Sous son poids santé et refuse de manger',
+      'Image déformée de son corps',
+      'Difficile/capricieux pour la nourriture',
+      'Mange beaucoup de malbouffe',
+    ]},
+    {name:'Apprentissage', diag:'315', seuil:2, seuilMax:8, items:[
+      'Retard de langage expressif',
+      'Bégaiement',
+      'Difficulté à articuler',
+      'Performances sous la moyenne en lecture',
+      'Performances sous la moyenne en maths',
+      'Difficulté à écrire (malpropre, évite)',
+      'Performance scolaire variable',
+      'Sous son potentiel à l\'école',
+    ]},
+    {name:'Coordination', diag:'', seuil:1, seuilMax:3, items:[
+      'Difficulté en motricité globale (gym, sports, vélo)',
+      'Maladresse',
+      'Difficulté en motricité fine (boutons, lacets)',
+    ]},
+    {name:'Personnalité limite', diag:'301.83', seuil:5, seuilMax:9, items:[
+      'Difficulté à maintenir des relations',
+      'Peur de l\'abandon',
+      'Idées suicidaires récurrentes ou tentatives',
+      'Colères intenses',
+      'Changements majeurs d\'humeur',
+      'Comportement autodestructeur / blessures',
+      'Image de soi ou identité fragile',
+      'Se sentir vide à l\'intérieur',
+      'Réagit au stress par dissociation ou paranoïa transitoire',
+    ]},
+  ]
+};
+
+// ════════════════ RENDER ════════════════
+
+function qHTML(items, opts) {
+  let h = '';
+  items.forEach((it, i) => {
+    const q = typeof it === 'string' ? it : it.q;
+    const cls = it.sc ? 'sr' : '';
+    h += `<div class="qi ${cls}"><span class="ql"><span class="num">${i+1}</span> ${q}</span><div class="rg">`;
+    for (let j = 0; j < opts; j++) {
+      const l = opts === 5 ? F[j] : opts === 4 ? F4[j] : F5[j];
+      h += `<label class="r${j}"><input type="radio" name="q_${i}" value="${j}" onchange="rc()"><span>${l.s}</span></label>`;
+    }
+    h += '</div></div>';
+  });
+  return h;
+}
+
+function gv(i) { const e=document.querySelector(`input[name="q_${i}"]:checked`); return e?parseInt(e.value):null; }
+function sv(len) { let s=0,a=true; for(let i=0;i<len;i++){const v=gv(i);if(v===null){a=false;break}s+=v} return a?s:null; }
+function cntThr(start,len,thr){let c=0,a=true;for(let i=start;i<start+len;i++){const v=gv(i);if(v===null){a=false;break}if(v>=thr)c++}return a?c:null}
+
+function renderASRS() {
+  let h = '';
+  ASRS.forEach((it, i) => {
+    const cls = it.sc ? 'sr' : '';
+    h += `<div class="qi ${cls}"><span class="ql"><span class="num">${i+1}</span> ${it.q}</span><div class="rg">`;
+    h += `<label class="r0"><input type="radio" name="a${i}" value="0" onchange="rc()"><span>${F[0].s}</span></label>`;
+    h += `<label class="r1"><input type="radio" name="a${i}" value="1" onchange="rc()"><span>${F[1].s}</span></label>`;
+    h += `<label class="r2"><input type="radio" name="a${i}" value="2" onchange="rc()"><span>${F[2].s}</span></label>`;
+    h += `<label class="r3"><input type="radio" name="a${i}" value="3" onchange="rc()"><span>${F[3].s}</span></label>`;
+    h += `<label class="r4"><input type="radio" name="a${i}" value="4" onchange="rc()"><span>${F[4].s}</span></label>`;
+    h += '</div></div>';
+  });
+  document.getElementById('q_asrs').innerHTML = h;
+}
+
+let wfiIdx = 0;
+function renderWFIRS() {
+  let h = '';
+  let gi = 0;
+  WFIRS.groups.forEach(g => {
+    h += `<div style="font-size:12px;font-weight:600;color:#1e3a5f;margin:14px 0 4px;padding:4px 8px;background:#f1f5f9;border-radius:4px">${g.name} — ${g.desc}</div>`;
+    g.items.forEach((q, j) => {
+      const idx = gi + j;
+      h += `<div class="qi"><span class="ql"><span class="num">${++wfiIdx}</span> ${q}</span><div class="rg">`;
+      h += `<label class="r0"><input type="radio" name="w${idx}" value="0" onchange="rc()"><span>${F4[0].s}</span></label>`;
+      h += `<label class="r1"><input type="radio" name="w${idx}" value="1" onchange="rc()"><span>${F4[1].s}</span></label>`;
+      h += `<label class="r2"><input type="radio" name="w${idx}" value="2" onchange="rc()"><span>${F4[2].s}</span></label>`;
+      h += `<label class="r3"><input type="radio" name="w${idx}" value="3" onchange="rc()"><span>${F4[3].s}</span></label>`;
+      h += '</div></div>';
+    });
+    gi += g.items.length;
+  });
+  document.getElementById('q_wfirs').innerHTML = h;
+}
+
+function renderWSR() {
+  let h = '';
+  let gi = 0;
+  WSR.groups.forEach(g => {
+    const thr = g.seuil ? `Seuil ≥${g.seuil}/${g.seuilMax}` : '';
+    const note = g.seuilNote || '';
+    h += `<div style="font-size:12px;font-weight:600;color:#1e3a5f;margin:14px 0 4px;padding:4px 8px;background:#f1f5f9;border-radius:4px;display:flex;justify-content:space-between;align-items:center">`;
+    h += `<span>${g.name}${g.diag?' <span style="font-weight:400;color:#64748b;font-size:10px">'+g.diag+'</span>':''}</span>`;
+    h += `<span style="font-weight:400;font-size:10px;color:#64748b">${note||thr}</span>`;
+    h += `</div>`;
+    g.items.forEach((q, j) => {
+      const idx = gi + j;
+      h += `<div class="qi"><span class="ql"><span class="num">${j+1}</span> ${q}</span><div class="rg">`;
+      h += `<label class="r0"><input type="radio" name="s${idx}" value="0" onchange="rc()"><span>${F42[0].s}</span></label>`;
+      h += `<label class="r1"><input type="radio" name="s${idx}" value="1" onchange="rc()"><span>${F42[1].s}</span></label>`;
+      h += `<label class="r2"><input type="radio" name="s${idx}" value="2" onchange="rc()"><span>${F42[2].s}</span></label>`;
+      h += `<label class="r3"><input type="radio" name="s${idx}" value="3" onchange="rc()"><span>${F42[3].s}</span></label>`;
+      h += '</div></div>';
+    });
+    gi += g.items.length;
+  });
+  document.getElementById('q_wsr').innerHTML = h;
+}
+
+// ════════════════ SCORING ════════════════
+
+function totalWi(name, start, count) {
+  let s=0,a=true;
+  for(let i=start;i<start+count;i++){const e=document.querySelector(`input[name="${name}${i}"]:checked`);if(!e){a=false;break}s+=parseInt(e.value)}
+  return a?s:null;
+}
+
+function countWi(name, start, count, thr) {
+  let c=0,a=true;
+  for(let i=start;i<start+count;i++){const e=document.querySelector(`input[name="${name}${i}"]:checked`);if(!e){a=false;break}if(parseInt(e.value)>=thr)c++}
+  return a?c:null;
+}
+
+function rc() {
+  // ── ASRS ──
+  let asrsAok=true; let asrsA=0;
+  for(let i=0;i<6;i++){const v=parseInt(document.querySelector(`input[name="a${i}"]:checked`)?.value);if(isNaN(v)){asrsAok=false;break}asrsA+=v}
+  let asrsBok=true; let asrsB=0;
+  for(let i=6;i<18;i++){const v=parseInt(document.querySelector(`input[name="a${i}"]:checked`)?.value);if(isNaN(v)){asrsBok=false;break}asrsB+=v}
+  const asrsTot = asrsAok&&asrsBok ? asrsA+asrsB : null;
+
+  if (asrsAok) {
+    let scr=0;
+    for(let i=0;i<6;i++){const v=parseInt(document.querySelector(`input[name="a${i}"]:checked`).value);if(i<3? v>=4:v>=5)scr++}
+    const c=scr>=4?'bd-r':scr>=2?'bd-o':'bd-g';
+    const l=scr>=4?'Dépistage +':scr>=2?'±':'-';
+    document.getElementById('sub_asrs').innerHTML = `
+      <span class="tag ${scr>=4?'t-pos':scr>=2?'t-lim':'t-neg'}">Partie A: ${scr}/6 positifs (seuil ≥4)</span>
+    `;
+    document.getElementById('sp_asrs').innerHTML = `
+      <span class="pi">Partie A : <b>${asrsA}/24</b></span>
+      <span class="pi">Partie B : <b>${asrsB}/48</b></span>
+      <span class="pi">Total : <b>${asrsA+asrsB}/72</b></span>
+    `;
+    const p=(asrsA+asrsB)/72;
+    const el=document.getElementById('sc_asrs');el.classList.add('shw');
+    document.getElementById('sn_asrs').textContent=`${asrsA+asrsB}/72`;
+    const ip=document.getElementById('si_asrs');
+    if(scr>=4){ip.textContent='🔴 Dépistage ASRS positif — symptômes TDAH probables. Évaluation approfondie recommandée.';el.className='ssc shw sr'}
+    else if(scr>=2){ip.textContent='🟡 Dépistage limite — certains symptômes présents.';el.className='ssc shw so'}
+    else{ip.textContent='🟢 Dépistage négatif — peu de symptômes TDAH.';el.className='ssc shw sg'}
+    document.getElementById('sb_asrs').style.width=(p*100)+'%';
+  } else { document.getElementById('sc_asrs').classList.remove('shw'); }
+
+  // ── WFIRS-S ──
+  let wfOk=true; let gi=0; const wfDomains=[];
+  WFIRS.groups.forEach((g,di)=>{
+    const t = totalWi('w', gi, g.items.length);
+    gi += g.items.length;
+    if(t===null) wfOk=false;
+    wfDomains.push(t);
+  });
+  const wfTot = wfOk ? wfDomains.reduce((a,b)=>a+b,0) : null;
+
+  if(wfOk){
+    document.getElementById('sp_wfirs').innerHTML = wfDomains.map((t,i)=>`<span class="pi">${WFIRS.groups[i].name.split('.')[0]} : <b>${t}/${WFIRS.groups[i].items.length*3}</b></span>`).join('') + `<span class="pi">Total : <b>${wfTot}/207</b></span>`;
+    
+    // Count items ≥2 per domain
+    gi=0; const domPos=[];
+    WFIRS.groups.forEach((g,di)=>{
+      const c = countWi('w', gi, g.items.length, 2);
+      gi += g.items.length;
+      domPos.push(c);
+    });
+    const totalPos = domPos.reduce((a,b)=>a+b,0);
+    const avg2 = totalPos / WFIRS.groups.length;
+    document.getElementById('sub_wfirs').innerHTML = `<span class="tag ${avg2>=3?'t-pos':avg2>=1.5?'t-lim':'t-neg'}">Items ≥2 : ${totalPos}/${gi} (moy. ${avg2.toFixed(1)}/domaine)</span>`;
+
+    const p=wfTot/207;
+    const el=document.getElementById('sc_wfirs');el.classList.add('shw');
+    document.getElementById('sn_wfirs').textContent=`${wfTot}/207`;
+    if(avg2>=3){document.getElementById('si_wfirs').textContent='🔴 Handicap fonctionnel significatif lié au TDAH.';el.className='ssc shw sr'}
+    else if(avg2>=1.5){document.getElementById('si_wfirs').textContent='🟡 Handicap fonctionnel modéré.';el.className='ssc shw so'}
+    else{document.getElementById('si_wfirs').textContent='🟢 Peu d\'impact fonctionnel rapporté.';el.className='ssc shw sg'}
+    document.getElementById('sb_wfirs').style.width=(p*100)+'%';
+  } else { document.getElementById('sc_wfirs').classList.remove('shw'); }
+
+  // ── WSR ──
+  let wsOk=true; gi=0; const wsDom=[];
+  WSR.groups.forEach((g,di)=>{
+    const c = countWi('s', gi, g.items.length, 2);
+    gi += g.items.length;
+    if(c===null) wsOk=false;
+    wsDom.push(c);
+  });
+  const wsTot = wsOk ? wsDom.reduce((a,b)=>a+b,0) : null;
+
+  if(wsOk){
+    let pills = '';
+    gi=0;
+    WSR.groups.forEach((g,di)=>{
+      const c = wsDom[di];
+      const seuil = g.seuil || 0;
+      const cls = c>=seuil ? (seuil>0?'t-pos':'') : (c>=Math.ceil(seuil/2)?'t-lim':'t-neg');
+      const tag = `${g.name.split(' — ')[0]} ${c}/${g.items.length}${seuil>0?' (≥'+seuil+')':''}`;
+      pills += `<span class="tag ${cls}">${tag}</span>`;
+      gi += g.items.length;
+    });
+    document.getElementById('sub_wsr').innerHTML = pills;
+    
+    // Count positive diagnoses
+    let posDx=0; let totalWithSeuil=0;
+    WSR.groups.forEach((g,di)=>{
+      if(g.seuil && g.seuil>0){ totalWithSeuil++; if(wsDom[di]>=g.seuil) posDx++; }
+    });
+    document.getElementById('sp_wsr').innerHTML = `
+      <span class="pi">Diagnostics positifs : <b>${posDx}/${totalWithSeuil}</b></span>
+    `;
+
+    const p=Math.min((posDx/totalWithSeuil)*100, 100);
+    const el=document.getElementById('sc_wsr');el.classList.add('shw');
+    document.getElementById('sn_wsr').textContent=`${posDx}/${totalWithSeuil}`;
+    if(posDx>=4){document.getElementById('si_wsr').textContent='🔴 Plusieurs diagnostics potentiels. Consultation spécialisée impérative.';el.className='ssc shw sr'}
+    else if(posDx>=2){document.getElementById('si_wsr').textContent='🟡 Certains seuils diagnostiques atteints.';el.className='ssc shw so'}
+    else{document.getElementById('si_wsr').textContent='🟢 Peu de seuils diagnostiques atteints.';el.className='ssc shw sg'}
+    document.getElementById('sb_wsr').style.width=p+'%';
+  } else { document.getElementById('sc_wsr').classList.remove('shw'); }
+
+  updateGlobal(asrsTot, wfTot, wsOk, wsDom, asrsAok);
+}
+
+function updateGlobal(asrsTot, wfTot, wsOk, wsDom, asrsAok) {
+  const el=document.getElementById('gb');
+  if (asrsAok && wfOk && wsOk && wsDom) {
+    // ASRS screener
+    let scr=0;
+    for(let i=0;i<6;i++){const v=parseInt(document.querySelector(`input[name="a${i}"]:checked`).value);if(i<3? v>=4:v>=5)scr++}
+    const asrsPos = scr>=4;
+    
+    // WFIRS avg items ≥2
+    let gi=0; let domPos=[];
+    WFIRS.groups.forEach(g=>{domPos.push(countWi('w',gi,g.items.length,2));gi+=g.items.length});
+    const wfAvg = domPos.reduce((a,b)=>a+b,0)/WFIRS.groups.length;
+    const wfPos = wfAvg >= 3;
+    
+    // WSR positive diagnoses
+    let posDx=0; let totalS=0;
+    WSR.groups.forEach((g,di)=>{if(g.seuil&&g.seuil>0){totalS++;if(wsDom[di]>=g.seuil)posDx++}});
+    const wsPos = posDx >= 4;
+    
+    // Composite
+    const totPos = [asrsPos, wfPos, wsPos].filter(Boolean).length;
+    
+    // Score 
+    const asrsPct = scr>=6 ? 100 : scr>=4 ? 80 : scr>=2 ? 40 : 10;
+    const wfPct = wfAvg >= 4 ? 100 : wfAvg >= 3 ? 75 : wfAvg >= 1.5 ? 40 : 10;
+    const wsPct = posDx >= 6 ? 100 : posDx >= 4 ? 75 : posDx >= 2 ? 40 : 10;
+    const score = Math.round((asrsPct + wfPct + wsPct) / 3);
+
+    document.getElementById('gsMain').textContent = score + '%';
+    document.getElementById('gsBar').style.width = score + '%';
+    document.getElementById('gsSub').textContent = `${totPos}/3 instruments positifs`;
+    
+    document.getElementById('gsGrid').innerHTML = `
+      <div class="gi"><div class="gv" style="color:${asrsPos?'#ef4444':'#22c55e'}">${asrsPos?'+':'−'}</div><div class="gl">ASRS</div></div>
+      <div class="gi"><div class="gv" style="color:${wfPos?'#ef4444':'#22c55e'}">${wfPos?'+':'−'}</div><div class="gl">WFIRS</div></div>
+      <div class="gi"><div class="gv" style="color:${wsPos?'#ef4444':'#22c55e'}">${wsPos?'+':'−'}</div><div class="gl">WSR</div></div>
+      <div class="gi"><div class="gv">${posDx}</div><div class="gl">Dx WSR</div></div>
+    `;
+
+    if (totPos === 3) {
+      document.getElementById('gsInterp').innerHTML = '🔴 <strong>Profil TDAH très cohérent.</strong> Les 3 instruments convergent : symptômes (ASRS), retentissement fonctionnel (WFIRS) et diagnostic syndromique (WSR). Consultation spécialisée urgente.';
+    } else if (totPos >= 2) {
+      document.getElementById('gsInterp').innerHTML = '🟡 <strong>Signes évocateurs.</strong> 2 instruments sur 3 sont positifs. Une évaluation clinique est recommandée.';
+    } else if (totPos === 1) {
+      document.getElementById('gsInterp').innerHTML = '🟠 <strong>Signes partiels.</strong> Un seul instrument est positif. D\'autres causes peuvent expliquer les symptômes.';
+    } else {
+      document.getElementById('gsInterp').innerHTML = '🟢 <strong>Faible probabilité TDAH.</strong> Aucun instrument n\'atteint le seuil. Si des difficultés persistent, explorez d\'autres pistes.';
+    }
+  } else {
+    let done=0;
+    if(asrsAok)done++;
+    if(wfOk)done++;
+    if(wsOk)done++;
+    document.getElementById('gsMain').textContent = done + '/3';
+    document.getElementById('gsBar').style.width = (done/3*100)+'%';
+    document.getElementById('gsSub').textContent = `${done}/3 instruments complétés`;
+    document.getElementById('gsGrid').innerHTML = `<div class="gi"><div class="gv">${done}/3</div><div class="gl">Complétés</div></div>`;
+    document.getElementById('gsInterp').textContent = `Il reste ${3-done} instrument${3-done>1?'s':''} à remplir.`;
+  }
+}
+
+function fq() {
+  const q = document.getElementById('si').value.toLowerCase().trim();
+  const sections = document.querySelectorAll('.sc');
+  let visible = 0, total = 0;
+  
+  sections.forEach(sc => {
+    const items = sc.querySelectorAll('.qi');
+    let cv = 0;
+    items.forEach(el => {
+      const txt = el.textContent.toLowerCase();
+      const match = !q || txt.includes(q);
+      el.style.display = match ? '' : 'none';
+      if (match) cv++;
+      total++;
+    });
+    const card = sc;
+    if (!q || cv > 0) { card.style.display = ''; visible += cv; } 
+    else { card.style.display = 'none'; }
+  });
+  document.getElementById('scnt').textContent = q ? `${visible}/${total}` : '';
+}
+
+function ts(header) {
+  const body = header.nextElementSibling;
+  const icon = header.querySelector('.to');
+  body.classList.toggle('op');
+  icon.classList.toggle('op');
+}
+
+function ra() {
+  document.querySelectorAll('input[type="radio"]').forEach(el => el.checked = false);
+  rc();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderASRS();
+  renderWFIRS();
+  renderWSR();
+  document.getElementById('scnt').textContent = '';
+});
+</script>
+</body>
+</html>
