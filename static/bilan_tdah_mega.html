@@ -112,6 +112,12 @@
 </div>
 
 <!-- ═══ GLOBAL ═══ -->
+<div style="background:#fff;border-radius:12px;margin-bottom:14px;padding:10px 16px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:8px">
+  <span style="font-size:18px">🔍</span>
+  <input type="search" id="searchInput" placeholder="Chercher une question, un mot-clé, un test..." style="flex:1;border:none;outline:none;font-size:14px;padding:8px 0;background:transparent;-webkit-appearance:none" oninput="filterQuestions()">
+  <span id="searchCount" style="font-size:11px;color:#94a3b8;white-space:nowrap"></span>
+</div>
+
 <div class="gc" id="globalBox">
   <h2>📊 Résultat Global</h2>
   <div class="big" id="globalScore">—%</div>
@@ -885,6 +891,47 @@ function updateGlobal(ac) {
     document.getElementById('globalSummary').innerHTML = `<div class="gi"><div class="gv">${done}/15</div><div class="gl">Tests complétés</div></div>`;
     const left = 15 - done;
     document.getElementById('globalInterp').textContent = `${done} test${done>1?'s':''} complété${done>1?'s':''} sur 15. Il reste ${left} questionnaire${left>1?'s':''} à remplir.`;
+  }
+}
+
+function filterQuestions() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  let totalVisible = 0;
+  let totalQuestions = 0;
+
+  TESTS.forEach(t => {
+    const container = document.getElementById('q_' + t.id);
+    if (!container) return;
+    const items = container.querySelectorAll('.qi');
+    let visibleCount = 0;
+    let sectionMatch = t.name.toLowerCase().includes(q) || t.short.toLowerCase().includes(q);
+
+    items.forEach((el, i) => {
+      const text = t.items[i] ? (t.items[i].q + ' ' + (t.items[i].sc || '')).toLowerCase() : '';
+      const match = !q || sectionMatch || text.includes(q);
+      el.style.display = match ? '' : 'none';
+      if (match) visibleCount++;
+    });
+
+    totalVisible += visibleCount;
+    totalQuestions += items.length;
+
+    // Show/hide the whole section card
+    const card = container.closest('.sc');
+    if (card) {
+      if (!q || visibleCount > 0) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    }
+  });
+
+  const count = document.getElementById('searchCount');
+  if (q) {
+    count.textContent = `${totalVisible}/${totalQuestions} questions`;
+  } else {
+    count.textContent = '';
   }
 }
 
