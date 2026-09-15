@@ -1,0 +1,23 @@
+# données locales (jamais commitées)
+*.db
+jobs.db
+jobs_data.json
+linkedin_jobs.json
+docs/jobs.json
+docs/closed_jobs.json
+docs/dismissed_jobs.json
+.qa_runs/
+.env
+*.env
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# os / éditeurs
+.DS_Store
+.hermes/
+.idea/
+.vscode/

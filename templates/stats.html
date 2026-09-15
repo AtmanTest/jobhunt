@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Stats — JobHunt{% if env_label %} · {{ env_label }}{% endif %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/theme.css">
+<style>
+.container{max-width:1100px;margin:0 auto;padding:24px 32px}
+h1{font-size:22px;margin-bottom:4px}
+.sub{color:var(--text-dim);font-size:13px;margin-bottom:24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.card h2{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:12px}
+.num{font-size:28px;font-weight:800;color:var(--accent)}
+.row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-light);font-size:13px}
+.row:last-child{border:none}
+.label{color:var(--text-dim)}
+.val{font-family:'JetBrains Mono',monospace;color:var(--text)}
+.bar{height:6px;border-radius:3px;background:var(--border);margin:6px 0;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;background:var(--accent)}
+.bar-fill.green{background:var(--green)}
+.bar-fill.org{background:var(--orange)}
+.match-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.match-card:hover{border-color:var(--accent)}
+.match-title{font-size:13px;font-weight:600;color:var(--text)}
+.match-meta{font-size:11px;color:var(--text-dim)}
+.match-score{font-size:18px;font-weight:800;color:var(--green)}
+.badge{display:inline-block;background:var(--accent-glow);color:var(--accent);padding:1px 7px;border-radius:8px;font-size:10px;font-weight:600;margin:1px}
+.missing{background:var(--red-dim);color:var(--red)}
+</style>
+</head>
+<body>
+<header class="header">
+  <a href="/" class="header-logo" style="text-decoration:none;">⚡ JobHunt{% if env_label %} · {{ env_label }}{% endif %}</a>
+  <nav class="header-nav">
+    <a href="/">Dashboard</a>
+    <a href="/stats" class="active">📊 Stats</a>
+    <a href="/changelog">Changelog</a>
+  </nav>
+  <div class="header-right">
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Basculer thème">☀️</button>
+  </div>
+</header>
+<div class="container">
+  <h1>📊 Analyse & Stats</h1>
+  <div class="sub">{{ total_jobs }} offres analysées · v{{ version }}</div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>🎯 Top Matches</h2>
+      {% for j in top_matches[:10] %}
+      <div class="match-card">
+        <div>
+          <div class="match-title">{{ j.title[:55] }}{% if j.title|length > 55 %}…{% endif %}</div>
+          <div class="match-meta">{{ j.company }} · {{ j.source }}</div>
+        </div>
+        <div class="match-score">{{ j.match_score }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="card">
+      <h2>🧩 Skills Gap</h2>
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">Match: {{ skills_gap.match_rate }}%</div>
+      <div class="bar"><div class="bar-fill green" style="width:{{ skills_gap.match_rate }}%"></div></div>
+      <div style="margin-top:12px;font-size:12px;color:var(--text-dim);margin-bottom:6px">Compétences demandées :</div>
+      {% for s in skills_gap.top_demanded[:10] %}
+      <span class="badge {% if s in skills_gap.missing %}missing{% endif %}">{{ s }}</span>
+      {% endfor %}
+      {% if skills_gap.missing %}
+      <div style="margin-top:12px;font-size:12px;color:var(--orange)">⚠️ Manquantes: {{ skills_gap.missing|join(', ') }}</div>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h2>📡 Sources</h2>
+      {% for s in source_stats %}
+      <div class="row">
+        <span class="label">{{ s.name }}</span>
+        <span class="val">{{ s.total }} jobs · {{ s.freelance_pct }}% freelance{% if s.avg_tjm %} · ~{{ s.avg_tjm }}{% endif %}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="card">
+      <h2>🔁 Doublons</h2>
+      <div class="num">{{ duplicate_count }}</div>
+      <div style="font-size:12px;color:var(--text-dim);margin-top:4px">groupes d'offres similaires détectés</div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:16px;font-size:11px;color:var(--text-muted);border-top:1px solid var(--border)">
+    <a href="/" style="color:var(--accent);text-decoration:none">← Dashboard</a>
+  </div>
+</div>
+<script>
+(function(){
+  var theme = localStorage.getItem('jh-theme') || '';
+  var btn = document.getElementById('theme-btn');
+  if(theme==='dark'){document.documentElement.removeAttribute('data-theme');btn.textContent='☀️';}else{document.documentElement.setAttribute('data-theme','light');btn.textContent='🌙';}
+  window.toggleTheme=function(){var t=document.documentElement.getAttribute('data-theme');if(t==='light'){document.documentElement.removeAttribute('data-theme');localStorage.setItem('jh-theme','dark');btn.textContent='☀️';}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('jh-theme','');btn.textContent='🌙';}};
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Cover Letter — JobHunt{% if env_label %} · {{ env_label }}{% endif %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/theme.css">
+<style>
+.container{max-width:800px;margin:0 auto;padding:32px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;margin-bottom:16px}
+h1{font-size:20px;margin-bottom:4px}
+.sub{color:var(--text-dim);font-size:13px;margin-bottom:20px}
+.meta{font-size:12px;color:var(--text-dim);margin-bottom:20px;display:flex;gap:16px;flex-wrap:wrap}
+.letter{line-height:1.8;font-size:14px;white-space:pre-wrap;color:var(--text)}
+.letter strong{color:var(--accent)}
+.badges{display:flex;gap:6px;margin:16px 0}
+.badge{background:var(--accent-glow);color:var(--accent);padding:2px 10px;border-radius:12px;font-size:11px;font-weight:500}
+.btn{display:inline-block;padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;text-decoration:none;margin-right:8px;font-family:inherit}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-dim)}
+.btn-outline{border:1px solid var(--border);color:var(--text-dim);background:transparent}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+</style>
+</head>
+<body>
+<header class="header">
+  <a href="/" class="header-logo" style="text-decoration:none;">⚡ JobHunt{% if env_label %} · {{ env_label }}{% endif %}</a>
+  <div class="header-right">
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Basculer thème">☀️</button>
+  </div>
+</header>
+<div class="container">
+  <div class="card">
+    <h1>✉️ Cover Letter</h1>
+    <div class="sub">pour {{ job.title }} @ {{ job.company }}</div>
+    <div class="meta">
+      <span>🎯 Score: <strong style="color:var(--green)">{{ score }}/100</strong></span>
+      <span>📍 {{ job.location }}</span>
+      <span>🔗 <a href="{{ job.url }}" target="_blank" style="color:var(--accent)">Voir l'annonce</a></span>
+    </div>
+    {% if matched_skills %}
+    <div class="badges">
+      {% for s in matched_skills %}<span class="badge">{{ s }}</span>{% endfor %}
+    </div>
+    {% endif %}
+    <div class="letter">{{ cover_letter }}</div>
+    <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.querySelector('.letter').textContent);this.textContent='Copié ✓'">📋 Copier</button>
+      <a href="{{ job.url }}" target="_blank" class="btn btn-outline">🔗 Postuler</a>
+      <a href="/" class="btn btn-outline">← Retour</a>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var theme = localStorage.getItem('jh-theme') || '';
+  var btn = document.getElementById('theme-btn');
+  if(theme==='dark'){document.documentElement.removeAttribute('data-theme');btn.textContent='☀️';}else{document.documentElement.setAttribute('data-theme','light');btn.textContent='🌙';}
+  window.toggleTheme=function(){var t=document.documentElement.getAttribute('data-theme');if(t==='light'){document.documentElement.removeAttribute('data-theme');localStorage.setItem('jh-theme','dark');btn.textContent='☀️';}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('jh-theme','');btn.textContent='🌙';}};
+})();
+</script>
+</body>
+</html>
