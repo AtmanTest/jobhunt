@@ -1742,6 +1742,76 @@ def poc_ct_ai_api_score():
     })
 
 
+# ---------------------------------------------------------------------------
+# Chaîne de livraison virtuelle — déroulé complet du processus de test
+# ---------------------------------------------------------------------------
+@app.route("/poc-delivery")
+def poc_delivery():
+    """Vitrine : une livraison simulée, testée pour de vrai, du besoin au Go/No-Go."""
+    return render_template("poc_delivery.html")
+
+
+@app.route("/poc-delivery/api/scenario")
+def poc_delivery_api_scenario():
+    """Renvoie tout le déroulé : données + campagnes réellement exécutées."""
+    import virtual_delivery as vd
+
+    scenario = vd.scenario_complet()
+    campagnes = {
+        "v1_execution": {
+            "campagne": scenario["v1_campagne"],
+            "anomalies": scenario["v1_anomalies"],
+            "criteres_sortie": scenario["v1_verdict"],
+        },
+        "v2_confirmation": {"campagne": scenario["v2_confirmation"],
+                            "anomalies": vd.rapports_anomalie(scenario["v2_confirmation"]["resultats"])},
+        "v2_regression": {
+            "campagne": scenario["v2_regression"],
+            "anomalies": scenario["v2_anomalies"],
+            "criteres_sortie": scenario["v2_verdict"],
+        },
+        "v3_confirmation": {"campagne": scenario["v3_confirmation"],
+                            "anomalies": vd.rapports_anomalie(scenario["v3_confirmation"]["resultats"])},
+        "v3_regression": {
+            "campagne": scenario["v3_regression"],
+            "anomalies": scenario["v3_anomalies"],
+            "criteres_sortie": scenario["v3_verdict"],
+        },
+    }
+    verts_v1 = {r["cas"] for r in scenario["v1_campagne"]["resultats"] if r["statut"] == "réussi"}
+    rouges_v2 = set(scenario["v2_regression"]["synthese"]["ids_en_echec"])
+    campagnes["regressions_nouvelles"] = sorted(verts_v1 & rouges_v2)
+
+    cas = [{k: v for k, v in c.items() if k not in ("fonction", "attendu_valeur")}
+           for c in vd.CAS_DE_TEST]
+    return jsonify({
+        "demande": vd.DEMANDE_METIER,
+        "user_stories": vd.USER_STORIES,
+        "etapes": vd.ETAPES,
+        "versions": vd.VERSIONS,
+        "cas": cas,
+        "tracabilite": vd.tracabilite(),
+        "campagnes": campagnes,
+        "genere_le": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+    })
+
+
+@app.route("/poc-delivery/api/campagne", methods=["POST"])
+def poc_delivery_api_campagne():
+    """Relance une campagne réelle (le visiteur peut rejouer l'exécution)."""
+    import virtual_delivery as vd
+
+    charge = request.get_json(silent=True) or {}
+    version = str(charge.get("version") or vd.VERSION_LIVREE)
+    if version not in vd.VERSIONS:
+        return jsonify({"error": f"version inconnue : {version}"}), 400
+    cas_ids = charge.get("cas_ids") or None
+    campagne = vd.executer_campagne(version, cas_ids=cas_ids)
+    anomalies = vd.rapports_anomalie(campagne["resultats"])
+    return jsonify({"campagne": campagne, "anomalies": anomalies,
+                    "criteres_sortie": vd.evaluer_criteres_sortie(campagne["resultats"], anomalies)})
+
+
 @app.route("/qa")
 def qa_dashboard():
     return render_template("qa.html")
