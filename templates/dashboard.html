@@ -1483,6 +1483,13 @@
       </div>
       <div class="filter-spacer"></div>
       {% if country_counts|selectattr('key', 'equalto', 'france')|map(attribute='count')|first > 0 %}
+      <div class="filter-group" data-type="budget" title="Budget minimum (TJM analysé, borne inclusive)">
+        <button class="filter-btn active" data-val="all">💰 Tout budget</button>
+        <button class="filter-btn" data-val="500">💰 ≥ 500</button>
+        <button class="filter-btn" data-val="600">💰 ≥ 600</button>
+        <button class="filter-btn" data-val="700">💰 ≥ 700</button>
+      </div>
+      <div class="filter-spacer"></div>
       <div class="filter-group" data-type="location">
         <button class="filter-btn active" data-val="all">🇫🇷 France entière</button>
         <button class="filter-btn" data-val="idf">🏙️ IDF</button>
@@ -1523,7 +1530,7 @@
       <div class="job-list paginated-list" data-per-page="3">
       {% if country_data.jobs %}
       {% for job in country_data.jobs %}
-        <div class="job-card {% if job.applied %}applied{% endif %} swipe-card" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}" data-auto="{%- set autoc = ((job.title or '') + ' ' + ((job.tags or '')|replace(',',' ') + ' ' + ((job.matched_skills or [])|join(' ')))|lower) -%}{%- if 'automation' in autoc or 'automated' in autoc or 'automat' in autoc or 'selenium' in autoc or 'playwright' in autoc or 'cypress' in autoc or 'ci/cd' in autoc or 'test framework' in autoc or 'llm' in autoc or 'machine learning' in autoc or ' ai ' in autoc -%}auto{%- else -%}manual{%- endif -%}">
+        <div class="job-card {% if job.applied %}applied{% endif %} swipe-card" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}" data-budget="{{ job.tjm_analysis.tjm if job.tjm_analysis and job.tjm_analysis.tjm else '' }}" data-auto="{%- set autoc = ((job.title or '') + ' ' + ((job.tags or '')|replace(',',' ') + ' ' + ((job.matched_skills or [])|join(' ')))|lower) -%}{%- if 'automation' in autoc or 'automated' in autoc or 'automat' in autoc or 'selenium' in autoc or 'playwright' in autoc or 'cypress' in autoc or 'ci/cd' in autoc or 'test framework' in autoc or 'llm' in autoc or 'machine learning' in autoc or ' ai ' in autoc -%}auto{%- else -%}manual{%- endif -%}">
           <button class="btn-dismiss" onclick="dismissJob({{ job.id }}, this);event.stopPropagation();" title="Masquer">✕</button>
           <div class="swipe-overlay swipe-overlay-left"><span>❌ Dismiss</span></div>
           <div class="swipe-overlay swipe-overlay-right"><span>Ouvrir →</span></div>
@@ -1590,7 +1597,7 @@
       <div class="job-list paginated-list" data-per-page="3">
       {% if tous_jobs %}
       {% for job in tous_jobs %}
-        <div class="job-card {% if job.applied %}applied{% endif %} swipe-card" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}">
+        <div class="job-card {% if job.applied %}applied{% endif %} swipe-card" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}" data-budget="{{ job.tjm_analysis.tjm if job.tjm_analysis and job.tjm_analysis.tjm else '' }}">
           <button class="btn-dismiss" onclick="dismissJob({{ job.id }}, this);event.stopPropagation();" title="Masquer">✕</button>
           <div class="swipe-overlay swipe-overlay-left"><span>❌ Dismiss</span></div>
           <div class="swipe-overlay swipe-overlay-right"><span>Ouvrir →</span></div>
@@ -1719,6 +1726,7 @@ function runFilters() {
   const auto = document.querySelector('[data-type="automation"] .filter-btn.active')?.dataset.val || 'all';
   const fresh = document.querySelector('[data-type="freshness"] .filter-btn.active')?.dataset.val || 'all';
   const loc = document.querySelector('[data-type="location"] .filter-btn.active')?.dataset.val || 'all';
+  const budget = document.querySelector('[data-type="budget"] .filter-btn.active')?.dataset.val || 'all';
   activePanel.querySelectorAll('.job-card, .featured-card').forEach(card => {
     const rmMatch = rm === 'all' || detectRemoteType(card) === rm;
     const autoMatch = auto === 'all' || (card.dataset.auto || 'manual') === auto;
@@ -1726,7 +1734,12 @@ function runFilters() {
     const freshMatch = fresh === 'all' || fresh === f;
     const z = detectLocationZone(card);
     const locMatch = loc === 'all' || loc === z;
-    const match = rmMatch && freshMatch && locMatch && autoMatch;
+    // Règle métier du budget : borne inclusive ; une offre sans budget analysé est
+    // écartée dès qu'un seuil est demandé (on ne suppose jamais un budget absent).
+    const budgetMatch = budget === 'all'
+      || (card.dataset.budget !== '' && card.dataset.budget !== undefined
+          && Number(card.dataset.budget) >= Number(budget));
+    const match = rmMatch && freshMatch && locMatch && autoMatch && budgetMatch;
     card.classList.toggle('filtered-out', !match);
     card.classList.toggle('filtered-in', match);
   });

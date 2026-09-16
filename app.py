@@ -44,7 +44,9 @@ from scraper import init_db, fetch_all, fetch_all_new_sources, save_jobs, get_jo
 from version import get_version, get_git_commit, get_git_tag, is_dirty, DB_SCHEMA_VERSION
 import unicodedata
 
-from matcher import _norm, match_job_to_cv, analyze_tjm, detect_duplicates, analyze_skills_gap, source_stats as src_stats
+from matcher import (_norm, analyze_skills_gap, analyze_tjm, detect_duplicates,
+                     filtrer_par_budget, match_job_to_cv)
+from matcher import source_stats as src_stats
 
 # ─── QA Module ───────────────────────────────────────────────────
 QA_RUNS_DIR = os.path.join(os.path.dirname(__file__), ".qa_runs")
@@ -1130,6 +1132,7 @@ def stats_page():
         duplicate_count=len(dup_groups),
         total_jobs=len(all_jobs),
         version=get_version())
+@app.route("/api/jobs")
 def api_jobs():
     filters = {}
     if request.args.get("qa"):
@@ -1140,8 +1143,16 @@ def api_jobs():
         filters["search"] = request.args.get("search")
     if request.args.get("source"):
         filters["source"] = request.args.get("source")
-    
+
     jobs = get_jobs(filters)
+
+    # Filtre par budget minimum : le TJM est analysé depuis le champ libre « salary »,
+    # il ne peut pas être exprimé en SQL — on filtre donc après lecture, via la
+    # fonction testée unitairement (matcher.filtrer_par_budget).
+    budget_min = request.args.get("budget_min", type=int)
+    if budget_min is not None:
+        jobs = filtrer_par_budget(jobs, budget_min)
+
     return jsonify(jobs)
 
 
@@ -1672,6 +1683,15 @@ CT_AI_EVIDENCE_PATH = os.path.join(CT_AI_DIR, "evidence.json")
 CT_AI_SEUIL = 40
 
 
+def _lifecycle_data():
+    """Charge la preuve du cycle de vie (scripts/build_lifecycle.py)."""
+    try:
+        with open(os.path.join(CT_AI_DIR, "lifecycle.json"), encoding="utf-8") as fh:
+            return json.load(fh)
+    except (OSError, ValueError):
+        return None
+
+
 def _ct_ai_evidence():
     """Charge la preuve générée par scripts/ct_ai_evidence.py (exécution réelle)."""
     try:
@@ -1679,6 +1699,25 @@ def _ct_ai_evidence():
             return json.load(fh)
     except (OSError, ValueError):
         return None
+
+
+@app.route("/cycle-de-vie")
+def cycle_de_vie():
+    """Cycle de vie complet de JobHunt : du besoin métier à l'amélioration continue.
+
+    La page ne raconte rien : elle affiche les mesures produites par
+    scripts/build_lifecycle.py (suites exécutées, couverture calculée, code et
+    correctifs lus dans le dépôt).
+    """
+    import markdown as _markdown
+
+    data = _lifecycle_data()
+    journal = ""
+    chemin_journal = os.path.join(CT_AI_DIR, "tdd-journal.md")
+    if os.path.exists(chemin_journal):
+        with open(chemin_journal, encoding="utf-8") as fh:
+            journal = _markdown.markdown(fh.read(), extensions=["tables", "fenced_code"])
+    return render_template("poc_lifecycle.html", p=data, journal=journal)
 
 
 @app.route("/poc-ct-ai")

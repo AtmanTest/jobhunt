@@ -1,0 +1,464 @@
+{
+  "genere_le": "16/09/2026 23:48:28",
+  "recit": {
+    "demande": {
+      "id": "DM-2026-021",
+      "titre": "Écarter les offres sous le budget minimum du freelance",
+      "demandeur": "Utilisateur pilote (rôle métier et propriétaire du produit)",
+      "contexte": "Le tableau de bord classe et filtre les offres, mais aucune vue ne permet d'écarter les missions dont le tarif journalier est sous le seuil recherché. Le budget figure dans un champ texte libre, il doit être interprété avant comparaison.",
+      "perimetre": "Filtre budget minimum sur le tableau de bord + filtre équivalent dans l'API des offres.",
+      "hors_perimetre": "Négociation tarifaire, conversion de devises, budget maximum.",
+      "valeur": "Ne plus perdre de temps sur des offres hors budget, et rendre la règle vérifiable.",
+      "criteres_metier": [
+        "Une offre exactement au budget minimum est retenue",
+        "Une offre sans budget renseigné est écartée dès qu'un seuil est demandé",
+        "Le filtre s'applique quel que soit le marché de l'offre"
+      ]
+    },
+    "stories": [
+      {
+        "id": "US-201",
+        "titre": "Filtrer les offres par budget minimum (TJM)",
+        "priorite": "Must",
+        "valeur": 5,
+        "risque": 4,
+        "risque_justification": "Le budget est un texte libre interprété par analyse : une borne mal choisie écarte silencieusement des offres valables.",
+        "criteres": [
+          "Étant donné une offre à 600 exactement, quand je filtre à 600, alors elle est affichée",
+          "Étant donné une offre à 500, quand je filtre à 600, alors elle est masquée",
+          "Étant donné une offre sans budget, quand je filtre à 600, alors elle est masquée"
+        ]
+      },
+      {
+        "id": "US-202",
+        "titre": "Le même filtre côté API",
+        "priorite": "Should",
+        "valeur": 3,
+        "risque": 3,
+        "risque_justification": "Deux implémentations de la même règle (navigateur et serveur) doivent rester alignées.",
+        "criteres": [
+          "GET /api/jobs?budget_min=600 ne renvoie que des offres à TJM analysé ≥ 600",
+          "Le filtre ne peut jamais ajouter d'offres à la réponse"
+        ]
+      },
+      {
+        "id": "US-203",
+        "titre": "Garantir la disponibilité des points d'entrée de l'API",
+        "priorite": "Must",
+        "valeur": 4,
+        "risque": 4,
+        "risque_justification": "Un endpoint déclaré sans route est invisible : le défaut ne se voit qu'en test.",
+        "criteres": [
+          "Chaque endpoint listé dans l'application répond autre chose qu'un 404",
+          "Les filtres documentés de l'API restent acceptés"
+        ]
+      }
+    ],
+    "strategie": {
+      "niveaux": [
+        {
+          "niveau": "Unitaire",
+          "outil": "pytest",
+          "portee": "règle métier du budget (matcher.filtrer_par_budget)",
+          "nb_tests": 12,
+          "execution": "locale et CI"
+        },
+        {
+          "niveau": "Intégration",
+          "outil": "pytest + client Flask",
+          "portee": "contrat de l'API des offres",
+          "nb_tests": 9,
+          "execution": "locale et CI"
+        },
+        {
+          "niveau": "Composant",
+          "outil": "pytest",
+          "portee": "moteur de classement, TJM, déduplication",
+          "nb_tests": 63,
+          "execution": "locale et CI"
+        },
+        {
+          "niveau": "Scénarios métier (BDD)",
+          "outil": "pytest-bdd",
+          "portee": "parcours décrits en Gherkin",
+          "nb_tests": 69,
+          "execution": "locale et CI"
+        },
+        {
+          "niveau": "Bout en bout navigateur",
+          "outil": "Playwright (Chromium)",
+          "portee": "interface réelle",
+          "nb_tests": 10,
+          "execution": "mesurée ici dans un navigateur réel"
+        }
+      ],
+      "techniques": [
+        {
+          "technique": "Partition d'équivalence",
+          "application": "offre avec budget / sans budget"
+        },
+        {
+          "technique": "Analyse des valeurs limites",
+          "application": "seuil exact (600), juste au-dessus (651), juste en dessous (520), au-delà de tous"
+        },
+        {
+          "technique": "Table de décision",
+          "application": "combinaison budget × disponibilité du budget"
+        },
+        {
+          "technique": "Test de régression",
+          "application": "endpoints de l'API et filtres voisins"
+        }
+      ],
+      "criteres_entree": [
+        "Code livré et compilable",
+        "Jeu d'essai disponible",
+        "Environnement de test isolé (base en mémoire ou locale)"
+      ],
+      "criteres_sortie": [
+        "Aucun échec sur les tests critiques",
+        "Aucune anomalie bloquante ou majeure ouverte",
+        "Suite de régression exécutée en totalité",
+        "Aucun nouvel échec dans la suite existante",
+        "Couverture des modules touchés mesurée et publiée"
+      ]
+    }
+  },
+  "demande_stories": [
+    {
+      "id": "US-201",
+      "titre": "Filtrer les offres par budget minimum (TJM)",
+      "priorite": "Must",
+      "valeur": 5,
+      "risque": 4,
+      "risque_justification": "Le budget est un texte libre interprété par analyse : une borne mal choisie écarte silencieusement des offres valables.",
+      "criteres": [
+        "Étant donné une offre à 600 exactement, quand je filtre à 600, alors elle est affichée",
+        "Étant donné une offre à 500, quand je filtre à 600, alors elle est masquée",
+        "Étant donné une offre sans budget, quand je filtre à 600, alors elle est masquée"
+      ]
+    },
+    {
+      "id": "US-202",
+      "titre": "Le même filtre côté API",
+      "priorite": "Should",
+      "valeur": 3,
+      "risque": 3,
+      "risque_justification": "Deux implémentations de la même règle (navigateur et serveur) doivent rester alignées.",
+      "criteres": [
+        "GET /api/jobs?budget_min=600 ne renvoie que des offres à TJM analysé ≥ 600",
+        "Le filtre ne peut jamais ajouter d'offres à la réponse"
+      ]
+    },
+    {
+      "id": "US-203",
+      "titre": "Garantir la disponibilité des points d'entrée de l'API",
+      "priorite": "Must",
+      "valeur": 4,
+      "risque": 4,
+      "risque_justification": "Un endpoint déclaré sans route est invisible : le défaut ne se voit qu'en test.",
+      "criteres": [
+        "Chaque endpoint listé dans l'application répond autre chose qu'un 404",
+        "Les filtres documentés de l'API restent acceptés"
+      ]
+    }
+  ],
+  "tdd": {
+    "rouge": "Étape rouge enregistrée lors de l'exécution initiale (voir 05-techniques.md) : ImportError: cannot import name 'filtrer_par_budget'",
+    "vert": "============================= test session starts ==============================\ncollected 21 items\ntests/test_budget_filter.py ...............                              [ 71%]\ntests/test_api_routes.py ......                                          [100%]\n============================= 21 passed in 11.43s ==============================",
+    "resume": {
+      "passes": 21,
+      "echecs": 0,
+      "erreurs": 0,
+      "ignores": 0,
+      "duree": "11.43"
+    }
+  },
+  "campagnes": {
+    "unitaires_et_integration": {
+      "sortie": "============================= test session starts ==============================\ncollected 21 items\ntests/test_budget_filter.py ...............                              [ 71%]\ntests/test_api_routes.py ......                                          [100%]\n============================= 21 passed in 11.43s ==============================",
+      "resume": {
+        "passes": 21,
+        "echecs": 0,
+        "erreurs": 0,
+        "ignores": 0,
+        "duree": "11.43"
+      }
+    },
+    "api_bdd": {
+      "sortie": "============================= test session starts ==============================\ncollected 5 items\ntests/test_scenarios.py .....                                            [100%]\n============================== 5 passed in 11.83s ==============================",
+      "resume": {
+        "passes": 5,
+        "echecs": 0,
+        "erreurs": 0,
+        "ignores": 0,
+        "duree": "11.83"
+      }
+    },
+    "suite_complete": {
+      "sortie": "FAILED tests/test_scenarios.py::test_job_alertcheck_toutes_les_2h - pytest_bd...\nFAILED tests/test_scenarios.py::test_voir_les_colonnes_kanban - pytest_bdd.ex...\nFAILED tests/test_scenarios.py::test_déplacer_une_offre_dans_le_pipeline - py...\nFAILED tests/test_scenarios.py::test_recherche_en_temps_réel - pytest_bdd.exc...\nFAILED tests/test_scenarios.py::test_filtre_par_séniorité - pytest_bdd.except...\nFAILED tests/test_scenarios.py::test_filtres_combinés - pytest_bdd.exceptions...\nFAILED tests/test_scenarios.py::test_scraping_nominal_avec_résultats_valides\nFAILED tests/test_scenarios.py::test_scraping_nominal_via_rss - AssertionErro...\nFAILED tests/test_scenarios.py::test_bug001_keyerror_sur_offre_sans_salary - ...\nFAILED tests/test_scenarios.py::test_bug002_filtre_acceptait_qa_director - As...\nFAILED tests/test_scenarios.py::test_bug003_doublon_avec_casse_différente - A...\nFAILED tests/test_scenarios.py::test_deux_offres_même_titre__même_boîte_mais_url_différente__doublon\nFAILED tests/test_scenarios.py::test_linkedin_scraper_navigue_via_url_directe_pas_js_eval\n================== 26 failed, 153 passed, 6 skipped in 12.78s ==================",
+      "resume": {
+        "passes": 153,
+        "echecs": 26,
+        "erreurs": 0,
+        "ignores": 6,
+        "duree": "12.78"
+      }
+    },
+    "end_to_end": {
+      "sortie": "  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\nplaywright/test_dashboard.py::test_dismiss_button_does_not_navigate[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_dismiss_button_does_not_navigate[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\nplaywright/test_dashboard.py::test_apply_button_is_only_clickable_link[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_apply_button_is_only_clickable_link[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n======================= 10 passed, 10 warnings in 21.71s =======================",
+      "resume": {
+        "passes": 10,
+        "echecs": 0,
+        "erreurs": 0,
+        "ignores": 0,
+        "duree": "21.71"
+      },
+      "serveur_de_test": "127.0.0.1:5097 (démarré et arrêté pendant la mesure)"
+    }
+  },
+  "couverture": {
+    "modules": [
+      {
+        "module": "app.py",
+        "instructions": 1292,
+        "non_couvertes": 825,
+        "couverture": 36
+      },
+      {
+        "module": "matcher.py",
+        "instructions": 187,
+        "non_couvertes": 37,
+        "couverture": 80
+      },
+      {
+        "module": "virtual_delivery.py",
+        "instructions": 126,
+        "non_couvertes": 8,
+        "couverture": 94
+      }
+    ],
+    "total": {
+      "instructions": 1605,
+      "non_couvertes": 870,
+      "couverture": 46
+    }
+  },
+  "anomalies": [
+    {
+      "id": "AN-101",
+      "titre": "L'endpoint /api/jobs ne répond plus : route non déclarée",
+      "gravite": "bloquante",
+      "detecte_par": "test d'intégration écrit pour une nouvelle fonctionnalité",
+      "origine": "fonction api_jobs présente mais décorateur @app.route disparu",
+      "impact": "5 scénarios BDD en échec, aucun consommateur d'API ne pouvait lire les offres",
+      "statut": "corrigée et vérifiée",
+      "preuve": "GET /api/jobs → 404 avant, 200 avec une liste JSON après"
+    },
+    {
+      "id": "AN-102",
+      "titre": "La suite end-to-end ne pouvait pas s'exécuter",
+      "gravite": "majeure",
+      "detecte_par": "exécution de la suite Playwright existante",
+      "origine": "pytest-playwright absent des dépendances alors que les scénarios utilisent la fixture « page »",
+      "impact": "9 scénarios navigateur en erreur : la couverture E2E annoncée n'existait pas",
+      "statut": "corrigée et vérifiée",
+      "preuve": "10 scénarios exécutés dans un vrai navigateur"
+    },
+    {
+      "id": "AN-103",
+      "titre": "Le filtre budget était absent du produit",
+      "gravite": "majeure",
+      "detecte_par": "analyse de la demande métier",
+      "origine": "besoin exprimé, jamais implémenté ni spécifié",
+      "impact": "les offres sous le seuil de TJM restaient affichées, sans moyen de les écarter",
+      "statut": "implémentée en TDD",
+      "preuve": "12 tests unitaires + 3 tests d'intégration + 1 scénario navigateur"
+    }
+  ],
+  "historique": {
+    "echecs_avant": 34,
+    "echecs_apres": 26,
+    "passes_avant": 102,
+    "passes_apres": 153,
+    "nouveaux_echecs": 0,
+    "resolus": 8,
+    "detail_resolus": [
+      "5 scénarios d'API (décorateur de route manquant)",
+      "3 scénarios de filtrage (détection par mot entier dans le moteur de classement)"
+    ]
+  },
+  "code": [
+    {
+      "titre": "matcher.filtrer_par_budget",
+      "bloc": {
+        "fichier": "matcher.py",
+        "debut": 166,
+        "contenu": "def filtrer_par_budget(offres, budget_min=None):\n    \"\"\"Retient les offres dont le TJM analysé atteint le budget minimum.\n\n    Règle métier validée avec le PO :\n      - la borne est inclusive (une offre à 600 passe un budget de 600) ;\n      - une offre sans budget renseigné est exclue dès qu'un budget est demandé :\n        on ne suppose jamais un budget absent, on l'écarte ;\n      - un budget absent (None) ne filtre rien ; un budget à 0 demande simplement\n        que le budget soit renseigné ;\n      - l'ordre d'entrée est conservé : le tri est la responsabilité de trier().\n    \"\"\"\n    if not offres:\n        return []\n    if budget_min is None:\n        return list(offres)\n    retenues = []\n    for offre in offres:\n        if not isinstance(offre, dict):\n            continue\n        tjm = analyze_tjm(offre).get(\"tjm\")"
+      },
+      "role": "La règle métier du budget, écrite après les tests (TDD) : borne inclusive, offre sans budget écartée, ordre d'entrée conservé."
+    },
+    {
+      "titre": "app.api_jobs (route rétablie)",
+      "bloc": {
+        "fichier": "app.py",
+        "debut": 1136,
+        "contenu": "def api_jobs():\n    filters = {}\n    if request.args.get(\"qa\"):\n        filters[\"qa_only\"] = request.args.get(\"qa\") == \"1\"\n    if request.args.get(\"unapplied\"):\n        filters[\"not_applied\"] = request.args.get(\"unapplied\") == \"1\"\n    if request.args.get(\"search\"):\n        filters[\"search\"] = request.args.get(\"search\")\n    if request.args.get(\"source\"):\n        filters[\"source\"] = request.args.get(\"source\")\n\n    jobs = get_jobs(filters)\n\n    # Filtre par budget minimum : le TJM est analysé depuis le champ libre « salary »,\n    # il ne peut pas être exprimé en SQL — on filtre donc après lecture, via la\n    # fonction testée unitairement (matcher.filtrer_par_budget).\n    budget_min = request.args.get(\"budget_min\", type=int)\n    if budget_min is not None:\n        jobs = filtrer_par_budget(jobs, budget_min)\n\n    return jsonify(jobs)\n"
+      },
+      "role": "Le point d'entrée de l'API des offres : lecture des filtres, puis filtre budget sur le TJM analysé (impossible en SQL, le budget est un texte libre)."
+    },
+    {
+      "titre": "tests.test_budget_filter (niveau unitaire)",
+      "bloc": {
+        "fichier": "tests/test_budget_filter.py",
+        "debut": 34,
+        "contenu": "class TestFiltreBudget:\n    def test_borne_inclusive_au_seuil(self):\n        \"\"\"Une offre exactement au budget minimum doit être retenue.\"\"\"\n        retenues = filtrer_par_budget([_offre(\"Offre 600 pile\", \"600 €/jour\")], 600)\n        assert [o[\"title\"] for o in retenues] == [\"Offre 600 pile\"]\n\n    def test_moyenne_de_plage_utilisee_comme_tjm(self):\n        \"\"\"« 600-700 €/jour » est analysé à 650 : retenue à 600, exclue à 700.\"\"\"\n        assert filtrer_par_budget([_offre(\"Plage\", \"600-700 €/jour\")], 600) != []\n        assert filtrer_par_budget([_offre(\"Plage\", \"600-700 €/jour\")], 700) == []\n\n    def test_offres_sans_budget_exclues(self):\n        retenues = filtrer_par_budget(OFFRES, 500)\n        titres = [o[\"title\"] for o in retenues]\n        assert \"Offre sans budget\" not in titres\n        assert \"Offre budget illisible\" not in titres\n\n    def test_budget_absent_ne_filtre_rien(self):\n        assert len(filtrer_par_budget(OFFRES, None)) == len(OFFRES)\n\n    def test_budget_zero_conserve_toutes_les_offres_chiffrees(self):\n        titres = [o[\"title\"] for o in filtrer_par_budget(OFFRES, 0)]\n        assert titres == [\"Offre 900\", \"Offre 600\", \"Offre 520\"]\n\n    def test_ordre_d_entree_conserve(self):\n        titres = [o[\"title\"] for o in filtrer_par_budget(OFFRES, 500)]"
+      },
+      "role": "Les tests écrits AVANT le code : borne inclusive, absence de budget, valeurs limites."
+    },
+    {
+      "titre": "tests.test_api_routes (non-régression)",
+      "bloc": {
+        "fichier": "tests/test_api_routes.py",
+        "debut": 26,
+        "contenu": "class TestRoutesApi:\n    @pytest.mark.parametrize(\"route\", ENDPOINTS_ATTENDUS)\n    def test_endpoint_attendu_accessible(self, route):\n        \"\"\"Un endpoint documenté ne doit jamais devenir orphelin (Anomalie AN-102).\"\"\"\n        reponse = client.get(route)\n        assert reponse.status_code != 404, (\n            f\"{route} répond 404 : route non déclarée (décorateur manquant ?)\")\n        assert reponse.status_code < 500, f\"{route} répond {reponse.status_code}\"\n\n    def test_aucune_route_declaree_ne_renvoie_404(self):\n        \"\"\"Contrôle générique : chaque règle déclarée dans l'application est joignable.\"\"\"\n        problemes = []\n        for regle in app.url_map.iter_rules():\n            chemin = str(regle)\n            if not chemin.startswith(\"/api/\") or regle.arguments:\n                continue  # les routes paramétrées sont couvertes par des tests dédiés\n            if \"POST\" not in regle.methods and \"GET\" not in regle.methods:\n                continue"
+      },
+      "role": "Non-régression du défaut AN-101 : tout endpoint déclaré doit être joignable."
+    },
+    {
+      "titre": "playwright.test_budget_filter (end-to-end)",
+      "bloc": {
+        "fichier": "tests/playwright/test_dashboard.py",
+        "debut": 19,
+        "contenu": "def test_budget_filter(page):\n    \"\"\"E2E du filtre budget : cliquer ≥ 600 ne doit laisser que les offres à TJM >= 600.\n\n    Vérifie trois choses observables depuis le navigateur :\n      1. le groupe de filtres « budget » existe et porte les bornes attendues ;\n      2. après clic sur « ≥ 600 », aucune carte visible n'a un budget analysé < 600 ;\n      3. les cartes sans budget analysé sont écartées (règle métier).\n    \"\"\"\n    page.goto(BASE_URL)\n    page.wait_for_selector(\".job-card\", timeout=15000)\n\n    groupe = page.query_selector('[data-type=\"budget\"]')\n    assert groupe is not None, \"groupe de filtres « budget » absent du dashboard\"\n    libelles = [b.text_content().strip() for b in groupe.query_selector_all(\".filter-btn\")]\n    assert any(\"600\" in l for l in libelles), f\"borne 600 absente : {libelles}\"\n"
+      },
+      "role": "Le test navigateur : clic réel sur le filtre, puis contrôle des cartes réellement visibles."
+    },
+    {
+      "titre": "dashboard.runFilters (filtre côté navigateur)",
+      "bloc": {
+        "fichier": "templates/dashboard.html",
+        "debut": 1739,
+        "contenu": "    const budgetMatch = budget === 'all'\n      || (card.dataset.budget !== '' && card.dataset.budget !== undefined\n          && Number(card.dataset.budget) >= Number(budget));\n    const match = rmMatch && freshMatch && locMatch && autoMatch && budgetMatch;\n    card.classList.toggle('filtered-out', !match);\n    card.classList.toggle('filtered-in', match);\n  });\n  if (activePanel.id) initPagination(activePanel.id);"
+      },
+      "role": "La règle appliquée dans l'interface, alignée sur la règle serveur et sur les tests."
+    }
+  ],
+  "correctifs": [
+    {
+      "titre": "Chaîne de livraison virtuelle",
+      "sha": "4a0f0135",
+      "fichier": "virtual_delivery.py",
+      "diff": "+    return {\"criteres\": criteres, \"go\": all(c[\"ok\"] for c in criteres)}\n+\n+\n+def tracabilite():\n+    \"\"\"Matrice de traçabilité exigence → critère d'acceptation → cas de test.\"\"\"\n+    lignes = []\n+    for us in USER_STORIES:\n+        cas_us = [c for c in CAS_DE_TEST if c[\"us\"] == us[\"id\"]]\n+        for ca in us[\"criteres\"]:\n+            cas_ca = [c[\"id\"] for c in cas_us if c[\"ca\"] == ca[\"id\"]]\n+            lignes.append({\n+                \"us\": us[\"id\"], \"us_titre\": us[\"titre\"], \"critere\": ca[\"id\"],\n+                \"enonce\": f\"Étant donné {ca['etant_donne']} — quand {ca['quand']} — alors {ca['alors']}\",\n+                \"cas\": cas_ca,\n+                \"couvert\": bool(cas_ca),\n+                \"technique\": \", \".join(sorted({c[\"technique\"] for c in cas_us if c[\"ca\"] == ca[\"id\"]})) or \"—\",\n+            })\n+    return lignes\n+\n+\n+def rapport_final(version=VERSION_LIVREE):\n+    \"\"\"Photo complète d'une livraison : campagne + anomalies + critères.\"\"\"\n+    campagne = executer_campagne(version)\n+    anomalies = rapports_anomalie(campagne[\"resultats\"])\n+    return {\n+        \"version\": version,\n+        \"campagne\": campagne,\n+        \"anomalies\": anomalies,\n+        \"criteres_sortie\": evaluer_criteres_sortie(campagne[\"resultats\"], anomalies),\n+        \"tracabilite\": tracabilite(),\n+    }\n+\n+\n+def scenario_complet():\n+    \"\"\"Le scénario de référence, exécuté de bout en bout (utilisé par les tests et la vitrine).\"\"\"\n+    etapes = {}\n+    etapes[\"v1_campagne\"] = executer_campagne(\"v1\")\n+    etapes[\"v1_anomalies\"] = rapports_anomalie(etapes[\"v1_campagne\"][\"resultats\"])\n+    etapes[\"v1_verdict\"] = evaluer_criteres_sortie(etapes[\"v1_campagne\"][\"resultats\"], etapes[\"v1_anomalies\"])\n+\n+    ids_v1 = etapes[\"v1_campagne\"][\"synthese\"][\"ids_en_echec\"]\n+    etapes[\"v2_confirmation\"] = executer_campagne(\"v2\", cas_ids=ids_v1)\n+    etapes[\"v2_regression\"] = executer_campagne(\"v2\")\n+    etapes[\"v2_anomalies\"] = rapports_anomalie(etapes[\"v2_regression\"][\"resultats\"])\n+    etapes[\"v2_verdict\"] = evaluer_criteres_sortie(etapes[\"v2_regression\"][\"resultats\"], etapes[\"v2_anomalies\"])\n+\n+    ids_v2 = etapes[\"v2_regression\"][\"synthese\"][\"ids_en_echec\"]\n+    etapes[\"v3_confirmation\"] = executer_c"
+    },
+    {
+      "titre": "Normalisation et mot entier dans le moteur de classement",
+      "sha": "c9f382eb",
+      "fichier": "matcher.py",
+      "diff": "-    elif job.get(\"remote_type\") == \"hybrid\":\n-        score += 5\n+    score += _remote_points(job.get(\"remote_type\"))\n     # Freelance (10pts)\n-    if job.get(\"freelance_status\") == \"VALIDÉE\":\n-        score += 10\n-    elif job.get(\"freelance_status\") == \"AMBIGUË\":\n-        score += 5\n+    score += _freelance_points(job.get(\"freelance_status\"))\n     # Keywords bonus (20pts)\n     bonus_kw = [\"contract\", \"mission\", \"freelance\", \"régie\", \"prestation\",\n                 \"sasu\", \"consultant\", \"independent\", \"tjm\", \"/jour\", \"daily rate\"]\n-    bonus = sum(2 for kw in bonus_kw if kw in text)\n+    bonus = sum(2 for kw in bonus_kw if _kw(text, kw))\n     score += min(bonus, 20)\n     # TJM bonus (10pts)\n-    salary = (job.get(\"salary\") or \"\").lower()\n-    if \"/jour\" in salary or \"/j\" in salary or \"tjm\" in salary:\n+    salary = _norm(job.get(\"salary\"))\n+    if \"/jour\" in salary or \"/j\" in salary or _kw(salary, \"tjm\"):\n         score += 10\n     elif \"chf\" in salary or \"€\" in salary:\n         score += 5\n@@ -96,14 +165,14 @@ def match_job_to_cv(job, cv_skills=None):\n def analyze_tjm(job):\n     \"\"\"Détecte TJM dans le job et compare au marché.\"\"\"\n-    text = f\"{job.get('salary') or ''} {job.get('title') or ''} {job.get('description') or ''}\".lower()\n+    text = _norm(f\"{job.get('salary') or ''} {job.get('title') or ''} {job.get('description') or ''}\")\n     tjm = None\n     currency = \"\"\n     unit = \"\"\n     # Patterns TJM\n     patterns = [\n-        r\"(\\d+)\\s*[-àà]\\s*(\\d+)\\s*(€|eur|chf|usd|sgd)?\\s*/?\\s*(jour|day|jr|h|hr|heure)\",\n+        r\"(\\d+)\\s*(?:[-–—]|a|à|to|jusqu\\'?à)\\s*(\\d+)\\s*(€|eur|chf|usd|sgd)?\\s*/?\\s*(jour|day|jr|h|hr|heure)\",\n         r\"(\\d+)\\s*(€|eur|chf|usd|sgd)?\\s*/?\\s*(jour|day|jr|h|hr)\",\n         r\"tjm\\s*[:\\s]*(\\d+)\",\n     ]\n@@ -209,11 +278,11 @@ def analyze_skills_gap(jobs, cv_skills=None):\n         cv_skills = CV_SKILLS\n     all_skills = Counter()\n     for job in jobs:\n-        text = f\"{job.get('title', '')} {job.get('description', '')} {job.get('tags', '')}\".lower()\n+        text = _norm(f\"{job.get('title', '')} {job.get('description', '')} {job.get('tags', '')}\")\n         for skill in cv_skills + [\"playwright\", \"aws\", \"docker\", \"kubernetes\",\n                   "
+    }
+  ],
+  "ci": [
+    {
+      "fichier": ".github/workflows/ci.yml",
+      "contenu": "name: CI\n\non:\n  push:\n    branches: [main, master]\n  pull_request:\n    branches: [main, master]\n  workflow_dispatch:\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n        python-version: [\"3.11\", \"3.12\"]\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - name: Set up Python ${{ matrix.python-version }}\n        uses: actions/setup-python@v5\n        with:\n          python-version: ${{ matrix.python-version }}\n\n      - name: Install dependencies\n        run: |\n          python -m pip install --upgrade pip\n          pip install -r tests/requirements-test.txt\n\n      - name: Run tests with coverage\n        run: |\n          python -m pytest tests/ -v --cov=. --cov-report=term --cov-report=xml\n\n      - name: Upload coverage report\n        uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: coverage-${{ matrix.python-version }}\n          path: coverage.xml\n"
+    },
+    {
+      "fichier": ".github/workflows/qa-tests.yml",
+      "contenu": "name: QA Tests (Playwright + API)\n\non:\n  workflow_dispatch:\n    inputs:\n      target_url:\n        description: 'URL cible du dashboard'\n        required: true\n        default: 'https://jobhunt-1-ar3w.onrender.com'\n      suites:\n        description: 'Suites à exécuter (playwright,api)'\n        required: true\n        default: 'playwright,api'\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n\n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: '3.11'\n\n      - name: Install Python dependencies\n        run: pip install requests\n\n      - name: Install Playwright + Chromium\n        run: |\n          pip install pytest-playwright\n          python -m playwright install chromium\n          echo \"PW_INSTALLED=1\" >> $GITHUB_ENV\n\n      - name: Run QA suites (per-test-case results)\n        env:\n          PW_PYTHON: python\n        run: |\n          python tests/github_qa_runner.py \\\n            --url \"${{ inputs.target_url }}\" \\\n            --suites \"${{ inputs.suites }}\"\n\n      - name: Upload detailed per-test-case results\n        uses: actions/upload-artifact@v4\n        if: always()\n        with:\n          name: qa-results-${{ github.run_id }}\n          path: .qa_runs/\n          include-hidden-files: true\n          retention-days: 7\n\n      - name: Upload Playwright screenshots\n        uses: actions/upload-artifact@v4\n        if: always()\n        continue-on-error: true\n        with:\n          name: screenshots-${{ github.run_id }}\n          path: tests/playwright/screenshots/\n          retention-days: 7\n"
+    }
+  ],
+  "amelioration": [
+    {
+      "titre": "La suite end-to-end devient exécutable",
+      "avant": "9 scénarios navigateur en erreur (fixture « page » introuvable)",
+      "apres": "10 scénarios exécutés dans un vrai navigateur, dont le nouveau scénario budget",
+      "gain": "couverture E2E réelle au lieu d'une promesse"
+    },
+    {
+      "titre": "Les points d'entrée de l'API sont surveillés",
+      "avant": "un endpoint pouvait disparaître sans que rien ne le signale",
+      "apres": "test générique sur toutes les routes déclarées + test explicite des endpoints documentés",
+      "gain": "5 scénarios BDD réparés, défaut de cette classe impossible à réintroduire silencieusement"
+    },
+    {
+      "titre": "La règle métier du budget est écrite une seule fois et testée à trois niveaux",
+      "avant": "règle implicite, non vérifiée, appliquée uniquement côté serveur",
+      "apres": "fonction unique + contrat d'API + filtre d'interface, tous alignés et testés",
+      "gain": "12 tests unitaires, 3 tests d'intégration, 1 scénario navigateur"
+    },
+    {
+      "titre": "Une mesure de couverture est publiée",
+      "avant": "aucune couverture mesurée malgré pytest-cov déclaré",
+      "apres": "couverture par module calculée à chaque exécution et affichée",
+      "gain": "les zones non testées sont visibles au lieu d'être supposées"
+    }
+  ],
+  "istqb": [
+    {
+      "etape": "Demande métier",
+      "ctfl": "Fondamentaux : contexte et base de test (§1)",
+      "ct_ai": "Cadrage du risque (§2)",
+      "genai": "Introduction au GenAI pour le test (§1)"
+    },
+    {
+      "etape": "User stories et critères",
+      "ctfl": "Analyse de test : conditions vérifiables (§4)",
+      "ct_ai": "Spécification du composant (§7.1)",
+      "genai": "Analyse de test assistée par prompt (§2.2.1)"
+    },
+    {
+      "etape": "Conception des tests",
+      "ctfl": "Techniques : équivalence, valeurs limites, table de décision (§4)",
+      "ct_ai": "Sélection des techniques pour systèmes IA (§9.7)",
+      "genai": "Conception et implémentation des tests (§2.2.2)"
+    },
+    {
+      "etape": "Développement piloté par les tests",
+      "ctfl": "Le test comme activité dès la conception (§2)",
+      "ct_ai": "Oracle et critères d'acceptation (§8.7)",
+      "genai": "Générer des cas depuis les critères (§2.2.2)"
+    },
+    {
+      "etape": "Exécution des campagnes",
+      "ctfl": "Exécution et journalisation (§1.4)",
+      "ct_ai": "Niveaux de test (§7.2)",
+      "genai": "Automatisation de la régression assistée (§2.2.3)"
+    },
+    {
+      "etape": "Anomalies",
+      "ctfl": "Gestion des anomalies (§5.5)",
+      "ct_ai": "Défauts sur données et amont (§4.4)",
+      "genai": "Hallucinations et erreurs de raisonnement (§3.1)"
+    },
+    {
+      "etape": "Confirmation et régression",
+      "ctfl": "Test de confirmation et de régression (§1.2.2)",
+      "ct_ai": "Non-déterminisme : oracles tolérants (§8.4)",
+      "genai": "Évaluer le résultat avant de l'utiliser (§2.3)"
+    },
+    {
+      "etape": "Critères de sortie et Go/No-Go",
+      "ctfl": "Suivi, contrôle et critères de sortie (§5.3)",
+      "ct_ai": "Critères d'acceptation des systèmes IA (§8.8)",
+      "genai": "Risques et cadre de décision (§3.4)"
+    },
+    {
+      "etape": "Couverture et qualité du code",
+      "ctfl": "Outils de test : couverture (§6)",
+      "ct_ai": "Limites des métriques de couverture (§6.2)",
+      "genai": "Métriques d'évaluation du GenAI (§2.3.1)"
+    },
+    {
+      "etape": "Amélioration continue",
+      "ctfl": "Rapport et amélioration du processus (§5.6)",
+      "ct_ai": "Dérive et surveillance après mise en production (§7.6)",
+      "genai": "Intégration et conduite du changement (§5.2)"
+    }
+  ],
+  "syllabus": [
+    "ISTQB CTFL v4.0.1 (fondamentaux)",
+    "ISTQB CT-AI v1.0.1 (test des systèmes d'IA)",
+    "ISTQB CT-GenAI v1.1 (test avec l'IA générative)"
+  ]
+}

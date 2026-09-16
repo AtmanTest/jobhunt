@@ -163,6 +163,31 @@ def match_job_to_cv(job, cv_skills=None):
     return min(score, 100), matched
 
 
+def filtrer_par_budget(offres, budget_min=None):
+    """Retient les offres dont le TJM analysé atteint le budget minimum.
+
+    Règle métier validée avec le PO :
+      - la borne est inclusive (une offre à 600 passe un budget de 600) ;
+      - une offre sans budget renseigné est exclue dès qu'un budget est demandé :
+        on ne suppose jamais un budget absent, on l'écarte ;
+      - un budget absent (None) ne filtre rien ; un budget à 0 demande simplement
+        que le budget soit renseigné ;
+      - l'ordre d'entrée est conservé : le tri est la responsabilité de trier().
+    """
+    if not offres:
+        return []
+    if budget_min is None:
+        return list(offres)
+    retenues = []
+    for offre in offres:
+        if not isinstance(offre, dict):
+            continue
+        tjm = analyze_tjm(offre).get("tjm")
+        if tjm is not None and tjm >= budget_min:
+            retenues.append(offre)
+    return retenues
+
+
 def analyze_tjm(job):
     """Détecte TJM dans le job et compare au marché."""
     text = _norm(f"{job.get('salary') or ''} {job.get('title') or ''} {job.get('description') or ''}")

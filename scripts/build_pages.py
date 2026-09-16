@@ -181,10 +181,24 @@ from app import app  # noqa: E402  (import après les données : l'app lit ses e
 client = app.test_client()
 
 
+LIENS_STATIQUES = {
+    'href="/"': 'href="index.html"',
+    'href="/poc-ct-ai"': 'href="vitrine-ct-ai.html"',
+    'href="/poc-delivery"': 'href="chaine-de-livraison.html"',
+    'href="/cycle-de-vie"': 'href="cycle-de-vie.html"',
+    'href="/qa"': 'href="index.html"',
+    'href="/about"': 'href="index.html"',
+}
+
+
 def _page(route):
+    """Rend une route avec le vrai moteur, puis réécrit les liens pour un site statique."""
     reponse = client.get(route)
     assert reponse.status_code == 200, f"{route} a renvoyé {reponse.status_code}"
-    return reponse.get_data(as_text=True)
+    html = reponse.get_data(as_text=True)
+    for avant, apres in LIENS_STATIQUES.items():
+        html = html.replace(avant, apres)
+    return html
 
 
 os.makedirs(os.path.join(SORTIE, "static"), exist_ok=True)
@@ -230,8 +244,11 @@ vitrine = vitrine.replace(
     "moteur et de la suite de tests. Corpus d'évaluation : ")
 html_vitrine = vitrine
 
+cycle = _page("/cycle-de-vie")
 with open(os.path.join(SORTIE, "vitrine-ct-ai.html"), "w", encoding="utf-8") as fh:
     fh.write(html_vitrine)
+with open(os.path.join(SORTIE, "cycle-de-vie.html"), "w", encoding="utf-8") as fh:
+    fh.write(cycle)
 with open(os.path.join(SORTIE, "chaine-de-livraison.html"), "w", encoding="utf-8") as fh:
     fh.write(html_livraison)
 
@@ -328,7 +345,18 @@ index = f"""<!DOCTYPE html>
 
   <div class="grille">
     <div class="carte">
-      <h2>1 · Chaîne de livraison virtuelle</h2>
+      <h2>1 · Cycle de vie complet de JobHunt</h2>
+      <p>
+        Une fonctionnalité réelle suivie de bout en bout : demande métier, user stories, stratégie de test,
+        développement piloté par les tests (sorties console réelles), exécution des campagnes
+        (unitaire, intégration, scénarios métier, navigateur), anomalies, corrections extraites de
+        l'historique Git, non-régression mesurée, couverture calculée, intégration continue et
+        amélioration continue. Chaque étape est rattachée aux référentiels CTFL, CT-AI et CT-GenAI.
+      </p>
+      <a href="cycle-de-vie.html">Ouvrir le cycle de vie →</a>
+    </div>
+    <div class="carte">
+      <h2>2 · Chaîne de livraison virtuelle</h2>
       <p>
         Une demande métier, des user stories, une analyse de risque, douze cas de test conçus, une livraison
         défectueuse, des anomalies, un correctif… qui casse ailleurs — puis le second correctif et le verdict
@@ -337,7 +365,7 @@ index = f"""<!DOCTYPE html>
       <a href="chaine-de-livraison.html">Ouvrir la chaîne de livraison →</a>
     </div>
     <div class="carte">
-      <h2>2 · Vitrine du test d'IA</h2>
+      <h2>3 · Vitrine du test d'IA</h2>
       <p>
         Le moteur de classement pris comme système à tester : matrice de confusion et seuils verrouillés,
         dix relations métamorphiques, entrées adverses, huit défauts trouvés puis corrigés avec l'avant/après

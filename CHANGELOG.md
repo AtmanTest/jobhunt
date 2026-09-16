@@ -1,24 +1,20 @@
 # CHANGELOG
 
-## [1.5.0] - 2026-09-16
+## [1.6.0] - 2026-09-16
 ### Ajouté
-- 🧪 Cadre ISTQB CT-AI appliqué au moteur de classement : 62 tests (portes 2 à 7) dans `tests/test_ct_ai_gates.py`
-- 📊 Corpus d'évaluation étiqueté et verrouillé par empreinte SHA-256 (`tests/fixtures/ct_ai/matcher_gold.json`)
-- 📁 `docs/qa-ct-ai/` : cadrage du risque IA, qualité des données, métriques et seuils, plan de test, techniques, journal d'aide IA
-- 🛡️ Contrôle permanent : aucune adresse e-mail ni téléphone dans les fichiers suivis
+- 🎯 Filtre par budget minimum (TJM) : règle métier unique (`matcher.filtrer_par_budget`), branchée sur l'API des offres et sur la barre de filtres du tableau de bord
+- 🧪 12 tests unitaires + 3 tests d'intégration + 1 scénario navigateur pour ce filtre (développement piloté par les tests)
+- 📄 Page « Cycle de vie complet » (`/cycle-de-vie`) : demande métier, user stories, stratégie de test, TDD, campagnes exécutées, anomalies, correctifs extraits de Git, non-régression, couverture, intégration continue, amélioration continue, rattachement CTFL / CT-AI / CT-GenAI
+- 🧾 `scripts/build_lifecycle.py` : produit la preuve par exécution réelle (suites + couverture + lecture du code et de l'historique)
+- 🧾 `scripts/build_pages.py` : publie les démonstrations sur GitHub Pages avec contrôle automatique de non-fuite
 
 ### Corrigé
-- Comparaison des valeurs métier insensible à la casse et aux accents (`remote_type`, `freelance_status`)
-- Détection des compétences sur mot entier : fin des compétences fantômes (« api » dans « capital », « test » dans « latest »)
-- Valeurs de télétravail reconnues étendues (`fully_remote`, `Fully Remote`, `100% remote`, `télétravail partiel`)
-- Marchés complétés (Zurich, Genève, Lausanne, Bâle, Berne, Lucerne, Lugano…) et marché inconnu plus comparé au marché français
-- Plage de salaire « 600 à 700 » de nouveau interprétée comme une plage après normalisation des accents
-- Classement déterministe à score égal (départage par identifiant) : plus de top qui change entre deux rafraîchissements
-- Robustesse : plus de plantage quand `description` ou `tags` ne sont pas du texte
-- Énumération Playwright : référence morte supprimée (bloquait la collecte de toute la suite pytest)
+- 🐛 **AN-101** : `/api/jobs` répondait 404 — le décorateur de route avait disparu (5 scénarios BDD en échec réparés)
+- 🐛 **AN-102** : la suite navigateur ne pouvait pas s'exécuter (`pytest-playwright` absent des dépendances) → 10 scénarios tournent désormais dans un vrai Chromium
 
 ### Technique
-- 3 scénarios de filtrage qui échouaient passent désormais (titre « game tester » rejeté, « QA automation » accepté, description pharma rejetée)
+- 📉 Suite historique : 34 → 26 échecs, 102 → 153 tests passants, aucun nouvel échec
+- 📊 Couverture mesurée : matcher.py 80 %, virtual_delivery.py 94 %, app.py 36 % (chantier identifié)
 
 ## [1.0.0] - 2026-05-28
 ### Ajouté

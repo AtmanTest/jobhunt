@@ -16,6 +16,48 @@ def _screenshot(page, name):
     return path
 
 
+def test_budget_filter(page):
+    """E2E du filtre budget : cliquer ≥ 600 ne doit laisser que les offres à TJM >= 600.
+
+    Vérifie trois choses observables depuis le navigateur :
+      1. le groupe de filtres « budget » existe et porte les bornes attendues ;
+      2. après clic sur « ≥ 600 », aucune carte visible n'a un budget analysé < 600 ;
+      3. les cartes sans budget analysé sont écartées (règle métier).
+    """
+    page.goto(BASE_URL)
+    page.wait_for_selector(".job-card", timeout=15000)
+
+    groupe = page.query_selector('[data-type="budget"]')
+    assert groupe is not None, "groupe de filtres « budget » absent du dashboard"
+    libelles = [b.text_content().strip() for b in groupe.query_selector_all(".filter-btn")]
+    assert any("600" in l for l in libelles), f"borne 600 absente : {libelles}"
+
+    avant = [c for c in page.query_selector_all(".job-card") if c.is_visible()]
+    assert avant, "aucune carte affichée avant filtrage"
+
+    bouton = [b for b in groupe.query_selector_all(".filter-btn") if "600" in b.text_content()][0]
+    bouton.click()
+    page.wait_for_timeout(700)
+
+    visibles = [c for c in page.query_selector_all(".job-card") if c.is_visible()]
+    assert len(visibles) <= len(avant), "le filtre a ajouté des cartes"
+
+    hors_seuil = []
+    sans_budget = []
+    for carte in visibles:
+        brut = carte.get_attribute("data-budget")
+        if brut in (None, ""):
+            sans_budget.append(carte.get_attribute("data-id"))
+            continue
+        if int(float(brut)) < 600:
+            hors_seuil.append((carte.get_attribute("data-id"), brut))
+
+    assert not hors_seuil, f"offres sous le seuil encore visibles : {hors_seuil}"
+    assert not sans_budget, f"offres sans budget analysé encore visibles : {sans_budget[:5]}"
+    return {"passed": True,
+            "details": f"{len(avant)} cartes avant, {len(visibles)} après filtrage ≥ 600 (aucune sous le seuil)"}
+
+
 def test_page_title(page):
     page.goto(BASE_URL)
     title = page.title()
@@ -126,6 +168,7 @@ def test_apply_button_is_only_clickable_link(page):
 
 SCENARIOS = {
     "test_page_title": test_page_title,
+    "test_budget_filter": test_budget_filter,
     "test_hero_stats": test_hero_stats,
     "test_country_tabs": test_country_tabs,
     "test_remote_filter": test_remote_filter,
