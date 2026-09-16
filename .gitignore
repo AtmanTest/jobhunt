@@ -21,3 +21,6 @@ venv/
 .hermes/
 .idea/
 .vscode/
+.coverage
+htmlcov/
+.pytest_cache/
