@@ -42,6 +42,8 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from scraper import init_db, fetch_all, fetch_all_new_sources, save_jobs, get_jobs, mark_applied, get_stats, export_static_json, get_db as scraper_db, compute_freshness_score
 from version import get_version, get_git_commit, get_git_tag, is_dirty, DB_SCHEMA_VERSION
+import unicodedata
+
 from matcher import _norm, match_job_to_cv, analyze_tjm, detect_duplicates, analyze_skills_gap, source_stats as src_stats
 
 # ─── QA Module ───────────────────────────────────────────────────
@@ -1661,6 +1663,84 @@ def marche_qa():
 
 
 # ─── QA Routes ──────────────────────────────────────────────────
+
+# ---------------------------------------------------------------------------
+# PoC ISTQB CT-AI — vitrine du processus de test d'un système d'IA
+# ---------------------------------------------------------------------------
+CT_AI_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs", "qa-ct-ai")
+CT_AI_EVIDENCE_PATH = os.path.join(CT_AI_DIR, "evidence.json")
+CT_AI_SEUIL = 40
+
+
+def _ct_ai_evidence():
+    """Charge la preuve générée par scripts/ct_ai_evidence.py (exécution réelle)."""
+    try:
+        with open(CT_AI_EVIDENCE_PATH, encoding="utf-8") as fh:
+            return json.load(fh)
+    except (OSError, ValueError):
+        return None
+
+
+@app.route("/poc-ct-ai")
+def poc_ct_ai():
+    """Vitrine : le processus de test d'IA en 8 portes, preuves à l'appui."""
+    return render_template("poc_ct_ai.html", evidence=_ct_ai_evidence())
+
+
+@app.route("/poc-ct-ai/api/evidence")
+def poc_ct_ai_api_evidence():
+    data = _ct_ai_evidence()
+    if data is None:
+        return jsonify({"error": "preuve non générée : exécuter scripts/ct_ai_evidence.py"}), 503
+    return jsonify(data)
+
+
+@app.route("/poc-ct-ai/api/score", methods=["POST"])
+def poc_ct_ai_api_score():
+    """Note une offre en direct et rejoue la même offre écrite autrement.
+
+    Le contrôle d'invariance est le cœur de la démonstration : il vérifie en
+    public que la décision ne dépend pas de la forme de la saisie.
+    """
+    payload = request.get_json(silent=True) or {}
+    offre = {
+        "title": str(payload.get("title") or ""),
+        "description": str(payload.get("description") or ""),
+        "tags": str(payload.get("tags") or ""),
+        "salary": str(payload.get("salary") or ""),
+        "location": str(payload.get("location") or ""),
+        "remote_type": str(payload.get("remote_type") or ""),
+        "freelance_status": str(payload.get("freelance_status") or ""),
+    }
+    score, competences = match_job_to_cv(dict(offre))
+    tjm = analyze_tjm(dict(offre))
+    sans_accents = unicodedata.normalize("NFKD", offre["description"]).encode("ascii", "ignore").decode()
+    variantes = [
+        ("Titre et description en MAJUSCULES",
+         {**offre, "title": offre["title"].upper(), "description": offre["description"].upper()}),
+        ("Accents retirés", {**offre, "description": sans_accents}),
+        ("Espaces ajoutés en bord de champs",
+         {**offre, "title": "  " + offre["title"] + "   ", "description": "  " + offre["description"] + "  "}),
+        ("Ponctuation ajoutée au titre", {**offre, "title": offre["title"] + " !!!"}),
+        ("Statut freelance en minuscules",
+         {**offre, "freelance_status": offre["freelance_status"].lower()}),
+    ]
+    controle = []
+    for nom, variante in variantes:
+        score_variante, _ = match_job_to_cv(variante)
+        controle.append({"nom": nom, "score": score_variante,
+                         "identique": score_variante == score})
+    return jsonify({
+        "score": score,
+        "competences": competences,
+        "tjm": tjm,
+        "salaire_source": offre["salary"],
+        "pertinent": score >= CT_AI_SEUIL,
+        "seuil": CT_AI_SEUIL,
+        "controle": controle,
+        "invariance_ok": all(c["identique"] for c in controle),
+    })
+
 
 @app.route("/qa")
 def qa_dashboard():

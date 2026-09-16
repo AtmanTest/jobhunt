@@ -41,6 +41,25 @@ pour la méthode et le détail) :
 Plus un défaut de robustesse : une description ou des tags non textuels faisaient
 planter le calcul de score (`TypeError`).
 
+## Vitrine publique
+
+Le PoC est présenté sur le site, à l'adresse **/poc-ct-ai**, avec une entrée dans la barre
+de navigation de l'accueil :
+
+- les 8 portes avec, pour chacune, l'exigence du référentiel, le livrable produit et la preuve ;
+- les métriques et la matrice de confusion du corpus verrouillé ;
+- les 10 relations métamorphiques vérifiées en direct ;
+- les défauts trouvés puis corrigés, avec l'avant/après mesuré ;
+- les entrées adverses et leurs résultats ;
+- un banc d'essai en direct (`POST /poc-ct-ai/api/score`) qui note une offre saisie et
+  rejoue la même offre écrite autrement pour montrer l'invariance.
+
+Tout ce qui s'affiche vient de `docs/qa-ct-ai/evidence.json`, régénéré par exécution réelle :
+
+```bash
+python3 scripts/ct_ai_evidence.py
+```
+
 ## Comment rejouer
 
 ```bash
