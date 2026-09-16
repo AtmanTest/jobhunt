@@ -42,7 +42,9 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from scraper import init_db, fetch_all, fetch_all_new_sources, save_jobs, get_jobs, mark_applied, get_stats, export_static_json, get_db as scraper_db, compute_freshness_score
 from version import get_version, get_git_commit, get_git_tag, is_dirty, DB_SCHEMA_VERSION
-from matcher import match_job_to_cv, analyze_tjm, detect_duplicates, analyze_skills_gap, source_stats as src_stats
+import unicodedata
+
+from matcher import _norm, match_job_to_cv, analyze_tjm, detect_duplicates, analyze_skills_gap, source_stats as src_stats
 
 # ─── QA Module ───────────────────────────────────────────────────
 QA_RUNS_DIR = os.path.join(os.path.dirname(__file__), ".qa_runs")
@@ -888,13 +890,13 @@ def index():
     country_counts.append({'key': 'tous', 'count': len(all_jobs)})
 
     # Top matches (top 10 tous pays)
-    top_matches = sorted(all_jobs, key=lambda j: -j.get('match_score', 0))[:10]
+    top_matches = sorted(all_jobs, key=lambda j: (-j.get('match_score', 0), str(j.get('id'))))[:10]
 
     # Jobs du Jour : les 3 plus récents (frais A en priorité)
     fresh_jobs = [j for j in all_jobs if j.get('freshness_score') in ('A', 'B') and j.get('match_score', 0) >= 10]
     jobs_of_day = []
     if fresh_jobs:
-        jobs_of_day = sorted(fresh_jobs, key=lambda j: (-j.get('match_score', 0), -(j.get('freelance_score') or 0)))[:3]
+        jobs_of_day = sorted(fresh_jobs, key=lambda j: (-j.get('match_score', 0), -(j.get('freelance_score') or 0), str(j.get('id'))))[:3]
 
     # Priority scoring: combine match + freelance fit + freshness
     def compute_priority(job):
@@ -905,13 +907,13 @@ def index():
         # Bonuses: applied jobs get lower priority, VALIDÉE gets higher
         stage = job.get('pipeline_stage', 'new')
         stage_bonus = -15 if stage != 'new' else 0
-        status_bonus = 10 if job.get('freelance_status') == 'VALIDÉE' else 0
+        status_bonus = 10 if _norm(job.get('freelance_status')).startswith('valid') else 0
         return match * 2 + freelance * 3 + freshness + stage_bonus + status_bonus
 
     # Hot Picks: top jobs by priority (excluding already applied)
     hot_picks = sorted(
         [j for j in all_jobs if (j.get('pipeline_stage') or 'new') == 'new'],
-        key=compute_priority, reverse=True
+        key=lambda j: (compute_priority(j), str(j.get('id'))), reverse=True
     )[:5]
 
     # Pipeline stats
@@ -1661,6 +1663,154 @@ def marche_qa():
 
 
 # ─── QA Routes ──────────────────────────────────────────────────
+
+# ---------------------------------------------------------------------------
+# PoC ISTQB CT-AI — vitrine du processus de test d'un système d'IA
+# ---------------------------------------------------------------------------
+CT_AI_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs", "qa-ct-ai")
+CT_AI_EVIDENCE_PATH = os.path.join(CT_AI_DIR, "evidence.json")
+CT_AI_SEUIL = 40
+
+
+def _ct_ai_evidence():
+    """Charge la preuve générée par scripts/ct_ai_evidence.py (exécution réelle)."""
+    try:
+        with open(CT_AI_EVIDENCE_PATH, encoding="utf-8") as fh:
+            return json.load(fh)
+    except (OSError, ValueError):
+        return None
+
+
+@app.route("/poc-ct-ai")
+def poc_ct_ai():
+    """Vitrine : le processus de test d'IA en 8 portes, preuves à l'appui."""
+    return render_template("poc_ct_ai.html", evidence=_ct_ai_evidence())
+
+
+@app.route("/poc-ct-ai/api/evidence")
+def poc_ct_ai_api_evidence():
+    data = _ct_ai_evidence()
+    if data is None:
+        return jsonify({"error": "preuve non générée : exécuter scripts/ct_ai_evidence.py"}), 503
+    return jsonify(data)
+
+
+@app.route("/poc-ct-ai/api/score", methods=["POST"])
+def poc_ct_ai_api_score():
+    """Note une offre en direct et rejoue la même offre écrite autrement.
+
+    Le contrôle d'invariance est le cœur de la démonstration : il vérifie en
+    public que la décision ne dépend pas de la forme de la saisie.
+    """
+    payload = request.get_json(silent=True) or {}
+    offre = {
+        "title": str(payload.get("title") or ""),
+        "description": str(payload.get("description") or ""),
+        "tags": str(payload.get("tags") or ""),
+        "salary": str(payload.get("salary") or ""),
+        "location": str(payload.get("location") or ""),
+        "remote_type": str(payload.get("remote_type") or ""),
+        "freelance_status": str(payload.get("freelance_status") or ""),
+    }
+    score, competences = match_job_to_cv(dict(offre))
+    tjm = analyze_tjm(dict(offre))
+    sans_accents = unicodedata.normalize("NFKD", offre["description"]).encode("ascii", "ignore").decode()
+    variantes = [
+        ("Titre et description en MAJUSCULES",
+         {**offre, "title": offre["title"].upper(), "description": offre["description"].upper()}),
+        ("Accents retirés", {**offre, "description": sans_accents}),
+        ("Espaces ajoutés en bord de champs",
+         {**offre, "title": "  " + offre["title"] + "   ", "description": "  " + offre["description"] + "  "}),
+        ("Ponctuation ajoutée au titre", {**offre, "title": offre["title"] + " !!!"}),
+        ("Statut freelance en minuscules",
+         {**offre, "freelance_status": offre["freelance_status"].lower()}),
+    ]
+    controle = []
+    for nom, variante in variantes:
+        score_variante, _ = match_job_to_cv(variante)
+        controle.append({"nom": nom, "score": score_variante,
+                         "identique": score_variante == score})
+    return jsonify({
+        "score": score,
+        "competences": competences,
+        "tjm": tjm,
+        "salaire_source": offre["salary"],
+        "pertinent": score >= CT_AI_SEUIL,
+        "seuil": CT_AI_SEUIL,
+        "controle": controle,
+        "invariance_ok": all(c["identique"] for c in controle),
+    })
+
+
+# ---------------------------------------------------------------------------
+# Chaîne de livraison virtuelle — déroulé complet du processus de test
+# ---------------------------------------------------------------------------
+@app.route("/poc-delivery")
+def poc_delivery():
+    """Vitrine : une livraison simulée, testée pour de vrai, du besoin au Go/No-Go."""
+    return render_template("poc_delivery.html")
+
+
+@app.route("/poc-delivery/api/scenario")
+def poc_delivery_api_scenario():
+    """Renvoie tout le déroulé : données + campagnes réellement exécutées."""
+    import virtual_delivery as vd
+
+    scenario = vd.scenario_complet()
+    campagnes = {
+        "v1_execution": {
+            "campagne": scenario["v1_campagne"],
+            "anomalies": scenario["v1_anomalies"],
+            "criteres_sortie": scenario["v1_verdict"],
+        },
+        "v2_confirmation": {"campagne": scenario["v2_confirmation"],
+                            "anomalies": vd.rapports_anomalie(scenario["v2_confirmation"]["resultats"])},
+        "v2_regression": {
+            "campagne": scenario["v2_regression"],
+            "anomalies": scenario["v2_anomalies"],
+            "criteres_sortie": scenario["v2_verdict"],
+        },
+        "v3_confirmation": {"campagne": scenario["v3_confirmation"],
+                            "anomalies": vd.rapports_anomalie(scenario["v3_confirmation"]["resultats"])},
+        "v3_regression": {
+            "campagne": scenario["v3_regression"],
+            "anomalies": scenario["v3_anomalies"],
+            "criteres_sortie": scenario["v3_verdict"],
+        },
+    }
+    verts_v1 = {r["cas"] for r in scenario["v1_campagne"]["resultats"] if r["statut"] == "réussi"}
+    rouges_v2 = set(scenario["v2_regression"]["synthese"]["ids_en_echec"])
+    campagnes["regressions_nouvelles"] = sorted(verts_v1 & rouges_v2)
+
+    cas = [{k: v for k, v in c.items() if k not in ("fonction", "attendu_valeur")}
+           for c in vd.CAS_DE_TEST]
+    return jsonify({
+        "demande": vd.DEMANDE_METIER,
+        "user_stories": vd.USER_STORIES,
+        "etapes": vd.ETAPES,
+        "versions": vd.VERSIONS,
+        "cas": cas,
+        "tracabilite": vd.tracabilite(),
+        "campagnes": campagnes,
+        "genere_le": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+    })
+
+
+@app.route("/poc-delivery/api/campagne", methods=["POST"])
+def poc_delivery_api_campagne():
+    """Relance une campagne réelle (le visiteur peut rejouer l'exécution)."""
+    import virtual_delivery as vd
+
+    charge = request.get_json(silent=True) or {}
+    version = str(charge.get("version") or vd.VERSION_LIVREE)
+    if version not in vd.VERSIONS:
+        return jsonify({"error": f"version inconnue : {version}"}), 400
+    cas_ids = charge.get("cas_ids") or None
+    campagne = vd.executer_campagne(version, cas_ids=cas_ids)
+    anomalies = vd.rapports_anomalie(campagne["resultats"])
+    return jsonify({"campagne": campagne, "anomalies": anomalies,
+                    "criteres_sortie": vd.evaluer_criteres_sortie(campagne["resultats"], anomalies)})
+
 
 @app.route("/qa")
 def qa_dashboard():

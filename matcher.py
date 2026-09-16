@@ -1,6 +1,18 @@
 """Matching CV <-> offres, TJM, skills gap, doublons, stats sources."""
 import re
+import unicodedata
 from collections import Counter
+
+# Valeurs métier reconnues (comparées après normalisation, jamais à l'identique)
+REMOTE_ALIASES = {
+    "remote", "fully_remote", "fully remote", "full remote", "remote work",
+    "100% remote", "100%remote", "a distance", "en remote",
+    "teletravail total", "teletravail complet",
+}
+HYBRID_ALIASES = {
+    "hybrid", "hybride", "hybrid remote", "semi remote", "remote partiel",
+    "teletravail", "teletravail partiel", "partiel",
+}
 
 # TJM refs par marché
 TJM_RANGES = {
@@ -18,42 +30,105 @@ CV_SKILLS = [
     "regression", "acceptance", "mobile", "ios", "android",
     "sap", "oracle", "mainframe", "docker", "ci/cd",
     "test management", "qa lead", "test lead", "regulatory",
-    "confluence", "zephyr", "ranorex"
+    "confluence", "zephyr", "ranorex",
+    # Équivalents français : le marché visé publie en français
+    "recette", "plan de test", "cas de test", "non-régression", "anomalie"
 ]
 
 
+def _norm(value):
+    """Normalise une chaîne : minuscules, sans accents, espaces réduits.
+
+    Base de toutes les comparaisons du module : deux écritures d'une même
+    valeur métier (VALIDÉE / validee / Validée) doivent produire le même score.
+    """
+    if not isinstance(value, str):
+        return ""
+    txt = unicodedata.normalize("NFKD", value)
+    txt = "".join(c for c in txt if not unicodedata.combining(c))
+    return re.sub(r"\s+", " ", txt).strip().lower()
+
+
+def _kw(text_norm, keyword):
+    """Mot-clé présent comme mot entier dans un texte déjà passé par _norm().
+
+    Évite les faux positifs par sous-chaîne (« api » dans « capital »,
+    « test » dans « latest »). Les mots-clés contenant un séparateur
+    technique ("ci/cd", "/jour") restent testés en sous-chaîne.
+    """
+    kw = _norm(keyword)
+    if not kw or not text_norm:
+        return False
+    if " " in kw:
+        pattern = r"(?<![a-z0-9])" + r"\s+".join(re.escape(p) for p in kw.split(" ")) + r"(?![a-z0-9])"
+        return re.search(pattern, text_norm) is not None
+    if re.fullmatch(r"[a-z0-9]+", kw):
+        return re.search(r"(?<![a-z0-9])" + re.escape(kw) + r"(?![a-z0-9])", text_norm) is not None
+    return kw in text_norm
+
+
+def _remote_points(remote_type):
+    """10 = full remote, 5 = hybride, 0 = sur site ou inconnu."""
+    rt = _norm(remote_type)
+    if rt in REMOTE_ALIASES or ("remote" in rt and "non" not in rt and "partiel" not in rt):
+        return 10
+    if rt in HYBRID_ALIASES or "hybrid" in rt or "hybride" in rt or "partiel" in rt:
+        return 5
+    return 0
+
+
+def _freelance_points(freelance_status):
+    """10 = statut validé, 5 = ambigu, 0 = non freelance ou inconnu."""
+    fs = _norm(freelance_status)
+    if fs.startswith("valid"):
+        return 10
+    if fs.startswith("ambig"):
+        return 5
+    return 0
+
+
 def get_country_id(location):
-    loc = location.lower()
-    if any(k in loc for k in ["france", "paris", "lyon", "marseille", "toulouse"]):
-        return "france"
-    if any(k in loc for k in ["suisse", "switzerland", "zurich", "geneve", "genève"]):
-        return "suisse"
-    if any(k in loc for k in ["luxembourg", "luxemburg"]):
-        return "luxembourg"
-    if any(k in loc for k in ["dubai", "dubaï", "uae", "emirates", "abu dhabi"]):
-        return "dubai"
-    if any(k in loc for k in ["singapore", "singapour"]):
-        return "singapour"
-    return "france"
+    """Marché de référence d'une offre d'après sa localisation.
+
+    Retourne "inconnu" si aucun marché n'est reconnu : appliquer le marché
+    français à une offre suisse (ou allemande) produit une comparaison de TJM
+    fausse, ce qui est pire qu'aucune comparaison.
+    """
+    loc = _norm(location)
+    markets = [
+        ("france", ("france", "paris", "lyon", "marseille", "toulouse", "bordeaux",
+                    "lille", "nantes", "ile-de-france", "ile de france", "nice",
+                    "rennes", "strasbourg", "bagnolet")),
+        ("suisse", ("suisse", "switzerland", "swiss", "zurich", "geneve", "lausanne",
+                    "berne", "bern", "bale", "basel", "zug", "lucerne", "lugano")),
+        ("luxembourg", ("luxembourg", "luxemburg", "lux.")),
+        ("dubai", ("dubai", "uae", "emirates", "abu dhabi")),
+        ("singapour", ("singapore", "singapour")),
+    ]
+    for country, words in markets:
+        if any(_kw(loc, w) for w in words):
+            return country
+    return "inconnu"
 
 
 def match_job_to_cv(job, cv_skills=None):
     """Score /100: pertinence du job par rapport au profil."""
     if cv_skills is None:
         cv_skills = CV_SKILLS
-    title = (job.get("title") or "").lower()
-    desc = ((job.get("description") or "") + " " + (job.get("tags") or "")).lower()
+    title = _norm(job.get("title"))
+    desc = _norm(job.get("description")) + " " + _norm(job.get("tags"))
     text = title + " " + desc
 
     score = 0
 
     # Titre (20pts max)
     title_points = 0
-    if any(k in title for k in ["qa", "quality", "test", "sdet", "tester"]):
+    if any(_kw(title, k) for k in ["qa", "quality", "qualite", "test", "testeur",
+                                   "sdet", "tester", "recette", "assurance qualite"]):
         title_points += 10
-    if any(k in title for k in ["lead", "senior", "manager", "consultant"]):
+    if any(_kw(title, k) for k in ["lead", "senior", "manager", "consultant"]):
         title_points += 5
-    if any(k in title for k in ["automation", "engineer", "architect"]):
+    if any(_kw(title, k) for k in ["automation", "engineer", "architect"]):
         title_points += 5
     score += min(title_points, 20)
 
@@ -61,32 +136,26 @@ def match_job_to_cv(job, cv_skills=None):
     skill_score = 0
     matched = []
     for skill in cv_skills:
-        if skill in text:
+        if _kw(text, skill):
             skill_score += 3
             matched.append(skill)
     score += min(skill_score, 30)
 
     # Remote (10pts)
-    if job.get("remote_type") == "remote":
-        score += 10
-    elif job.get("remote_type") == "hybrid":
-        score += 5
+    score += _remote_points(job.get("remote_type"))
 
     # Freelance (10pts)
-    if job.get("freelance_status") == "VALIDÉE":
-        score += 10
-    elif job.get("freelance_status") == "AMBIGUË":
-        score += 5
+    score += _freelance_points(job.get("freelance_status"))
 
     # Keywords bonus (20pts)
     bonus_kw = ["contract", "mission", "freelance", "régie", "prestation",
                 "sasu", "consultant", "independent", "tjm", "/jour", "daily rate"]
-    bonus = sum(2 for kw in bonus_kw if kw in text)
+    bonus = sum(2 for kw in bonus_kw if _kw(text, kw))
     score += min(bonus, 20)
 
     # TJM bonus (10pts)
-    salary = (job.get("salary") or "").lower()
-    if "/jour" in salary or "/j" in salary or "tjm" in salary:
+    salary = _norm(job.get("salary"))
+    if "/jour" in salary or "/j" in salary or _kw(salary, "tjm"):
         score += 10
     elif "chf" in salary or "€" in salary:
         score += 5
@@ -96,14 +165,14 @@ def match_job_to_cv(job, cv_skills=None):
 
 def analyze_tjm(job):
     """Détecte TJM dans le job et compare au marché."""
-    text = f"{job.get('salary') or ''} {job.get('title') or ''} {job.get('description') or ''}".lower()
+    text = _norm(f"{job.get('salary') or ''} {job.get('title') or ''} {job.get('description') or ''}")
     tjm = None
     currency = ""
     unit = ""
 
     # Patterns TJM
     patterns = [
-        r"(\d+)\s*[-àà]\s*(\d+)\s*(€|eur|chf|usd|sgd)?\s*/?\s*(jour|day|jr|h|hr|heure)",
+        r"(\d+)\s*(?:[-–—]|a|à|to|jusqu\'?à)\s*(\d+)\s*(€|eur|chf|usd|sgd)?\s*/?\s*(jour|day|jr|h|hr|heure)",
         r"(\d+)\s*(€|eur|chf|usd|sgd)?\s*/?\s*(jour|day|jr|h|hr)",
         r"tjm\s*[:\s]*(\d+)",
     ]
@@ -209,11 +278,11 @@ def analyze_skills_gap(jobs, cv_skills=None):
         cv_skills = CV_SKILLS
     all_skills = Counter()
     for job in jobs:
-        text = f"{job.get('title', '')} {job.get('description', '')} {job.get('tags', '')}".lower()
+        text = _norm(f"{job.get('title', '')} {job.get('description', '')} {job.get('tags', '')}")
         for skill in cv_skills + ["playwright", "aws", "docker", "kubernetes",
                                    "cypress", "rest assured", "postman", "soapui",
                                    "devops", "ci/cd", "jenkins", "gitlab"]:
-            if skill in text:
+            if _kw(text, skill):
                 all_skills[skill] += 1
 
     top_demanded = [s for s, _ in all_skills.most_common(20)]
@@ -234,7 +303,7 @@ def source_stats(jobs):
         if src not in sources:
             sources[src] = {"total": 0, "validee": 0, "tjm_sum": 0, "tjm_count": 0}
         sources[src]["total"] += 1
-        if job.get("freelance_status") == "VALIDÉE":
+        if _norm(job.get("freelance_status")).startswith("valid"):
             sources[src]["validee"] += 1
         tjm_info = analyze_tjm(job)
         if tjm_info["tjm"]:
