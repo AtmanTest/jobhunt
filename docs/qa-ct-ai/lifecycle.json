@@ -1,5 +1,5 @@
 {
-  "genere_le": "16/09/2026 23:48:28",
+  "genere_le": "17/09/2026 01:15:44",
   "recit": {
     "demande": {
       "id": "DM-2026-021",
@@ -165,54 +165,55 @@
   ],
   "tdd": {
     "rouge": "Étape rouge enregistrée lors de l'exécution initiale (voir 05-techniques.md) : ImportError: cannot import name 'filtrer_par_budget'",
-    "vert": "============================= test session starts ==============================\ncollected 21 items\ntests/test_budget_filter.py ...............                              [ 71%]\ntests/test_api_routes.py ......                                          [100%]\n============================= 21 passed in 11.43s ==============================",
+    "vert": "============================= test session starts ==============================\ncollected 21 items\ntests/test_budget_filter.py ...............                              [ 71%]\ntests/test_api_routes.py ......                                          [100%]\n============================= 21 passed in 11.38s ==============================",
     "resume": {
       "passes": 21,
       "echecs": 0,
       "erreurs": 0,
       "ignores": 0,
-      "duree": "11.43"
+      "duree": "11.38"
     }
   },
   "campagnes": {
     "unitaires_et_integration": {
-      "sortie": "============================= test session starts ==============================\ncollected 21 items\ntests/test_budget_filter.py ...............                              [ 71%]\ntests/test_api_routes.py ......                                          [100%]\n============================= 21 passed in 11.43s ==============================",
+      "sortie": "============================= test session starts ==============================\ncollected 21 items\ntests/test_budget_filter.py ...............                              [ 71%]\ntests/test_api_routes.py ......                                          [100%]\n============================= 21 passed in 11.38s ==============================",
       "resume": {
         "passes": 21,
         "echecs": 0,
         "erreurs": 0,
         "ignores": 0,
-        "duree": "11.43"
+        "duree": "11.38"
       }
     },
     "api_bdd": {
-      "sortie": "============================= test session starts ==============================\ncollected 5 items\ntests/test_scenarios.py .....                                            [100%]\n============================== 5 passed in 11.83s ==============================",
+      "sortie": "============================= test session starts ==============================\ncollected 5 items\ntests/test_scenarios.py .....                                            [100%]\n============================== 5 passed in 10.72s ==============================",
       "resume": {
         "passes": 5,
         "echecs": 0,
         "erreurs": 0,
         "ignores": 0,
-        "duree": "11.83"
+        "duree": "10.72"
       }
     },
     "suite_complete": {
-      "sortie": "FAILED tests/test_scenarios.py::test_job_alertcheck_toutes_les_2h - pytest_bd...\nFAILED tests/test_scenarios.py::test_voir_les_colonnes_kanban - pytest_bdd.ex...\nFAILED tests/test_scenarios.py::test_déplacer_une_offre_dans_le_pipeline - py...\nFAILED tests/test_scenarios.py::test_recherche_en_temps_réel - pytest_bdd.exc...\nFAILED tests/test_scenarios.py::test_filtre_par_séniorité - pytest_bdd.except...\nFAILED tests/test_scenarios.py::test_filtres_combinés - pytest_bdd.exceptions...\nFAILED tests/test_scenarios.py::test_scraping_nominal_avec_résultats_valides\nFAILED tests/test_scenarios.py::test_scraping_nominal_via_rss - AssertionErro...\nFAILED tests/test_scenarios.py::test_bug001_keyerror_sur_offre_sans_salary - ...\nFAILED tests/test_scenarios.py::test_bug002_filtre_acceptait_qa_director - As...\nFAILED tests/test_scenarios.py::test_bug003_doublon_avec_casse_différente - A...\nFAILED tests/test_scenarios.py::test_deux_offres_même_titre__même_boîte_mais_url_différente__doublon\nFAILED tests/test_scenarios.py::test_linkedin_scraper_navigue_via_url_directe_pas_js_eval\n================== 26 failed, 153 passed, 6 skipped in 12.78s ==================",
+      "sortie": "FAILED tests/test_scenarios.py::test_job_alertcheck_toutes_les_2h - pytest_bd...\nFAILED tests/test_scenarios.py::test_voir_les_colonnes_kanban - pytest_bdd.ex...\nFAILED tests/test_scenarios.py::test_déplacer_une_offre_dans_le_pipeline - py...\nFAILED tests/test_scenarios.py::test_recherche_en_temps_réel - pytest_bdd.exc...\nFAILED tests/test_scenarios.py::test_filtre_par_séniorité - pytest_bdd.except...\nFAILED tests/test_scenarios.py::test_filtres_combinés - pytest_bdd.exceptions...\nFAILED tests/test_scenarios.py::test_scraping_nominal_avec_résultats_valides\nFAILED tests/test_scenarios.py::test_scraping_nominal_via_rss - AssertionErro...\nFAILED tests/test_scenarios.py::test_bug001_keyerror_sur_offre_sans_salary - ...\nFAILED tests/test_scenarios.py::test_bug002_filtre_acceptait_qa_director - As...\nFAILED tests/test_scenarios.py::test_bug003_doublon_avec_casse_différente - A...\nFAILED tests/test_scenarios.py::test_deux_offres_même_titre__même_boîte_mais_url_différente__doublon\nFAILED tests/test_scenarios.py::test_linkedin_scraper_navigue_via_url_directe_pas_js_eval\n================== 26 failed, 153 passed, 6 skipped in 12.60s ==================",
       "resume": {
         "passes": 153,
         "echecs": 26,
         "erreurs": 0,
         "ignores": 6,
-        "duree": "12.78"
+        "duree": "12.60"
       }
     },
     "end_to_end": {
-      "sortie": "  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\nplaywright/test_dashboard.py::test_dismiss_button_does_not_navigate[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_dismiss_button_does_not_navigate[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\nplaywright/test_dashboard.py::test_apply_button_is_only_clickable_link[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_apply_button_is_only_clickable_link[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n======================= 10 passed, 10 warnings in 21.71s =======================",
+      "sortie": "    warnings.warn(\nplaywright/test_dashboard.py::test_pagination[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_pagination[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\nplaywright/test_dashboard.py::test_dismiss_button_does_not_navigate[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_dismiss_button_does_not_navigate[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\nplaywright/test_dashboard.py::test_apply_button_is_only_clickable_link[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_apply_button_is_only_clickable_link[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n======================= 10 passed, 10 warnings in 17.03s =======================",
+      "sortie_complete": "============================= test session starts ==============================\ncollecting ... collected 10 items\n\ntests/playwright/test_dashboard.py::test_budget_filter[chromium] PASSED  [ 10%]\ntests/playwright/test_dashboard.py::test_page_title[chromium] PASSED     [ 20%]\ntests/playwright/test_dashboard.py::test_hero_stats[chromium] PASSED     [ 30%]\ntests/playwright/test_dashboard.py::test_country_tabs[chromium] PASSED   [ 40%]\ntests/playwright/test_dashboard.py::test_remote_filter[chromium] PASSED  [ 50%]\ntests/playwright/test_dashboard.py::test_job_cards[chromium] PASSED      [ 60%]\ntests/playwright/test_dashboard.py::test_top_matches[chromium] PASSED    [ 70%]\ntests/playwright/test_dashboard.py::test_pagination[chromium] PASSED     [ 80%]\ntests/playwright/test_dashboard.py::test_dismiss_button_does_not_navigate[chromium] PASSED [ 90%]\ntests/playwright/test_dashboard.py::test_apply_button_is_only_clickable_link[chromium] PASSED [100%]\n\n=============================== warnings summary ===============================\nplaywright/test_dashboard.py::test_budget_filter[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_budget_filter[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\n\nplaywright/test_dashboard.py::test_page_title[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_page_title[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\n\nplaywright/test_dashboard.py::test_hero_stats[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_hero_stats[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\n\nplaywright/test_dashboard.py::test_country_tabs[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_country_tabs[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\n\nplaywright/test_dashboard.py::test_remote_filter[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_remote_filter[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\n\nplaywright/test_dashboard.py::test_job_cards[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_job_cards[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\n\nplaywright/test_dashboard.py::test_top_matches[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_top_matches[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\n\nplaywright/test_dashboard.py::test_pagination[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_pagination[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\n\nplaywright/test_dashboard.py::test_dismiss_button_does_not_navigate[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_dismiss_button_does_not_navigate[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\n\nplaywright/test_dashboard.py::test_apply_button_is_only_clickable_link[chromium]\n  /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/_pytest/python.py:170: PytestReturnNotNoneWarning: Test functions should return None, but playwright/test_dashboard.py::test_apply_button_is_only_clickable_link[chromium] returned <class 'dict'>.\n  Did you mean to use `assert` instead of `return`?\n  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.\n    warnings.warn(\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n======================= 10 passed, 10 warnings in 17.03s =======================\n",
       "resume": {
         "passes": 10,
         "echecs": 0,
         "erreurs": 0,
         "ignores": 0,
-        "duree": "21.71"
+        "duree": "17.03"
       },
       "serveur_de_test": "127.0.0.1:5097 (démarré et arrêté pendant la mesure)"
     }
@@ -344,6 +345,115 @@
       "role": "La règle appliquée dans l'interface, alignée sur la règle serveur et sur les tests."
     }
   ],
+  "playwright": {
+    "feature_fichier": "tests/playwright/scenarios/tableau_de_bord.feature",
+    "feature_contenu": "# language: fr\n@niveau:bout-en-bout @outil:playwright @navigateur:chromium\nFonctionnalité: Tableau de bord des offres, vérifié dans un navigateur réel\n  Chaque scénario de ce fichier décrit un comportement observable du tableau de bord.\n  Il est exécuté par Playwright sur un Chromium réel : les mêmes scénarios tournent\n  en local (serveur de test) et dans la chaîne d'intégration.\n  Le lien entre le scénario et le code est explicite : l'étiquette @cas porte le nom\n  de la fonction de test correspondante dans tests/playwright/test_dashboard.py.\n\n  Contexte:\n    Étant donné que le tableau de bord est ouvert dans le navigateur\n    Et que l'adresse de test est fournie par la variable d'environnement JOBHUNT_URL\n\n  @cas:test_page_title\n  Scénario: Le titre de l'onglet identifie le produit\n    Alors le titre du document contient « JobHunt », « Marché » ou « QA »\n    Et le titre relevé est journalisé dans le résultat du scénario\n\n  @cas:test_hero_stats\n  Scénario: Les indicateurs principaux sont affichés\n    Quand j'attends l'affichage du bandeau d'indicateurs\n    Alors au moins 3 cartes d'indicateurs sont présentes\n    Et le contenu de chaque carte est relevé\n\n  @cas:test_country_tabs\n  Scénario: Les onglets de marché permettent de changer de pays\n    Quand j'attends l'affichage des onglets de marché\n    Alors au moins 5 onglets sont présents\n    Et le passage sur le marché suisse s'effectue sans erreur\n\n  @cas:test_remote_filter\n  Scénario: Le filtre télétravail est disponible et activable\n    Quand j'attends l'affichage de la barre de filtres\n    Alors un bouton de filtre « Remote » existe\n    Et son activation ne provoque aucune erreur d'exécution\n\n  @cas:test_job_cards\n  Scénario: Les offres sont affichées sous forme de cartes\n    Quand j'attends le chargement des cartes d'offres\n    Alors au moins une carte est visible à l'écran\n    Et le nombre de cartes visibles est relevé\n\n  @cas:test_top_matches\n  Scénario: Les meilleures correspondances affichent un score\n    Quand j'attends l'affichage des meilleures correspondances\n    Alors chaque carte de correspondance expose un score\n    Et les premiers scores sont relevés dans le résultat\n\n  @cas:test_pagination\n  Scénario: La pagination permet d'atteindre la page suivante\n    Quand j'attends l'affichage des boutons de page\n    Alors si un bouton « › » actif existe, je l'active sans erreur\n    Et s'il n'y a qu'une seule page, le scénario réussit sans action\n\n  @cas:test_budget_filter\n  Scénario: Le filtre budget minimum écarte les offres sous le seuil\n    Étant donné que la barre de filtres contient un bouton « ≥ 600 € »\n    Quand j'active ce bouton et que j'attends la fin du filtrage\n    Alors aucune carte visible dont le budget est renseigné n'affiche un TJM inférieur à 600\n    Et au moins une carte dont le budget est renseigné reste affichée\n    Et toutes les cartes portant un budget connu sont cohérentes avec le seuil retenu\n\n  @cas:test_dismiss_button_does_not_navigate\n  Scénario: Le bouton de rejet masque une offre sans quitter la page\n    Quand j'attends l'affichage d'un bouton de rejet ✕\n    Et que je relève l'adresse courante\n    Alors après activation, l'adresse de la page ne change pas\n    Et si aucun bouton de rejet n'existe, le scénario réussit sans action\n\n  @cas:test_apply_button_is_only_clickable_link\n  Scénario: Seul le lien de candidature ouvre la page de l'offre\n    Quand je clique sur le corps d'une carte d'offre\n    Alors l'adresse courante ne change pas\n    Et seul l'élément de candidature est un lien cliquable vers l'offre\n",
+    "scenarios": [
+      {
+        "fonction": "test_page_title",
+        "gherkin": "Scénario: Le titre de l'onglet identifie le produit\n  Alors le titre du document contient « JobHunt », « Marché » ou « QA »\n  Et le titre relevé est journalisé dans le résultat du scénario",
+        "code": {
+          "fichier": "tests/playwright/test_dashboard.py",
+          "debut": 61,
+          "contenu": "def test_page_title(page):\n    page.goto(BASE_URL)\n    title = page.title()\n    assert \"JobHunt\" in title or \"Marché\" in title or \"QA\" in title, f\"Unexpected title: {title}\"\n    return {\"passed\": True, \"details\": f\"Title: {title}\"}"
+        },
+        "statut": "PASSED"
+      },
+      {
+        "fonction": "test_hero_stats",
+        "gherkin": "Scénario: Les indicateurs principaux sont affichés\n  Quand j'attends l'affichage du bandeau d'indicateurs\n  Alors au moins 3 cartes d'indicateurs sont présentes\n  Et le contenu de chaque carte est relevé",
+        "code": {
+          "fichier": "tests/playwright/test_dashboard.py",
+          "debut": 68,
+          "contenu": "def test_hero_stats(page):\n    page.goto(BASE_URL)\n    page.wait_for_selector(\".hero-card\", timeout=10000)\n    cards = page.query_selector_all(\".hero-card\")\n    assert len(cards) >= 3, f\"Expected 3+ stat cards, got {len(cards)}\"\n    texts = [c.text_content().strip() for c in cards]\n    return {\"passed\": True, \"details\": f\"Stat cards: {len(cards)} — {' | '.join(t[:30] for t in texts)}\"}"
+        },
+        "statut": "PASSED"
+      },
+      {
+        "fonction": "test_country_tabs",
+        "gherkin": "Scénario: Les onglets de marché permettent de changer de pays\n  Quand j'attends l'affichage des onglets de marché\n  Alors au moins 5 onglets sont présents\n  Et le passage sur le marché suisse s'effectue sans erreur",
+        "code": {
+          "fichier": "tests/playwright/test_dashboard.py",
+          "debut": 77,
+          "contenu": "def test_country_tabs(page):\n    page.goto(BASE_URL)\n    page.wait_for_selector(\".country-btn\", timeout=10000)\n    tabs = page.query_selector_all(\".country-btn\")\n    tab_count = len(tabs)\n    assert tab_count >= 5, f\"Expected 5+ country tabs, got {tab_count}\"\n    # Click Switzerland\n    swiss = [t for t in tabs if \"Suisse\" in t.text_content() or \"Switzerland\" in t.text_content()]\n    if swiss:\n        swiss[0].click()\n        page.wait_for_timeout(500)\n    return {\"passed\": True, \"details\": f\"Country tabs: {tab_count}, switched to Suisse OK\"}"
+        },
+        "statut": "PASSED"
+      },
+      {
+        "fonction": "test_remote_filter",
+        "gherkin": "Scénario: Le filtre télétravail est disponible et activable\n  Quand j'attends l'affichage de la barre de filtres\n  Alors un bouton de filtre « Remote » existe\n  Et son activation ne provoque aucune erreur d'exécution",
+        "code": {
+          "fichier": "tests/playwright/test_dashboard.py",
+          "debut": 91,
+          "contenu": "def test_remote_filter(page):\n    page.goto(BASE_URL)\n    page.wait_for_selector(\".filter-btn\", timeout=10000)\n    filters = page.query_selector_all(\".filter-btn\")\n    remote_btn = [f for f in filters if \"Remote\" in f.text_content()]\n    assert len(remote_btn) > 0, \"Remote filter button not found\"\n    remote_btn[0].click()\n    page.wait_for_timeout(500)\n    return {\"passed\": True, \"details\": \"Remote filter clicked successfully\"}"
+        },
+        "statut": "PASSED"
+      },
+      {
+        "fonction": "test_job_cards",
+        "gherkin": "Scénario: Les offres sont affichées sous forme de cartes\n  Quand j'attends le chargement des cartes d'offres\n  Alors au moins une carte est visible à l'écran\n  Et le nombre de cartes visibles est relevé",
+        "code": {
+          "fichier": "tests/playwright/test_dashboard.py",
+          "debut": 102,
+          "contenu": "def test_job_cards(page):\n    page.goto(BASE_URL)\n    page.wait_for_selector(\".job-card\", timeout=15000)\n    cards = page.query_selector_all(\".job-card\")\n    visible = [c for c in cards if c.is_visible()]\n    assert len(visible) > 0, \"No visible job cards\"\n    return {\"passed\": True, \"details\": f\"{len(visible)} job cards visible\"}"
+        },
+        "statut": "PASSED"
+      },
+      {
+        "fonction": "test_top_matches",
+        "gherkin": "Scénario: Les meilleures correspondances affichent un score\n  Quand j'attends l'affichage des meilleures correspondances\n  Alors chaque carte de correspondance expose un score\n  Et les premiers scores sont relevés dans le résultat",
+        "code": {
+          "fichier": "tests/playwright/test_dashboard.py",
+          "debut": 111,
+          "contenu": "def test_top_matches(page):\n    page.goto(BASE_URL)\n    page.wait_for_selector(\".top-match-card\", timeout=10000)\n    cards = page.query_selector_all(\".top-match-card\")\n    scores = [c.query_selector(\".tm-score\") for c in cards if c.query_selector(\".tm-score\")]\n    score_texts = [s.text_content().strip() for s in scores if s]\n    return {\"passed\": True, \"details\": f\"{len(cards)} top matches — scores: {', '.join(score_texts[:5])}\"}"
+        },
+        "statut": "PASSED"
+      },
+      {
+        "fonction": "test_pagination",
+        "gherkin": "Scénario: La pagination permet d'atteindre la page suivante\n  Quand j'attends l'affichage des boutons de page\n  Alors si un bouton « › » actif existe, je l'active sans erreur\n  Et s'il n'y a qu'une seule page, le scénario réussit sans action",
+        "code": {
+          "fichier": "tests/playwright/test_dashboard.py",
+          "debut": 121,
+          "contenu": "def test_pagination(page):\n    page.goto(BASE_URL)\n    page.wait_for_selector(\".page-btn\", timeout=10000)\n    btns = page.query_selector_all(\".page-btn\")\n    next_btn = [b for b in btns if b.text_content().strip() == \"›\" and not b.is_disabled()]\n    if next_btn:\n        next_btn[0].click()\n        page.wait_for_timeout(500)\n        return {\"passed\": True, \"details\": \"Pagination: clicked next page\"}\n    return {\"passed\": True, \"details\": \"Only 1 page, pagination not needed\"}"
+        },
+        "statut": "PASSED"
+      },
+      {
+        "fonction": "test_budget_filter",
+        "gherkin": "Scénario: Le filtre budget minimum écarte les offres sous le seuil\n  Étant donné que la barre de filtres contient un bouton « ≥ 600 € »\n  Quand j'active ce bouton et que j'attends la fin du filtrage\n  Alors aucune carte visible dont le budget est renseigné n'affiche un TJM inférieur à 600\n  Et au moins une carte dont le budget est renseigné reste affichée\n  Et toutes les cartes portant un budget connu sont cohérentes avec le seuil retenu",
+        "code": {
+          "fichier": "tests/playwright/test_dashboard.py",
+          "debut": 19,
+          "contenu": "def test_budget_filter(page):\n    \"\"\"E2E du filtre budget : cliquer ≥ 600 ne doit laisser que les offres à TJM >= 600.\n\n    Vérifie trois choses observables depuis le navigateur :\n      1. le groupe de filtres « budget » existe et porte les bornes attendues ;\n      2. après clic sur « ≥ 600 », aucune carte visible n'a un budget analysé < 600 ;\n      3. les cartes sans budget analysé sont écartées (règle métier).\n    \"\"\"\n    page.goto(BASE_URL)\n    page.wait_for_selector(\".job-card\", timeout=15000)\n\n    groupe = page.query_selector('[data-type=\"budget\"]')\n    assert groupe is not None, \"groupe de filtres « budget » absent du dashboard\"\n    libelles = [b.text_content().strip() for b in groupe.query_selector_all(\".filter-btn\")]\n    assert any(\"600\" in l for l in libelles), f\"borne 600 absente : {libelles}\"\n\n    avant = [c for c in page.query_selector_all(\".job-card\") if c.is_visible()]\n    assert avant, \"aucune carte affichée avant filtrage\"\n\n    bouton = [b for b in groupe.query_selector_all(\".filter-btn\") if \"600\" in b.text_content()][0]\n    bouton.click()\n    page.wait_for_timeout(700)\n\n    visibles = [c for c in page.query_selector_all(\".job-card\") if c.is_visible()]\n    assert len(visibles) <= len(avant), \"le filtre a ajouté des cartes\"\n\n    hors_seuil = []\n    sans_budget = []\n    for carte in visibles:\n        brut = carte.get_attribute(\"data-budget\")\n        if brut in (None, \"\"):\n            sans_budget.append(carte.get_attribute(\"data-id\"))\n            continue\n        if int(float(brut)) < 600:\n            hors_seuil.append((carte.get_attribute(\"data-id\"), brut))\n\n    assert not hors_seuil, f\"offres sous le seuil encore visibles : {hors_seuil}\"\n    assert not sans_budget, f\"offres sans budget analysé encore visibles : {sans_budget[:5]}\"\n    return {\"passed\": True,\n            \"details\": f\"{len(avant)} cartes avant, {len(visibles)} après filtrage ≥ 600 (aucune sous le seuil)\"}"
+        },
+        "statut": "PASSED"
+      },
+      {
+        "fonction": "test_dismiss_button_does_not_navigate",
+        "gherkin": "Scénario: Le bouton de rejet masque une offre sans quitter la page\n  Quand j'attends l'affichage d'un bouton de rejet ✕\n  Et que je relève l'adresse courante\n  Alors après activation, l'adresse de la page ne change pas\n  Et si aucun bouton de rejet n'existe, le scénario réussit sans action",
+        "code": {
+          "fichier": "tests/playwright/test_dashboard.py",
+          "debut": 133,
+          "contenu": "def test_dismiss_button_does_not_navigate(page):\n    \"\"\"Verify that clicking the dismiss button (✕) does NOT navigate away.\"\"\"\n    page.goto(BASE_URL)\n    page.wait_for_selector(\".btn-dismiss\", timeout=15000)\n    current_url = page.url\n    dismiss_btn = page.query_selector(\".btn-dismiss\")\n    if not dismiss_btn:\n        return {\"passed\": True, \"details\": \"No dismiss buttons found, skip\"}\n    dismiss_btn.click()\n    page.wait_for_timeout(1000)\n    assert page.url == current_url, f\"Page navigated! {current_url} → {page.url}\"\n    return {\"passed\": True, \"details\": \"Dismiss button click did NOT navigate away\"}"
+        },
+        "statut": "PASSED"
+      },
+      {
+        "fonction": "test_apply_button_is_only_clickable_link",
+        "gherkin": "Scénario: Seul le lien de candidature ouvre la page de l'offre\n  Quand je clique sur le corps d'une carte d'offre\n  Alors l'adresse courante ne change pas\n  Et seul l'élément de candidature est un lien cliquable vers l'offre",
+        "code": {
+          "fichier": "tests/playwright/test_dashboard.py",
+          "debut": 147,
+          "contenu": "def test_apply_button_is_only_clickable_link(page):\n    \"\"\"Verify that clicking a job card body does NOT navigate, only the btn-apply link.\"\"\"\n    page.goto(BASE_URL)\n    page.wait_for_selector(\".job-card\", timeout=15000)\n    card = page.query_selector(\".job-card\")\n    if not card:\n        return {\"passed\": True, \"details\": \"No job cards found\"}\n    current_url = page.url\n    # Click the card body (not the button)\n    card.click(position={\"x\": 50, \"y\": 50})\n    page.wait_for_timeout(500)\n    assert page.url == current_url, \"Job card click navigated away!\"\n    # Click the Apply button\n    apply_btn = card.query_selector(\".btn-apply\")\n    if not apply_btn:\n        return {\"passed\": True, \"details\": \"No Apply button, skip\"}\n    # Don't actually click the link - just verify it has a valid href\n    href = apply_btn.get_attribute(\"href\")\n    assert href and href.startswith(\"http\"), f\"Apply button has no valid href: {href}\"\n    return {\"passed\": True, \"details\": f\"Card body non-clickable ✓, Apply → {href}\"}"
+        },
+        "statut": "PASSED"
+      }
+    ],
+    "nb_scenarios": 10,
+    "nb_passes": 10,
+    "navigateur": "Chromium (Playwright)"
+  },
   "correctifs": [
     {
       "titre": "Chaîne de livraison virtuelle",

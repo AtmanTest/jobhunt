@@ -61,6 +61,57 @@ def extraire_fichier(chemin, motif_debut, nb_lignes):
     return None
 
 
+def extraire_fonction(chemin, nom):
+    """Extrait une fonction de test réelle, avec son numéro de première ligne."""
+    with open(os.path.join(RACINE, chemin), encoding="utf-8") as fh:
+        lignes = fh.read().splitlines()
+    for i, ligne in enumerate(lignes):
+        if ligne.startswith(f"def {nom}("):
+            bloc = [ligne]
+            for suite in lignes[i + 1:]:
+                if suite and not suite.startswith((" ", "\t")):
+                    break
+                bloc.append(suite)
+            while bloc and not bloc[-1].strip():
+                bloc.pop()
+            return {"fichier": chemin, "debut": i + 1, "contenu": "\n".join(bloc)}
+    return None
+
+
+def parser_feature(chemin):
+    """Associe chaque scénario Gherkin à la fonction de test portée par son étiquette @cas."""
+    with open(os.path.join(RACINE, chemin), encoding="utf-8") as fh:
+        lignes = fh.read().splitlines()
+    scenarios, i = [], 0
+    while i < len(lignes):
+        if lignes[i].strip().startswith("@cas:"):
+            nom = lignes[i].strip().split("@cas:")[1].strip().split()[0]
+            bloc, j = [], i + 1
+            while j < len(lignes) and not lignes[j].strip().startswith("@cas:"):
+                brut = lignes[j]
+                if brut.strip() and not brut.strip().startswith("#"):
+                    bloc.append(brut[2:] if brut.startswith("  ") else brut)
+                j += 1
+            while bloc and not bloc[-1].strip():
+                bloc.pop()
+            scenarios.append({"fonction": nom, "gherkin": "\n".join(bloc)})
+            i = j
+        else:
+            i += 1
+    return scenarios
+
+
+def statuts_pytest(sortie):
+    """Relève le statut de chaque scénario exécuté (sortie pytest -v)."""
+    resultats = {}
+    for ligne in sortie.splitlines():
+        m = re.match(r"tests/playwright/test_dashboard\.py::(\w+)(?:\[[^\]]*\])?\s+"
+                     r"(PASSED|FAILED|ERROR|SKIPPED)", ligne.strip())
+        if m:
+            resultats[m.group(1)] = m.group(2)
+    return resultats
+
+
 def diff_commit(sha, chemin=None):
     cmd = ["git", "show", "--unified=3", "--format=%H%n%s%n%ad", sha]
     if chemin:
@@ -100,9 +151,10 @@ try:
         time.sleep(1)
     if pret:
         sortie_e2e = run([sys.executable, "-m", "pytest", "tests/playwright/test_dashboard.py",
-                          "-q", "--tb=line"], timeout=900,
+                          "-v", "--tb=line", "-p", "no:cacheprovider"], timeout=900,
                          env={"JOBHUNT_URL": f"http://127.0.0.1:{PORT_E2E}"})
-        E2E = {"sortie": dernieres_lignes(sortie_e2e), "resume": resumé_pytest(sortie_e2e),
+        E2E = {"sortie": dernieres_lignes(sortie_e2e, 18), "sortie_complete": sortie_e2e,
+               "resume": resumé_pytest(sortie_e2e),
                "serveur_de_test": f"127.0.0.1:{PORT_E2E} (démarré et arrêté pendant la mesure)"}
     else:
         E2E = {"sortie": "serveur de test indisponible", "resume": {}}
@@ -320,6 +372,22 @@ historique = {
     ],
 }
 
+# --- scénarios bout en bout : Gherkin + code + statut réel -----------------
+FEATURE = "tests/playwright/scenarios/tableau_de_bord.feature"
+statuts = statuts_pytest(E2E.get("sortie_complete", "") or E2E.get("sortie", ""))
+scenarios_e2e = []
+for scenario in parser_feature(FEATURE):
+    fonction = extraire_fonction("tests/playwright/test_dashboard.py", scenario["fonction"])
+    if not fonction:
+        continue
+    scenarios_e2e.append({
+        "fonction": scenario["fonction"],
+        "gherkin": scenario["gherkin"],
+        "code": fonction,
+        "statut": statuts.get(scenario["fonction"], "non exécuté"),
+    })
+feature_brute = open(os.path.join(RACINE, FEATURE), encoding="utf-8").read()
+
 preuve = {
     "genere_le": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
     "recit": RECIT,
@@ -344,6 +412,14 @@ preuve = {
     "anomalies": ANOMALIES,
     "historique": historique,
     "code": code_final,
+    "playwright": {
+        "feature_fichier": FEATURE,
+        "feature_contenu": feature_brute,
+        "scenarios": scenarios_e2e,
+        "nb_scenarios": len(scenarios_e2e),
+        "nb_passes": sum(1 for s in scenarios_e2e if s["statut"] == "PASSED"),
+        "navigateur": "Chromium (Playwright)" ,
+    },
     "correctifs": CORRECTIFS,
     "ci": CI,
     "amelioration": AMELIORATION,
@@ -361,3 +437,5 @@ print(f"            suite complète {resumé_pytest(SUITE)}")
 print(f"            end-to-end {E2E.get('resume', {})}")
 print(f"couverture : {[(m['module'], str(m['couverture']) + '%') for m in modules]}")
 print(f"extraits de code : {len(code_final)} · correctifs git : {len(CORRECTIFS)} · anomalies : {len(ANOMALIES)}")
+print(f"scénarios bout en bout : {sum(1 for s in scenarios_e2e if s['statut'] == 'PASSED')}/{len(scenarios_e2e)} "
+      f"(Gherkin : {FEATURE})")

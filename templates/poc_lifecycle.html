@@ -1,243 +1,249 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cycle de vie complet — JobHunt, du besoin à l'amélioration continue</title>
-  <link rel="stylesheet" href="/static/theme.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <style>
-    .cv-wrap { max-width: 1180px; margin: 1.4rem auto 4rem; padding: 0 1.2rem; }
-    .cv-hero { background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(59,130,246,0.10));
-               border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.4rem; margin-bottom: 1.2rem; }
-    .cv-hero .tag { display: inline-block; font-size: 0.66rem; font-weight: 700; text-transform: uppercase;
-                    letter-spacing: 0.6px; background: rgba(16,185,129,0.18); color: #6ee7b7;
-                    padding: 0.2rem 0.55rem; border-radius: 5px; margin-bottom: 0.55rem; }
-    .cv-hero h1 { margin: 0 0 0.45rem; font-size: 1.5rem; line-height: 1.25; }
-    .cv-hero p { margin: 0.2rem 0 0; color: var(--text-dim); font-size: 0.9rem; line-height: 1.65; }
-    .refs { margin-top: 0.8rem; display: flex; gap: 0.45rem; flex-wrap: wrap; }
-    .ref { font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 20px;
-           border: 1px solid var(--border); color: #e6e8ef; background: rgba(255,255,255,0.04); }
-    .kpis { display: flex; gap: 0.7rem; flex-wrap: wrap; margin: 1.2rem 0 1.8rem; }
-    .kpi { flex: 1 1 150px; background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-           padding: 0.9rem 1rem; min-height: 5.2rem; display: flex; flex-direction: column; justify-content: center; }
-    .kpi .num { display: block; font-size: 1.6rem; font-weight: 800; line-height: 1.1; }
-    .kpi .lbl { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.4px;
-                color: #c9d1d9; font-weight: 600; margin-top: 0.25rem; line-height: 1.35; }
-    .kpi.green .num { color: var(--green); } .kpi.blue .num { color: var(--blue); }
-    .kpi.orange .num { color: var(--orange); } .kpi.red .num { color: var(--red); }
-    .sec { margin-bottom: 2.3rem; }
-    .sec > h2 { font-size: 1.15rem; margin: 0 0 0.3rem; }
-    .sec > .sub { color: var(--text-dim); font-size: 0.85rem; line-height: 1.6; margin: 0 0 0.9rem; }
-    .boite { background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-             padding: 0.75rem 0.8rem; overflow-x: auto; }
-    table.cv { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-    table.cv th { text-align: left; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.4px;
-                  color: #c9d1d9; font-weight: 700; padding: 0.45rem 0.55rem; border-bottom: 1px solid var(--border); }
-    table.cv td { padding: 0.45rem 0.55rem; border-bottom: 1px solid var(--border); vertical-align: top; }
-    table.cv tr:last-child td { border-bottom: none; }
-    .chip { font-size: 0.68rem; font-weight: 700; padding: 0.14rem 0.45rem; border-radius: 20px; white-space: nowrap; }
-    .chip.ok { background: var(--green-dim); color: var(--green); }
-    .chip.ko { background: rgba(248,113,113,0.18); color: var(--red); }
-    .chip.warn { background: rgba(251,146,60,0.16); color: var(--orange); }
-    .chip.neutre { background: rgba(255,255,255,0.07); color: #d7dae3; }
-    .us { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 0.9rem;
-          margin-bottom: 0.5rem; }
-    .us .t { font-weight: 700; font-size: 0.9rem; }
-    .us ul { margin: 0.35rem 0 0; padding-left: 1.1rem; }
-    .us li { font-size: 0.81rem; color: var(--text-dim); line-height: 1.55; }
-    .anomalie { background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--orange);
-                border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 0.6rem; }
-    .anomalie .t { font-weight: 700; font-size: 0.9rem; }
-    .anomalie .d { font-size: 0.82rem; color: var(--text-dim); line-height: 1.55; margin-top: 0.3rem; }
-    details { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.6rem; }
-    details > summary { cursor: pointer; padding: 0.6rem 0.8rem; font-size: 0.85rem; font-weight: 700; }
-    details > summary::marker { color: var(--text-dim); }
-    details .role { font-size: 0.8rem; color: var(--text-dim); padding: 0 0.8rem 0.4rem; line-height: 1.55; }
-    pre { margin: 0; padding: 0.8rem 0.9rem; overflow-x: auto; font-size: 0.76rem; line-height: 1.5;
-          background: #0d1117; border-top: 1px solid var(--border); border-radius: 0 0 10px 10px;
-          font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #e6edf3; }
-    pre.vert { background: #08160f; } pre.rouge { background: #1a0d0d; }
-    .journal h1, .journal h2 { font-size: 1.02rem; margin: 1.1rem 0 0.4rem; }
-    .journal p { font-size: 0.85rem; color: var(--text-dim); line-height: 1.65; }
-    .journal code { background: rgba(255,255,255,0.07); padding: 0.1rem 0.3rem; border-radius: 4px; font-size: 0.78rem; }
-    .journal pre { border: 1px solid var(--border); border-radius: 8px; margin: 0.5rem 0; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.76rem; }
-    .gris { color: var(--text-dim); }
-    .note { border-left: 3px solid var(--blue); background: rgba(59,130,246,0.07); border-radius: 8px;
-            padding: 0.7rem 0.85rem; font-size: 0.83rem; line-height: 1.6; margin: 0.7rem 0; }
-    .alerte { border-left: 3px solid var(--orange); background: rgba(251,146,60,0.08); border-radius: 8px;
-              padding: 0.7rem 0.85rem; font-size: 0.84rem; line-height: 1.6; margin: 0.7rem 0; }
-    .alerte.ok { border-color: var(--green); background: rgba(16,185,129,0.08); }
-    .cv-foot { margin-top: 2.4rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.74rem;
-               color: var(--text-dim); line-height: 1.7; }
-    @media (max-width: 760px) {
-      .cv-hero h1 { font-size: 1.2rem; } .kpi { flex: 1 1 46%; min-height: 4.6rem; }
-      table.cv { font-size: 0.76rem; } pre { font-size: 0.72rem; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cycle de vie complet — JobHunt, du besoin à l'amélioration continue</title>
+<meta name="description" content="Cycle de vie complet d'une fonctionnalité réelle : demande métier, user stories, stratégie de test, TDD, scénarios Gherkin exécutés par Playwright, anomalies, non-régression, couverture, CI et amélioration continue.">
+<link rel="stylesheet" href="static/site.css">
 </head>
 <body>
-<header class="header">
-  <a href="/" class="header-logo" style="text-decoration:none;">⚡ JobHunt · Cycle de vie</a>
-  <div class="header-right">
-    <a href="/cycle-de-vie" class="btn-outline" style="margin-right:.5rem;">🔁 Cycle de vie</a>
-    <a href="/poc-ct-ai" class="btn-outline" style="margin-right:.5rem;">🧠 Test d'IA</a>
-    <a href="/qa" class="btn-outline" style="margin-right:.5rem;">🧪 Tests</a>
-    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Basculer thème">☀️</button>
+<div class="ciel"></div>
+
+<header class="entete">
+  <div class="entete-in">
+    <a class="marque" href="index.html">
+      <span class="orbe"></span>
+      <span class="pile"><span>JobHunt</span><small>QA · Cycle de vie</small></span>
+    </a>
+    <nav class="nav">
+      <a class="actif" href="cycle-de-vie.html">Cycle de vie</a>
+      <a href="chaine-de-livraison.html">Chaîne de livraison</a>
+      <a href="vitrine-ct-ai.html">Test d'IA</a>
+      <a href="index.html">Portes de qualité</a>
+    </nav>
   </div>
+  <div class="jauge"></div>
 </header>
 
-<div class="cv-wrap">
+<div class="page">
 {% if p %}
-  <div class="cv-hero">
-    <span class="tag">Cycle de vie complet · mesuré le {{ p.genere_le }}</span>
-    <h1>JobHunt, du besoin métier à l'amélioration continue</h1>
-    <p>
-      Cette page suit une fonctionnalité réelle de ce tableau de bord, <strong>de bout en bout</strong> :
-      demande métier, user stories, stratégie de test, développement piloté par les tests, exécution des
-      campagnes, anomalies, correction, confirmation, régression, critères de sortie, couverture, chaîne
-      d'intégration et amélioration continue.
+  <section class="heros">
+    <div class="oeil">Cycle de vie · du besoin au Go/No-Go · mesures du {{ p.genere_le }}</div>
+    <h1>Une fonctionnalité réelle, suivie <span class="gradient">de bout en bout</span></h1>
+    <p class="chapo">
+      Pas de produit fictif : c'est le filtre par budget minimum de ce tableau de bord,
+      mené de la demande métier jusqu'à l'amélioration continue. Chaque étape produit une
+      preuve — sortie console, extrait de code lu dans le dépôt, diff de correction, mesure
+      de couverture — et chaque étape est rattachée aux référentiels ISTQB.
     </p>
-    <p>
-      Tous les numéros affichés sont mesurés : les suites de tests sont exécutées (dont les scénarios
-      navigateur dans un vrai Chromium), la couverture est calculée par <span class="mono">coverage.py</span>,
-      les extraits de code et les correctifs sont lus dans les fichiers et dans l'historique Git.
-    </p>
-    <div class="refs">
-      {% for s in p.syllabus %}<span class="ref">{{ s }}</span>{% endfor %}
+    <div class="etiquettes">
+      <span class="etiquette vif">Chromium réel · {{ p.playwright.nb_passes }}/{{ p.playwright.nb_scenarios }} scénarios</span>
+      <span class="etiquette">Gherkin (français)</span>
+      <span class="etiquette">pytest · Playwright · coverage.py</span>
+      {% for s in p.syllabus %}<span class="etiquette">{{ s }}</span>{% endfor %}
     </div>
-  </div>
 
-  <div class="kpis">
-    <div class="kpi green"><span class="num">{{ p.campagnes.end_to_end.resume.passes }}</span>
-      <span class="lbl">scénarios navigateur exécutés</span></div>
-    <div class="kpi blue"><span class="num">{{ p.campagnes.suite_complete.resume.passes }}</span>
-      <span class="lbl">tests passants (suite complète)</span></div>
-    <div class="kpi green"><span class="num">{{ p.historique.resolus }}</span>
-      <span class="lbl">échecs réparés · 0 nouveau</span></div>
-    <div class="kpi orange"><span class="num">{{ p.anomalies|length }}</span>
-      <span class="lbl">anomalies réelles traitées</span></div>
-    <div class="kpi blue"><span class="num">{% for m in p.couverture.modules %}{% if m.module == 'matcher.py' %}{{ m.couverture }} %{% endif %}{% endfor %}</span>
-      <span class="lbl">couverture du moteur métier</span></div>
-  </div>
+    <div class="chiffres">
+      <div class="chiffre"><span class="valeur cyan">{{ p.playwright.nb_passes }}</span>
+        <span class="legende">scénarios navigateur exécutés</span></div>
+      <div class="chiffre"><span class="valeur violet">{{ p.campagnes.suite_complete.resume.passes }}</span>
+        <span class="legende">tests passants, suite complète</span></div>
+      <div class="chiffre"><span class="valeur emeraude">{{ p.historique.resolus }}</span>
+        <span class="legende">échecs réparés · {{ p.historique.nouveaux_echecs }} nouveau</span></div>
+      <div class="chiffre"><span class="valeur ambre">{{ p.anomalies|length }}</span>
+        <span class="legende">anomalies réelles traitées</span></div>
+      <div class="chiffre"><span class="valeur cyan">{% for m in p.couverture.modules %}{% if m.module == 'matcher.py' %}{{ m.couverture }} %{% endif %}{% endfor %}</span>
+        <span class="legende">couverture du moteur métier</span></div>
+    </div>
+  </section>
 
+  <!-- 1 · DEMANDE MÉTIER -->
   <section class="sec">
-    <h2>1 · Demande métier</h2>
-    <p class="sub">Point de départ : un besoin exprimé par le propriétaire du produit, avec ce qui est
-      dans le périmètre et ce qui n'y est pas. Rien ne se code avant que le besoin soit testable.</p>
-    <div class="boite">
-      <div class="gris mono">{{ p.recit.demande.id }} · {{ p.recit.demande.demandeur }}</div>
-      <div style="font-weight:700;margin:.4rem 0 .5rem;">{{ p.recit.demande.titre }}</div>
-      <div style="font-size:.85rem;line-height:1.6;">{{ p.recit.demande.contexte }}</div>
-      <div style="font-size:.83rem;margin-top:.6rem;">
-        <strong>Valeur attendue :</strong> {{ p.recit.demande.valeur }}<br>
-        <strong>Dans le périmètre :</strong> {{ p.recit.demande.perimetre }}<br>
-        <strong>Hors périmètre :</strong> {{ p.recit.demande.hors_perimetre }}
-      </div>
-      <ul style="margin:.6rem 0 0;padding-left:1.1rem;">
-        {% for c in p.recit.demande.criteres_metier %}<li class="gris" style="font-size:.82rem;line-height:1.55;">{{ c }}</li>{% endfor %}
+    <div class="sec-tete"><div class="sec-num">01</div><h2>Demande métier</h2></div>
+    <p class="sous">Le point de départ : un besoin exprimé, un périmètre assumé, des critères
+      observables. Rien ne se code avant que le besoin soit testable.</p>
+    <div class="panneau">
+      <div class="oeil">{{ p.recit.demande.id }} · {{ p.recit.demande.demandeur }}</div>
+      <h3 style="margin:.45rem 0 .6rem;">{{ p.recit.demande.titre }}</h3>
+      <p>{{ p.recit.demande.contexte }}</p>
+      <dl style="display:grid;grid-template-columns:auto 1fr;gap:.3rem .8rem;font-size:.87rem;margin:.8rem 0 0;">
+        <dt class="oeil" style="align-self:center;">Valeur</dt><dd style="margin:0;">{{ p.recit.demande.valeur }}</dd>
+        <dt class="oeil" style="align-self:center;">Périmètre</dt><dd style="margin:0;">{{ p.recit.demande.perimetre }}</dd>
+        <dt class="oeil" style="align-self:center;">Hors périmètre</dt><dd style="margin:0;">{{ p.recit.demande.hors_perimetre }}</dd>
+      </dl>
+      <ul class="propre" style="margin-top:.8rem;">
+        {% for c in p.recit.demande.criteres_metier %}<li>{{ c }}</li>{% endfor %}
       </ul>
     </div>
   </section>
 
+  <!-- 2 · PRODUCT OWNER -->
   <section class="sec">
-    <h2>2 · Product Owner — user stories et critères d'acceptation</h2>
-    <p class="sub">Chaque besoin devient une story priorisée, avec sa valeur, son risque produit et des
-      critères vérifiables. Un critère non mesurable est refusé.</p>
-    {% for us in p.recit.stories %}
-    <div class="us">
-      <div class="t"><span class="mono">{{ us.id }}</span> · {{ us.titre }}</div>
-      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin:.4rem 0;">
-        <span class="chip neutre">priorité {{ us.priorite }}</span>
-        <span class="chip neutre">valeur {{ us.valeur }}/5</span>
-        <span class="chip {{ 'warn' if us.risque >= 4 else 'neutre' }}">risque {{ us.risque }}/5</span>
-      </div>
-      <div class="gris" style="font-size:.79rem;line-height:1.55;">{{ us.risque_justification }}</div>
-      <ul>{% for c in us.criteres %}<li>{{ c }}</li>{% endfor %}</ul>
+    <div class="sec-tete"><div class="sec-num">02</div><h2>Product Owner — stories et critères d'acceptation</h2></div>
+    <p class="sous">Chaque besoin devient une story priorisée, chiffrée en valeur et en risque,
+      avec des critères vérifiables. Un critère non mesurable est refusé.</p>
+    <div class="grille">
+      {% for us in p.recit.stories %}
+      <article class="carte">
+        <div class="num-carte">{{ us.id }} · priorité {{ us.priorite }}</div>
+        <h3 style="margin:.35rem 0 .5rem;">{{ us.titre }}</h3>
+        <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.6rem;">
+          <span class="pastille neutre">valeur {{ us.valeur }}/5</span>
+          <span class="pastille {{ 'moyen' if us.risque >= 4 else 'neutre' }}">risque {{ us.risque }}/5</span>
+        </div>
+        <p style="font-size:.83rem;">{{ us.risque_justification }}</p>
+        <ul class="propre">{% for c in us.criteres %}<li>{{ c }}</li>{% endfor %}</ul>
+      </article>
+      {% endfor %}
     </div>
-    {% endfor %}
   </section>
 
+  <!-- 3 · STRATÉGIE DE TEST -->
   <section class="sec">
-    <h2>3 · Stratégie de test</h2>
-    <p class="sub">Les niveaux ne sont pas choisis au hasard : chaque niveau couvre un risque précis, avec
-      l'outil adapté. Les critères d'entrée et de sortie sont fixés avant l'exécution.</p>
-    <div class="boite" style="margin-bottom:.7rem;"><table class="cv">
-      <thead><tr><th>Niveau</th><th>Outil</th><th>Portée</th><th>Tests</th><th>Exécution</th></tr></thead>
-      <tbody>{% for n in p.recit.strategie.niveaux %}
-        <tr><td>{{ n.niveau }}</td><td class="mono">{{ n.outil }}</td><td class="gris">{{ n.portee }}</td>
-            <td class="mono">{{ n.nb_tests }}</td><td class="gris">{{ n.execution }}</td></tr>{% endfor %}
-      </tbody></table></div>
-    <div class="boite" style="margin-bottom:.7rem;"><table class="cv">
-      <thead><tr><th>Technique (CTFL ch. 4)</th><th>Application concrète ici</th></tr></thead>
-      <tbody>{% for t in p.recit.strategie.techniques %}
-        <tr><td>{{ t.technique }}</td><td class="gris">{{ t.application }}</td></tr>{% endfor %}
-      </tbody></table></div>
+    <div class="sec-tete"><div class="sec-num">03</div><h2>Stratégie de test</h2></div>
+    <p class="sous">Chaque niveau couvre un risque précis avec l'outil adapté. Les critères
+      d'entrée et de sortie sont figés avant l'exécution — c'est ce qui rend le Go/No-Go défendable.</p>
+    <div class="panneau" style="margin-bottom:.8rem;">
+      <table>
+        <caption>Niveaux de test et couverture associée</caption>
+        <thead><tr><th>Niveau</th><th>Outil</th><th>Portée</th><th>Tests</th><th>Exécution</th></tr></thead>
+        <tbody>{% for n in p.recit.strategie.niveaux %}
+          <tr><td><strong>{{ n.niveau }}</strong></td><td class="mono">{{ n.outil }}</td>
+              <td>{{ n.portee }}</td><td class="mono">{{ n.nb_tests }}</td><td>{{ n.execution }}</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="panneau" style="margin-bottom:.8rem;">
+      <table>
+        <caption>Techniques de conception appliquées (CTFL ch. 4)</caption>
+        <thead><tr><th>Technique</th><th>Application concrète ici</th></tr></thead>
+        <tbody>{% for t in p.recit.strategie.techniques %}
+          <tr><td><strong>{{ t.technique }}</strong></td><td>{{ t.application }}</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
     <div class="note">
-      <strong>Critères d'entrée :</strong> {{ p.recit.strategie.criteres_entree|join(' · ') }}<br>
-      <strong>Critères de sortie :</strong> {{ p.recit.strategie.criteres_sortie|join(' · ') }}
+      <strong>Critères d'entrée</strong> — {{ p.recit.strategie.criteres_entree|join(' · ') }}<br>
+      <strong>Critères de sortie</strong> — {{ p.recit.strategie.criteres_sortie|join(' · ') }}
     </div>
   </section>
 
+  <!-- 4 · TDD -->
   <section class="sec">
-    <h2>4 · Développement piloté par les tests</h2>
-    <p class="sub">Le test est écrit avant le code de production. Chaque étape ci-dessous est une sortie
-      console réelle, pas une reconstitution.</p>
-    <div class="journal">{{ journal|safe }}</div>
+    <div class="sec-tete"><div class="sec-num">04</div><h2>Développement piloté par les tests</h2></div>
+    <p class="sous">Le test est écrit avant le code de production. Les sorties ci-dessous sont
+      brutes : elles proviennent de l'exécution réelle, y compris l'échec qui a révélé une
+      anomalie plus grave que la fonctionnalité en cours.</p>
+    <div class="panneau journal" style="font-size:.89rem;">{{ journal|safe }}</div>
   </section>
 
+  <!-- 5 · PLAYWRIGHT + GHERKIN -->
   <section class="sec">
-    <h2>5 · Le code, tel qu'il est</h2>
-    <p class="sub">Extraits lus directement dans les fichiers du dépôt, avec le numéro de ligne de départ :
-      ce qui est montré est ce qui s'exécute.</p>
-    {% for c in p.code %}
+    <div class="sec-tete"><div class="sec-num">05</div><h2>Tests navigateur, écrits en Gherkin</h2></div>
+    <p class="sous">
+      Les {{ p.playwright.nb_scenarios }} scénarios de bout en bout sont décrits en Gherkin
+      (langage commun métier / QA), puis implémentés en Python et exécutés par Playwright sur un
+      vrai Chromium. L'étiquette <span class="mono">@cas</span> de chaque scénario porte le nom
+      de la fonction de test : la traçabilité est automatique, pas déclarative.
+    </p>
+
+    <div class="panneau" style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;">
+      <span class="pastille ok">{{ p.playwright.nb_passes }}/{{ p.playwright.nb_scenarios }} scénarios passés</span>
+      <span class="pastille ia">{{ p.playwright.navigateur }}</span>
+      <span class="pastille neutre mono">{{ p.playwright.feature_fichier }}</span>
+      <span class="pastille neutre mono">tests/playwright/test_dashboard.py</span>
+    </div>
+
+    {% for s in p.playwright.scenarios %}
+    <article class="cas">
+      <div class="cas-tete">
+        <span class="pastille {{ 'ok' if s.statut == 'PASSED' else 'ko' }}">{{ 'passé' if s.statut == 'PASSED' else s.statut|lower }}</span>
+        <span class="titre">{{ s.gherkin.split('\n')[0].split('Scénario:', 1)[-1].strip() }}</span>
+        <span class="pastille neutre mono" style="margin-left:auto;">{{ s.fonction }}</span>
+      </div>
+      <div class="duo">
+        <div class="bloc-code">
+          <div class="barre"><span class="point p1"></span><span class="point p2"></span><span class="point p3"></span>
+            <span class="chemin">Gherkin</span><span class="droite"></span></div>
+          <pre class="gherkin">{{ s.gherkin }}</pre>
+        </div>
+        <div class="bloc-code">
+          <div class="barre"><span class="point p1"></span><span class="point p2"></span><span class="point p3"></span>
+            <span class="chemin">test_dashboard.py:{{ s.code.debut }}</span><span class="droite"></span></div>
+          <pre class="python">{{ s.code.contenu }}</pre>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+
     <details>
-      <summary><span class="mono">{{ c.bloc.fichier }}:{{ c.bloc.debut }}</span> — {{ c.titre }}</summary>
-      <div class="role">{{ c.role }}</div>
-      <pre>{{ c.bloc.contenu }}</pre>
+      <summary>Le fichier de scénarios complet <span class="mono">{{ p.playwright.feature_fichier }}</span></summary>
+      <div class="interieur">Le fichier tel qu'il est versionné, en français, avec ses étiquettes de niveau et d'outil.</div>
+      <pre class="gherkin">{{ p.playwright.feature_contenu }}</pre>
     </details>
+
+    <details open>
+      <summary>Sortie console de la campagne navigateur</summary>
+      <div class="interieur">Exécution réelle sur un serveur de test local, démarré puis arrêté pendant la mesure : aucune exposition, aucun service laissé en marche.</div>
+      <pre class="vert">{{ p.campagnes.end_to_end.sortie }}</pre>
+    </details>
+  </section>
+
+  <!-- 6 · CODE -->
+  <section class="sec">
+    <div class="sec-tete"><div class="sec-num">06</div><h2>Le code, tel qu'il est</h2></div>
+    <p class="sous">Extraits lus directement dans les fichiers du dépôt, avec le numéro de première
+      ligne : ce qui est affiché est ce qui s'exécute.</p>
+    {% for c in p.code %}
+    <div class="bloc-code">
+      <div class="barre"><span class="point p1"></span><span class="point p2"></span><span class="point p3"></span>
+        <span class="chemin">{{ c.bloc.fichier }}:{{ c.bloc.debut }}</span>
+        <span class="droite"><span class="pastille neutre">{{ c.titre }}</span></span></div>
+      <pre class="python">{{ c.bloc.contenu }}</pre>
+    </div>
+    <p style="font-size:.85rem;margin:-.4rem 0 1.1rem;">{{ c.role }}</p>
     {% endfor %}
   </section>
 
+  <!-- 7 · ANOMALIES -->
   <section class="sec">
-    <h2>6 · Anomalies réelles et corrections</h2>
-    <p class="sub">Trois anomalies, toutes détectées par un test ou par l'analyse — aucune n'est simulée.</p>
+    <div class="sec-tete"><div class="sec-num">07</div><h2>Anomalies réelles et corrections</h2></div>
+    <p class="sous">Trois anomalies, toutes détectées par un test ou par l'analyse — aucune n'est simulée.</p>
     {% for a in p.anomalies %}
-    <div class="anomalie">
-      <div class="t"><span class="mono">{{ a.id }}</span> · {{ a.titre }}</div>
-      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin:.35rem 0;">
-        <span class="chip {{ 'ko' if a.gravite == 'bloquante' else 'warn' }}">gravité {{ a.gravite }}</span>
-        <span class="chip ok">{{ a.statut }}</span>
-        <span class="chip neutre">détectée par : {{ a.detecte_par }}</span>
+    <div class="anomalie {{ 'bloquante' if a.gravite == 'bloquante' else '' }}">
+      <div class="titre"><span class="mono" style="color:var(--texte-3);">{{ a.id }}</span> · {{ a.titre }}</div>
+      <div style="display:flex;gap:.35rem;flex-wrap:wrap;margin:.5rem 0;">
+        <span class="pastille {{ 'ko' if a.gravite == 'bloquante' else 'moyen' }}">gravité {{ a.gravite }}</span>
+        <span class="pastille ok">{{ a.statut }}</span>
+        <span class="pastille neutre">détectée par : {{ a.detecte_par }}</span>
       </div>
-      <div class="d">
-        Origine : {{ a.origine }}<br>
-        Impact : {{ a.impact }}<br>
-        Preuve : <span class="mono">{{ a.preuve }}</span>
-      </div>
+      <dl>
+        <dt>Origine</dt><dd>{{ a.origine }}</dd>
+        <dt>Impact</dt><dd>{{ a.impact }}</dd>
+        <dt>Preuve</dt><dd class="mono">{{ a.preuve }}</dd>
+      </dl>
     </div>
     {% endfor %}
     {% for c in p.correctifs %}
-    <details>
-      <summary><span class="mono">{{ c.sha }}</span> — {{ c.titre }} ({{ c.fichier }})</summary>
-      <div class="role">Correctif réel, extrait de l'historique Git du dépôt.</div>
+    <div class="bloc-code">
+      <div class="barre"><span class="point p1"></span><span class="point p2"></span><span class="point p3"></span>
+        <span class="chemin">{{ c.sha }} · {{ c.titre }}</span><span class="droite"></span></div>
       <pre>{{ c.diff }}</pre>
-    </details>
+    </div>
     {% endfor %}
   </section>
 
+  <!-- 8 · CAMPAGNES -->
   <section class="sec">
-    <h2>7 · Campagnes exécutées</h2>
-    <p class="sub">Sorties console des campagnes, telles quelles. La campagne navigateur a été jouée dans un
-      vrai Chromium, sur un serveur de test local démarré puis arrêté pendant la mesure.</p>
+    <div class="sec-tete"><div class="sec-num">08</div><h2>Campagnes exécutées</h2></div>
+    <p class="sous">Sorties console telles quelles, sans retouche.</p>
     {% for nom, c in [('Tests unitaires et d\'intégration', p.campagnes.unitaires_et_integration),
                       ('Contrat de l\'API (scénarios BDD)', p.campagnes.api_bdd),
-                      ('Suite complète hors navigateur', p.campagnes.suite_complete),
-                      ('Bout en bout navigateur', p.campagnes.end_to_end)] %}
-    <details {% if nom.startswith('Bout') %}open{% endif %}>
-      <summary>{{ nom }} —
-        <span class="chip {{ 'ok' if c.resume.get('echecs', 1) == 0 else 'warn' }}">
+                      ('Suite complète hors navigateur', p.campagnes.suite_complete)] %}
+    <details>
+      <summary>{{ nom }}
+        <span class="pastille {{ 'ok' if c.resume.get('echecs', 1) == 0 else 'moyen' }}">
           {{ c.resume.get('passes', 0) }} passés{% if c.resume.get('echecs') %} · {{ c.resume.echecs }} en échec{% endif %}
         </span>
       </summary>
@@ -246,99 +252,129 @@
     {% endfor %}
   </section>
 
+  <!-- 9 · COUVERTURE -->
   <section class="sec">
-    <h2>8 · Couverture mesurée</h2>
-    <p class="sub">Mesurée par <span class="mono">coverage.py</span> pendant l'exécution de la suite. Ce qui
-      n'est pas couvert est affiché, pas masqué.</p>
-    <div class="boite"><table class="cv">
-      <thead><tr><th>Module</th><th>Instructions</th><th>Non couvertes</th><th>Couverture</th></tr></thead>
-      <tbody>{% for m in p.couverture.modules %}
-        <tr><td class="mono">{{ m.module }}</td><td class="mono">{{ m.instructions }}</td>
-            <td class="mono">{{ m.non_couvertes }}</td>
-            <td><span class="chip {{ 'ok' if m.couverture >= 70 else 'warn' }}">{{ m.couverture }} %</span></td></tr>
-      {% endfor %}
-      {% if p.couverture.total.instructions %}
-        <tr><td><strong>Total</strong></td><td class="mono">{{ p.couverture.total.instructions }}</td>
-            <td class="mono">{{ p.couverture.total.non_couvertes }}</td>
-            <td><span class="chip warn">{{ p.couverture.total.couverture }} %</span></td></tr>
-      {% endif %}
-      </tbody></table></div>
+    <div class="sec-tete"><div class="sec-num">09</div><h2>Couverture mesurée</h2></div>
+    <p class="sous">Calculée par coverage.py pendant l'exécution. Ce qui n'est pas couvert est
+      affiché, pas masqué.</p>
+    <div class="panneau">
+      <table>
+        <caption>Couverture par module</caption>
+        <thead><tr><th>Module</th><th>Instructions</th><th>Non couvertes</th><th>Couverture</th><th></th></tr></thead>
+        <tbody>
+        {% for m in p.couverture.modules %}
+          <tr><td class="mono">{{ m.module }}</td><td class="mono">{{ m.instructions }}</td>
+              <td class="mono">{{ m.non_couvertes }}</td>
+              <td><span class="pastille {{ 'ok' if m.couverture >= 70 else 'moyen' }}">{{ m.couverture }} %</span></td>
+              <td><div class="barre-cv"><span style="width:{{ m.couverture }}%"></span></div></td></tr>
+        {% endfor %}
+        {% if p.couverture.total.instructions %}
+          <tr><td><strong>Total</strong></td><td class="mono">{{ p.couverture.total.instructions }}</td>
+              <td class="mono">{{ p.couverture.total.non_couvertes }}</td>
+              <td><span class="pastille moyen">{{ p.couverture.total.couverture }} %</span></td>
+              <td><div class="barre-cv"><span style="width:{{ p.couverture.total.couverture }}%"></span></div></td></tr>
+        {% endif %}
+        </tbody>
+      </table>
+    </div>
     <div class="alerte">
-      Lecture honnête : le moteur métier est couvert, l'application Flask ne l'est qu'à
-      {% for m in p.couverture.modules %}{% if m.module == 'app.py' %}{{ m.couverture }} %{% endif %}{% endfor %}.
-      C'est le chantier suivant, écrit noir sur blanc. Un chiffre de couverture n'est pas une preuve de
-      qualité : il indique seulement ce qui n'a jamais été exécuté.
+      Lecture honnête : le moteur métier est bien couvert, l'application Flask ne l'est qu'à
+      {% for m in p.couverture.modules %}{% if m.module == 'app.py' %}{{ m.couverture }} %{% endif %}{% endfor %} —
+      c'est le chantier suivant, écrit noir sur blanc. Un pourcentage de couverture n'est pas une
+      preuve de qualité : il montre seulement ce qui n'a jamais été exécuté.
     </div>
   </section>
 
+  <!-- 10 · NON-RÉGRESSION -->
   <section class="sec">
-    <h2>9 · Non-régression : ce que la démarche a changé</h2>
-    <p class="sub">Comparaison avant/après sur la suite existante, mesurée deux fois.</p>
-    <div class="boite" style="margin-bottom:.7rem;"><table class="cv">
-      <thead><tr><th></th><th>Avant</th><th>Après</th></tr></thead>
-      <tbody>
-        <tr><td>Tests passants</td><td class="mono">{{ p.historique.passes_avant }}</td>
-            <td class="mono"><strong>{{ p.historique.passes_apres }}</strong></td></tr>
-        <tr><td>Tests en échec</td><td class="mono">{{ p.historique.echecs_avant }}</td>
-            <td class="mono">{{ p.historique.echecs_apres }}</td></tr>
-        <tr><td>Échecs réparés</td><td class="mono">—</td>
-            <td class="mono">{{ p.historique.resolus }}</td></tr>
-        <tr><td>Nouveaux échecs introduits</td><td class="mono">—</td>
-            <td class="mono"><span class="chip ok">{{ p.historique.nouveaux_echecs }}</span></td></tr>
-      </tbody></table></div>
-    <ul style="padding-left:1.1rem;">
-      {% for d in p.historique.detail_resolus %}<li class="gris" style="font-size:.83rem;line-height:1.6;">{{ d }}</li>{% endfor %}
+    <div class="sec-tete"><div class="sec-num">10</div><h2>Non-régression : l'effet mesuré</h2></div>
+    <p class="sous">Comparaison avant / après sur la suite existante, mesurée deux fois.</p>
+    <div class="panneau" style="margin-bottom:.8rem;">
+      <table>
+        <thead><tr><th></th><th>Avant</th><th>Après</th></tr></thead>
+        <tbody>
+          <tr><td>Tests passants</td><td class="mono">{{ p.historique.passes_avant }}</td>
+              <td class="mono"><strong>{{ p.historique.passes_apres }}</strong></td></tr>
+          <tr><td>Tests en échec</td><td class="mono">{{ p.historique.echecs_avant }}</td>
+              <td class="mono">{{ p.historique.echecs_apres }}</td></tr>
+          <tr><td>Échecs réparés</td><td class="mono">—</td><td class="mono">{{ p.historique.resolus }}</td></tr>
+          <tr><td>Nouveaux échecs introduits</td><td class="mono">—</td>
+              <td><span class="pastille ok">{{ p.historique.nouveaux_echecs }}</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="propre">
+      {% for d in p.historique.detail_resolus %}<li>{{ d }}</li>{% endfor %}
     </ul>
   </section>
 
+  <!-- 11 · CI -->
   <section class="sec">
-    <h2>10 · Intégration continue</h2>
-    <p class="sub">Les suites ne dépendent pas d'une exécution manuelle : les mêmes commandes tournent dans
-      la chaîne d'intégration à chaque envoi de code.</p>
+    <div class="sec-tete"><div class="sec-num">11</div><h2>Intégration continue</h2></div>
+    <p class="sous">Les mêmes commandes tournent automatiquement à chaque envoi de code : la
+      qualité ne dépend pas d'une exécution manuelle courageuse.</p>
     {% for c in p.ci %}
-    <details>
-      <summary class="mono">{{ c.fichier }}</summary>
-      <div class="role">Définition réelle du pipeline, lue depuis le dépôt.</div>
+    <div class="bloc-code">
+      <div class="barre"><span class="point p1"></span><span class="point p2"></span><span class="point p3"></span>
+        <span class="chemin">{{ c.fichier }}</span><span class="droite"></span></div>
       <pre>{{ c.contenu }}</pre>
-    </details>
+    </div>
     {% endfor %}
   </section>
 
+  <!-- 12 · AMÉLIORATION CONTINUE -->
   <section class="sec">
-    <h2>11 · Amélioration continue</h2>
-    <p class="sub">Ce que chaque tour de boucle a changé — et ce que ça vaut concrètement.</p>
-    <div class="boite"><table class="cv">
-      <thead><tr><th>Action</th><th>Avant</th><th>Après</th><th>Gain</th></tr></thead>
-      <tbody>{% for a in p.amelioration %}
-        <tr><td><strong>{{ a.titre }}</strong></td><td class="gris">{{ a.avant }}</td>
-            <td class="gris">{{ a.apres }}</td><td>{{ a.gain }}</td></tr>{% endfor %}
-      </tbody></table></div>
+    <div class="sec-tete"><div class="sec-num">12</div><h2>Amélioration continue</h2></div>
+    <p class="sous">Ce que chaque tour de boucle a changé, et ce que ça vaut concrètement.</p>
+    <div class="panneau">
+      <table>
+        <thead><tr><th>Action</th><th>Avant</th><th>Après</th><th>Gain</th></tr></thead>
+        <tbody>{% for a in p.amelioration %}
+          <tr><td><strong>{{ a.titre }}</strong></td><td>{{ a.avant }}</td><td>{{ a.apres }}</td>
+              <td><span class="pastille ok">{{ a.gain }}</span></td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
   </section>
 
+  <!-- 13 · ISTQB -->
   <section class="sec">
-    <h2>12 · Rattachement aux référentiels ISTQB</h2>
-    <p class="sub">Chaque étape de ce cycle correspond à des chapitres identifiés des trois référentiels.</p>
-    <div class="boite"><table class="cv">
-      <thead><tr><th>Étape</th><th>CTFL v4.0.1 (fondamentaux)</th><th>CT-AI v1.0.1 (systèmes d'IA)</th>
-                 <th>CT-GenAI v1.1 (test avec l'IA générative)</th></tr></thead>
-      <tbody>{% for i in p.istqb %}
-        <tr><td><strong>{{ i.etape }}</strong></td><td class="gris">{{ i.ctfl }}</td>
-            <td class="gris">{{ i.ct_ai }}</td><td class="gris">{{ i.genai }}</td></tr>{% endfor %}
-      </tbody></table></div>
+    <div class="sec-tete"><div class="sec-num">13</div><h2>Rattachement aux référentiels ISTQB</h2></div>
+    <p class="sous">Chaque étape de ce cycle renvoie à des chapitres identifiés des trois référentiels :
+      fondamentaux, test des systèmes d'IA, et test avec l'IA générative.</p>
+    <div class="panneau">
+      <table>
+        <thead><tr><th>Étape</th><th>CTFL v4.0.1</th><th>CT-AI v1.0.1</th><th>CT-GenAI v1.1</th></tr></thead>
+        <tbody>{% for i in p.istqb %}
+          <tr><td><strong>{{ i.etape }}</strong></td><td>{{ i.ctfl }}</td><td>{{ i.ct_ai }}</td>
+              <td>{{ i.genai }}</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
   </section>
 
-  <div class="cv-foot">
-    Mesures du {{ p.genere_le }} · Code source et suites de tests dans un dépôt privé, présentables sur demande ·
-    Les chiffres de cette page sont produits par <span class="mono">scripts/build_lifecycle.py</span> :
-    exécution des suites, calcul de couverture, lecture du code et de l'historique Git.
+  <div class="note">
+    <strong>Comment cette page est produite</strong> — aucun chiffre n'est saisi à la main.
+    <span class="mono">scripts/build_lifecycle.py</span> exécute les suites (dont les scénarios
+    navigateur dans un vrai Chromium), calcule la couverture, lit le code et l'historique Git,
+    puis écrit la preuve affichée ici. Relancer le script suffit à rafraîchir la page.
   </div>
 {% else %}
-  <div class="boilerplate">
-    <h1>Preuve non générée</h1>
-    <p class="sub">Exécuter <span class="mono">python3 scripts/build_lifecycle.py</span> pour produire
+  <section class="heros">
+    <div class="oeil">Preuve non générée</div>
+    <h1>Aucune mesure disponible</h1>
+    <p class="chapo">Exécuter <span class="mono">python3 scripts/build_lifecycle.py</span> pour produire
       <span class="mono">docs/qa-ct-ai/lifecycle.json</span>, puis recharger cette page.</p>
-  </div>
+  </section>
 {% endif %}
 </div>
+
+<footer class="pied">
+  <div class="pied-in">
+    <span>Cycle de vie JobHunt · mesures du {{ p.genere_le if p else '—' }}</span>
+    <span style="margin-left:auto;">Dépôt privé, code présenté sur demande</span>
+  </div>
+</footer>
+<script src="static/site.js" defer></script>
 </body>
 </html>

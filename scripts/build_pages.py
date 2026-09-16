@@ -21,6 +21,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import re
 import shutil
 import sys
 from datetime import datetime
@@ -201,8 +202,43 @@ def _page(route):
     return html
 
 
+ENTETE = """<header class="entete">
+  <div class="entete-in">
+    <a class="marque" href="index.html"><span class="orbe"></span>
+      <span class="pile"><span>JobHunt</span><small>QA · Démonstrations</small></span></a>
+    <nav class="nav">
+      <a{h1} href="cycle-de-vie.html">Cycle de vie</a>
+      <a{h2} href="chaine-de-livraison.html">Chaîne de livraison</a>
+      <a{h3} href="vitrine-ct-ai.html">Test d'IA</a>
+      <a{h4} href="index.html">Sommaire</a>
+    </nav>
+  </div>
+  <div class="jauge"></div>
+</header>"""
+
+PIED = """<footer class="pied"><div class="pied-in">
+  <span>JobHunt · démonstrations de test logiciel et de test d'IA</span>
+  <span style="margin-left:auto;">Chiffres issus d'exécutions réelles · dépôt privé, code présenté sur demande</span>
+</div></footer>"""
+
+
+def _chrome(html, actif=0):
+    """Applique l'enveloppe visuelle commune à une page rendue par l'application."""
+    html = re.sub(r'<link rel="stylesheet" href="/?static/(?:theme|v3)\.css[^"]*">\s*', "", html)
+    marques = {i: (' class="actif"' if i == actif else "") for i in range(1, 5)}
+    html = re.sub(r'<header class="header">.*?</header>', ENTETE.format(**{
+        f"h{i}": marques[i] for i in range(1, 5)}), html, flags=re.S)
+    if 'class="ciel"' not in html:
+        html = re.sub(r"<body([^>]*)>", r'<body\1>\n<div class="ciel"></div>', html, count=1)
+    if "static/site.css" not in html:
+        html = html.replace("</head>", '<link rel="stylesheet" href="static/site.css">\n</head>')
+    if "static/site.js" not in html:
+        html = html.replace("</body>", PIED + '\n<script src="static/site.js" defer></script>\n</body>')
+    return html
+
+
 os.makedirs(os.path.join(SORTIE, "static"), exist_ok=True)
-for asset in ("theme.css",):
+for asset in ("theme.css", "site.css", "site.js"):
     source = os.path.join(RACINE, "static", asset)
     if os.path.exists(source):
         shutil.copy2(source, os.path.join(SORTIE, "static", asset))
@@ -219,7 +255,7 @@ livraison = livraison.replace(
 livraison = livraison.replace(
     "'Scénario exécuté le ' + S.genere_le",
     "'Démonstration statique (GitHub Pages) — scénario exécuté le ' + S.genere_le")
-html_livraison = livraison
+html_livraison = _chrome(livraison, actif=2)
 
 # --- vitrine CT-AI : les évaluations d'exemple sont précalculées
 vitrine = _page("/poc-ct-ai")
@@ -242,7 +278,7 @@ vitrine = vitrine.replace(
     "Corpus d'évaluation : ",
     "Démonstration statique (GitHub Pages) : les chiffres ci-dessous proviennent d'une exécution réelle du "
     "moteur et de la suite de tests. Corpus d'évaluation : ")
-html_vitrine = vitrine
+html_vitrine = _chrome(vitrine, actif=3)
 
 cycle = _page("/cycle-de-vie")
 with open(os.path.join(SORTIE, "vitrine-ct-ai.html"), "w", encoding="utf-8") as fh:
@@ -261,22 +297,26 @@ try:
 except ImportError:  # pragma: no cover
     _md = lambda t: "<pre>" + t.replace("<", "&lt;") + "</pre>"  # noqa: E731
 
+ENTETE_INDEX = ENTETE.format(h1=' class="actif"', h2="", h3="", h4="")
+ENTETE_DOC = ENTETE.format(h1="", h2="", h3="", h4=' class="actif"')
+
 GABARIT = """<!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{titre}</title>
-<link rel="stylesheet" href="static/theme.css">
-<style>
-  .doc {{ max-width: 900px; margin: 1.5rem auto 3rem; padding: 0 1.2rem; line-height: 1.7; }}
-  .doc h1 {{ font-size: 1.5rem; }} .doc h2 {{ font-size: 1.15rem; margin-top: 1.8rem; }}
-  .doc h3 {{ font-size: 1rem; }} .doc code {{ background: rgba(255,255,255,.07); padding: .1rem .3rem; border-radius: 4px; }}
-  .doc table {{ border-collapse: collapse; width: 100%; font-size: .85rem; margin: 1rem 0; }}
-  .doc th, .doc td {{ border: 1px solid var(--border); padding: .4rem .55rem; text-align: left; }}
-  .doc th {{ background: rgba(255,255,255,.04); }}
-  .retour {{ display: inline-block; margin: 1rem 1.2rem 0; font-size: .85rem; }}
-</style></head><body>
-<a class="retour" href="index.html">← Retour au sommaire</a>
-<div class="doc">{corps}</div></body></html>"""
+<title>{titre} — JobHunt</title>
+<link rel="stylesheet" href="static/site.css">
+</head><body>
+<div class="ciel"></div>
+{entete}
+<div class="page">
+  <div class="oeil">Portes de qualité · la démarche écrite</div>
+  <h1>{titre}</h1>
+  <div class="panneau doc" style="margin-top:1.2rem;">{corps}</div>
+  <p style="margin-top:1.6rem;"><a href="index.html">← Retour au sommaire</a></p>
+</div>
+{pied}
+<script src="static/site.js" defer></script>
+</body></html>"""
 
 DOCS = [
     ("01-cadrage-risque-ia.md", "Porte 1 — Cadrage du risque IA"),
@@ -294,7 +334,8 @@ for nom, titre in DOCS:
     corps = _md(open(chemin, encoding="utf-8").read())
     cible = nom.replace(".md", ".html")
     with open(os.path.join(SORTIE, cible), "w", encoding="utf-8") as fh:
-        fh.write(GABARIT.format(titre=titre, corps=corps))
+        fh.write(GABARIT.format(titre=titre, corps=corps, entete=ENTETE_DOC,
+                              pied=PIED))
     index_docs.append((cible, titre))
 
 # ---------------------------------------------------------------------------
@@ -303,11 +344,18 @@ for nom, titre in DOCS:
 t = EVIDENCE["tests"]
 m = EVIDENCE["metriques"]
 s = SCENARIO
+try:
+    with open(os.path.join(RACINE, "docs", "qa-ct-ai", "lifecycle.json"), encoding="utf-8") as fh:
+        LIFE = json.load(fh)
+except (OSError, ValueError):
+    LIFE = {"playwright": {"nb_passes": 0, "nb_scenarios": 0}, "historique": {}, "campagnes": {}}
+
 index = f"""<!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tests de systèmes d'IA — démonstrations exécutées</title>
-<link rel="stylesheet" href="static/theme.css">
+<title>Test logiciel et test d'IA — démonstrations exécutées</title>
+<meta name="description" content="Cycle de vie complet, chaîne de livraison avec anomalies et verdict GO, test d'un moteur de classement : tous les chiffres proviennent d'exécutions réelles.">
+<link rel="stylesheet" href="static/site.css">
 <style>
   .acc {{ max-width: 1000px; margin: 2rem auto 4rem; padding: 0 1.2rem; }}
   h1 {{ font-size: 1.7rem; line-height: 1.25; }}
@@ -325,27 +373,43 @@ index = f"""<!DOCTYPE html>
   footer {{ margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--border);
             color: var(--text-dim); font-size: .78rem; line-height: 1.7; }}
 </style></head><body>
-<div class="acc">
-  <h1>Tester un système d'IA — démonstrations exécutées</h1>
-  <p class="sous">
-    Deux démonstrations construites sur le référentiel <strong>ISTQB CT-AI v1.0.1</strong> (test des systèmes
-    à base d'IA) et <strong>ISTQB CTFL v4.0</strong> (processus de test, techniques, gestion des anomalies).
-    Tous les chiffres affichés proviennent d'exécutions réelles : campagnes de test jouées sur un produit
-    simulé, métriques mesurées sur un corpus étiqueté, relations métamorphiques vérifiées à la génération.
-  </p>
+<div class="ciel"></div>
+{ENTETE_INDEX}
+<div class="page">
+  <section class="heros">
+    <div class="oeil">Démonstrations · tous les chiffres sortent d'exécutions réelles</div>
+    <h1>Le test logiciel et le test d'IA, <span class="gradient">montrés plutôt que racontés</span></h1>
+    <p class="chapo">
+      Trois parcours construits sur les référentiels <strong>ISTQB CTFL v4.0.1</strong> (processus, techniques,
+      anomalies), <strong>CT-AI v1.0.1</strong> (test des systèmes à base d'IA) et <strong>CT-GenAI v1.1</strong>
+      (test avec l'IA générative). Chaque chiffre affiché provient d'une exécution : suites de tests jouées,
+      scénarios navigateur dans un vrai Chromium, métriques mesurées sur un corpus étiqueté, couverture calculée.
+    </p>
+    <div class="etiquettes">
+      <span class="etiquette vif">{LIFE['playwright']['nb_passes']}/{LIFE['playwright']['nb_scenarios']} scénarios navigateur</span>
+      <span class="etiquette">Gherkin + Playwright</span>
+      <span class="etiquette">pytest · coverage.py · Flask</span>
+      <span class="etiquette">CTFL · CT-AI · CT-GenAI</span>
+    </div>
 
-  <div class="kpis">
-    <div class="kpi"><span class="n">{t['passes']}</span><span class="l">tests exécutés · 0 échec</span></div>
-    <div class="kpi"><span class="n">{m['precision']}</span><span class="l">précision · seuil {m['seuil']}</span></div>
-    <div class="kpi"><span class="n">{m['rappel']}</span><span class="l">rappel · métrique clé</span></div>
-    <div class="kpi"><span class="n">{len(EVIDENCE['defauts'])}</span><span class="l">défauts corrigés</span></div>
-    <div class="kpi"><span class="n">{s['campagnes']['v3_regression']['campagne']['synthese']['reussis']}</span>
-      <span class="l">cas de la chaîne de livraison</span></div>
-  </div>
+    <div class="chiffres">
+      <div class="chiffre"><span class="valeur cyan">{t['passes']}</span>
+        <span class="legende">tests exécutés, 0 échec</span></div>
+      <div class="chiffre"><span class="valeur violet">{m['precision']}</span>
+        <span class="legende">précision · seuil {m['seuil']}</span></div>
+      <div class="chiffre"><span class="valeur emeraude">{m['rappel']}</span>
+        <span class="legende">rappel · métrique clé</span></div>
+      <div class="chiffre"><span class="valeur ambre">{len(EVIDENCE['defauts'])}</span>
+        <span class="legende">défauts corrigés, avant/après mesuré</span></div>
+      <div class="chiffre"><span class="valeur cyan">{s['campagnes']['v3_regression']['campagne']['synthese']['reussis']}</span>
+        <span class="legende">cas joués sur la chaîne de livraison</span></div>
+    </div>
+  </section>
 
   <div class="grille">
     <div class="carte">
-      <h2>1 · Cycle de vie complet de JobHunt</h2>
+      <div class="num-carte">PARCOURS 01</div>
+      <h2>Cycle de vie complet de JobHunt</h2>
       <p>
         Une fonctionnalité réelle suivie de bout en bout : demande métier, user stories, stratégie de test,
         développement piloté par les tests (sorties console réelles), exécution des campagnes
@@ -353,40 +417,52 @@ index = f"""<!DOCTYPE html>
         l'historique Git, non-régression mesurée, couverture calculée, intégration continue et
         amélioration continue. Chaque étape est rattachée aux référentiels CTFL, CT-AI et CT-GenAI.
       </p>
-      <a href="cycle-de-vie.html">Ouvrir le cycle de vie →</a>
+      <a class="lien" href="cycle-de-vie.html">Ouvrir le cycle de vie →</a>
     </div>
     <div class="carte">
-      <h2>2 · Chaîne de livraison virtuelle</h2>
+      <div class="num-carte">PARCOURS 02</div>
+      <h2>Chaîne de livraison virtuelle</h2>
       <p>
         Une demande métier, des user stories, une analyse de risque, douze cas de test conçus, une livraison
         défectueuse, des anomalies, un correctif… qui casse ailleurs — puis le second correctif et le verdict
         GO. Douze étapes jouables, campagnes réellement exécutées.
       </p>
-      <a href="chaine-de-livraison.html">Ouvrir la chaîne de livraison →</a>
+      <a class="lien" href="chaine-de-livraison.html">Ouvrir la chaîne de livraison →</a>
     </div>
     <div class="carte">
-      <h2>3 · Vitrine du test d'IA</h2>
+      <div class="num-carte">PARCOURS 03</div>
+      <h2>Vitrine du test d'IA</h2>
       <p>
         Le moteur de classement pris comme système à tester : matrice de confusion et seuils verrouillés,
         dix relations métamorphiques, entrées adverses, huit défauts trouvés puis corrigés avec l'avant/après
         mesuré, et les limites assumées du dispositif.
       </p>
-      <a href="vitrine-ct-ai.html">Ouvrir la vitrine →</a>
+      <a class="lien" href="vitrine-ct-ai.html">Ouvrir la vitrine →</a>
     </div>
   </div>
 
-  <h2 style="font-size:1.15rem;">Dossier de portes — la démarche écrite</h2>
-  <ul class="liste">
-    {''.join(f'<li><a href="{f}">{t}</a></li>' for f, t in index_docs)}
-  </ul>
+  <section class="sec">
+    <div class="sec-tete"><div class="sec-num">06</div><h2>Dossier de portes — la démarche écrite</h2></div>
+    <p class="sous">Les six portes de qualité du processus, rédigées avant l'exécution : cadrage du risque,
+      qualité des données, métriques et seuils verrouillés, plan de test, techniques appliquées, journal
+      d'usage de l'IA.</p>
+    <div class="panneau">
+      <ul class="propre">
+        {''.join(f'<li><a href="{f}">{t}</a></li>' for f, t in index_docs)}
+      </ul>
+    </div>
+  </section>
 
-  <footer>
+  <div class="note">
     Pages figées le {datetime.now().strftime('%d/%m/%Y %H:%M:%S')} · Python {EVIDENCE['stack']['python']} ·
-    pytest {EVIDENCE['stack']['pytest']} · Flask {EVIDENCE['stack']['flask']}<br>
-    Les pages statiques ne ré-exécutent pas les campagnes : les exemples du banc d'essai sont précalculés par
-    le même moteur, et chaque résultat affiché est un résultat d'exécution réel.
-  </footer>
-</div></body></html>"""
+    pytest {EVIDENCE['stack']['pytest']} · Flask {EVIDENCE['stack']['flask']}. Les pages statiques ne
+    ré-exécutent pas les campagnes : les exemples du banc d'essai sont précalculés par le même moteur, et
+    chaque résultat affiché est un résultat d'exécution réel.
+  </div>
+</div>
+{PIED}
+<script src="static/site.js" defer></script>
+</body></html>"""
 
 with open(os.path.join(SORTIE, "index.html"), "w", encoding="utf-8") as fh:
     fh.write(index)
