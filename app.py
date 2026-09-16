@@ -42,7 +42,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from scraper import init_db, fetch_all, fetch_all_new_sources, save_jobs, get_jobs, mark_applied, get_stats, export_static_json, get_db as scraper_db, compute_freshness_score
 from version import get_version, get_git_commit, get_git_tag, is_dirty, DB_SCHEMA_VERSION
-from matcher import match_job_to_cv, analyze_tjm, detect_duplicates, analyze_skills_gap, source_stats as src_stats
+from matcher import _norm, match_job_to_cv, analyze_tjm, detect_duplicates, analyze_skills_gap, source_stats as src_stats
 
 # ─── QA Module ───────────────────────────────────────────────────
 QA_RUNS_DIR = os.path.join(os.path.dirname(__file__), ".qa_runs")
@@ -888,13 +888,13 @@ def index():
     country_counts.append({'key': 'tous', 'count': len(all_jobs)})
 
     # Top matches (top 10 tous pays)
-    top_matches = sorted(all_jobs, key=lambda j: -j.get('match_score', 0))[:10]
+    top_matches = sorted(all_jobs, key=lambda j: (-j.get('match_score', 0), str(j.get('id'))))[:10]
 
     # Jobs du Jour : les 3 plus récents (frais A en priorité)
     fresh_jobs = [j for j in all_jobs if j.get('freshness_score') in ('A', 'B') and j.get('match_score', 0) >= 10]
     jobs_of_day = []
     if fresh_jobs:
-        jobs_of_day = sorted(fresh_jobs, key=lambda j: (-j.get('match_score', 0), -(j.get('freelance_score') or 0)))[:3]
+        jobs_of_day = sorted(fresh_jobs, key=lambda j: (-j.get('match_score', 0), -(j.get('freelance_score') or 0), str(j.get('id'))))[:3]
 
     # Priority scoring: combine match + freelance fit + freshness
     def compute_priority(job):
@@ -905,13 +905,13 @@ def index():
         # Bonuses: applied jobs get lower priority, VALIDÉE gets higher
         stage = job.get('pipeline_stage', 'new')
         stage_bonus = -15 if stage != 'new' else 0
-        status_bonus = 10 if job.get('freelance_status') == 'VALIDÉE' else 0
+        status_bonus = 10 if _norm(job.get('freelance_status')).startswith('valid') else 0
         return match * 2 + freelance * 3 + freshness + stage_bonus + status_bonus
 
     # Hot Picks: top jobs by priority (excluding already applied)
     hot_picks = sorted(
         [j for j in all_jobs if (j.get('pipeline_stage') or 'new') == 'new'],
-        key=compute_priority, reverse=True
+        key=lambda j: (compute_priority(j), str(j.get('id'))), reverse=True
     )[:5]
 
     # Pipeline stats

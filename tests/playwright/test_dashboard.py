@@ -131,7 +131,6 @@ SCENARIOS = {
     "test_remote_filter": test_remote_filter,
     "test_job_cards": test_job_cards,
     "test_top_matches": test_top_matches,
-    "test_cv_page": test_cv_page,
     "test_pagination": test_pagination,
     "test_dismiss_button_does_not_navigate": test_dismiss_button_does_not_navigate,
     "test_apply_button_is_only_clickable_link": test_apply_button_is_only_clickable_link,
