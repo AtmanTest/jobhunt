@@ -156,7 +156,6 @@ def _run_api_test(tid: str, base_url: str) -> dict:
     endpoints = {
         "api_01": ("GET", "/"),
         "api_02": ("GET", "/cv"),
-        "api_03": ("GET", "/api/deepseek/balance"),
         "api_04": ("GET", "/api/stats"),
         "api_05": ("GET", "/qa/api/test-cases"),
         "api_06": ("GET", "/api/linkedin/jobs"),

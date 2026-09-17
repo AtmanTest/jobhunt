@@ -73,7 +73,6 @@ def get_suites(base_url="http://localhost:5050"):
     api_tests = [
         {"id": "api_01", "name": "GET / → 200", "description": "Page d'accueil du dashboard", "timeout": 5},
         {"id": "api_02", "name": "GET /cv → 200", "description": "Page CV", "timeout": 5},
-        {"id": "api_03", "name": "GET /api/deepseek/balance", "description": "Endpoint balance DeepSeek", "timeout": 5},
         {"id": "api_04", "name": "GET /api/stats → JSON", "description": "Endpoint stats", "timeout": 5},
         {"id": "api_05", "name": "GET /qa/api/test-cases", "description": "Endpoint cas de test", "timeout": 5},
         {"id": "api_06", "name": "GET /api/linkedin/jobs", "description": "Endpoint jobs LinkedIn", "timeout": 10},

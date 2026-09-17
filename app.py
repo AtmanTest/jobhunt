@@ -1226,39 +1226,10 @@ def api_stats_advanced():
     return jsonify(stats)
 
 
-@app.route("/api/deepseek/balance")
-def api_deepseek_balance():
-    """Live DeepSeek balance depuis l'API officielle."""
-    api_key = os.environ.get("DEEPSEEK_API_KEY", "")
-    if not api_key:
-        env_file = os.path.expanduser("~/.hermes/.env")
-        if os.path.exists(env_file):
-            with open(env_file) as f:
-                for line in f:
-                    if line.startswith("DEEPSEEK_API_KEY="):
-                        api_key = line.split("=", 1)[1].strip().strip("\"'")
-                        break
-    if not api_key:
-        return jsonify({"error": "No API key", "balance": 0, "currency": "USD", "live": False}), 200
+# NOTE — l'endpoint public /api/deepseek/balance a été supprimé.
+# Exposé sans authentification, il permettait à n'importe quel visiteur de
+# lire le solde du compte API. Le solde se consulte chez le fournisseur.
 
-    try:
-        resp = requests.get(
-            "https://api.deepseek.com/user/balance",
-            headers={"Authorization": f"Bearer {api_key}", "Accept": "application/json"},
-            timeout=10
-        )
-        if resp.status_code == 200:
-            data = resp.json()
-            for b in data.get("balance_infos", []):
-                return jsonify({
-                    "balance": float(b.get("total_balance", 0)),
-                    "topped_up": float(b.get("topped_up_balance", 0)),
-                    "currency": b.get("currency", "USD"),
-                    "live": True
-                })
-        return jsonify({"error": f"API error {resp.status_code}", "balance": 0, "live": False}), 200
-    except Exception as e:
-        return jsonify({"balance": 0, "error": str(e), "live": False}), 200
 
 
 # ─── Supabase Status ──────────────────────────────────────
@@ -1430,9 +1401,27 @@ def api_update_pipeline(job_id):
     return jsonify({"status": "ok", "pipeline_status": status})
 
 
+def _llm_api_allowed():
+    """Autorise les routes qui consomment la clé LLM.
+
+    En local (dev, tests) : oui. Depuis un déploiement public : non, sauf
+    jeton explicite — sinon n'importe quel visiteur brûle le crédit API.
+    """
+    token = (os.environ.get("JOBHUNT_API_TOKEN") or "").strip()
+    if token and request.headers.get("X-JobHunt-Token", "") == token:
+        return True
+    if os.environ.get("RENDER") or os.environ.get("JOBHUNT_PUBLIC"):
+        return False
+    if request.headers.get("X-Forwarded-For") or request.headers.get("X-Forwarded-Proto"):
+        return False
+    return True
+
+
 @app.route("/api/jobs/enrich/<int:job_id>")
 def api_enrich_job(job_id):
     """Enrich job description via DeepSeek API to extract structured data."""
+    if not _llm_api_allowed():
+        return jsonify({"error": "forbidden"}), 403
     import os as os_mod
     conn = get_db()
     cursor = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,))

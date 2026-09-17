@@ -646,13 +646,6 @@
     .e-num { font-size: 18px; }
   }
 
-  /* ── Balance Chip ── */
-  .balance { font-family: 'JetBrains Mono', monospace !important; }
-  .balance .num { font-family: 'JetBrains Mono', monospace; font-size: 14px; }
-  .balance.green .num { color: var(--green); }
-  .balance.orange .num { color: var(--orange); }
-  .balance.red .num { color: var(--red); }
-
   /* ── Section Color Gradients ── */
   .card-blue {
     background: linear-gradient(135deg, rgba(84,160,255,0.40), var(--card) 65%) !important;
@@ -1029,7 +1022,6 @@
     .header-logo a span { font-size: 16px !important; }
     .user-name { display: none; }
     .refresh-btn { width: 30px; height: 30px; font-size: 14px; }
-    #balance-header { font-size: 10px !important; }
     .main { padding: 16px 14px; }
     .hero { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
     .hero-card { padding: 14px 16px; }
@@ -1078,9 +1070,6 @@
     .header-logo a span { font-size: 14px !important; }
     .header-right { gap: 6px; }
     .refresh-btn { width: 28px; height: 28px; font-size: 13px; }
-    #balance-header { font-size: 10px; }
-    .bal-prefix { display: none; }
-    #balance-header::before { content: 'API '; font-size: 10px; color: var(--text-dim); font-family: 'JetBrains Mono',monospace; }
     .main { padding: 12px 10px; }
     .hero { grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
     .hero-card { padding: 10px 12px; }
@@ -1225,7 +1214,6 @@
       <a href="{{ url_for('monitoring_page') }}">📊 Monitor</a>
       <a href="{{ url_for('stats_page') }}">📈 Stats</a>
       <a href="{{ url_for('about') }}">ℹ️ À propos</a>
-      <span id="balance-header" style="font-size:11px;font-weight:500;color:var(--text-dim);font-family:'JetBrains Mono',monospace;margin-left:4px;white-space:nowrap;"><span class="bal-prefix">API AI</span> $<span class="bal-amount">⟳</span></span>
     </nav>
     <div class="header-right">
       <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Basculer thème">☀️</button>
@@ -1877,30 +1865,6 @@ document.querySelectorAll('.tab-panel[id^="panel-"]').forEach(p => {
   if (p.id !== 'panel-linkedin') initPagination(p.id);
 });
 
-// ─── Balance Widget ───
-function fetchBalance() {
-  const val = document.getElementById('balance-header');
-  if (!val) return;
-  const amt = val.querySelector('.bal-amount');
-  const prefix = val.querySelector('.bal-prefix');
-  fetch('/api/deepseek/balance')
-    .then(r => r.json())
-    .then(data => {
-      if (data.live && data.balance > 0) {
-        if (amt) amt.textContent = data.balance.toFixed(2);
-        val.style.color = data.balance < 2 ? 'var(--red)' : data.balance < 5 ? 'var(--orange)' : 'var(--green)';
-      } else if (data.live) {
-        if (amt) amt.textContent = '0.00';
-        val.style.color = 'var(--red)';
-      } else {
-        if (amt) amt.textContent = '—';
-        val.style.color = 'var(--text-dim)';
-      }
-    })
-    .catch(() => { if (amt) amt.textContent = '—'; });
-}
-fetchBalance();
-setInterval(fetchBalance, 60000);
 loadFilterPref();
 
 // ─── LinkedIn ───
