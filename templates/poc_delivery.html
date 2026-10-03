@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chaîne de livraison virtuelle — du besoin au Go/No-Go</title>
+  <link rel="stylesheet" href="/static/theme.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .cd-wrap { max-width: 1180px; margin: 1.4rem auto 4rem; padding: 0 1.2rem; }
+    .cd-hero { background: linear-gradient(135deg, rgba(139,92,246,0.14), rgba(59,130,246,0.10));
+               border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem 1.4rem; margin-bottom: 1.2rem; }
+    .cd-hero .tag { display: inline-block; font-size: 0.66rem; font-weight: 700; text-transform: uppercase;
+                    letter-spacing: 0.6px; background: rgba(139,92,246,0.18); color: #c4b5fd;
+                    padding: 0.2rem 0.55rem; border-radius: 5px; margin-bottom: 0.55rem; }
+    .cd-hero h1 { margin: 0 0 0.4rem; font-size: 1.5rem; line-height: 1.25; }
+    .cd-hero p { margin: 0.2rem 0 0; color: var(--text-dim); font-size: 0.9rem; line-height: 1.65; }
+    .cd-hero .roles { margin-top: 0.8rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .role-chip { font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 20px;
+                 border: 1px solid var(--border); color: #e6e8ef; background: rgba(255,255,255,0.04); }
+    .role-chip.you { background: var(--blue-dim); color: #cfe3ff; border-color: transparent; }
+    .barre { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent);
+             backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: 12px;
+             padding: 0.6rem 0.9rem; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.8rem;
+             flex-wrap: wrap; }
+    .barre .prog { font-size: 0.8rem; font-weight: 700; }
+    .barre .jauge { flex: 1 1 140px; height: 8px; border-radius: 6px; background: var(--border); overflow: hidden; }
+    .barre .jauge span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+                         transition: width .35s ease; }
+    .barre button { cursor: pointer; font-family: inherit; font-size: 0.82rem; font-weight: 700; border-radius: 8px;
+                    padding: 0.45rem 0.85rem; border: 1px solid var(--border); background: transparent; color: var(--text); }
+    .barre button.primary { background: var(--blue); color: #fff; border-color: transparent; }
+    .etape { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 0.7rem;
+             overflow: hidden; }
+    .etape.hidden { display: none; }
+    .etape-hdr { display: flex; align-items: center; gap: 0.65rem; padding: 0.85rem 1rem; }
+    .etape-n { width: 28px; height: 28px; flex: 0 0 28px; border-radius: 8px; display: flex; align-items: center;
+               justify-content: center; font-weight: 800; font-size: 0.85rem; background: var(--blue-dim);
+               color: var(--blue); }
+    .etape-hdr .acteur { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+                         padding: 0.15rem 0.45rem; border-radius: 4px; background: rgba(255,255,255,0.06);
+                         color: #d7dae3; }
+    .etape-hdr .acteur.qa { background: var(--green-dim); color: var(--green); }
+    .etape-hdr .acteur.dev { background: rgba(251,146,60,0.16); color: var(--orange); }
+    .etape-hdr .titre { font-weight: 700; font-size: 0.96rem; flex: 1; }
+    .etape-corps { padding: 0 1rem 1rem; font-size: 0.85rem; line-height: 1.6; }
+    .syllabus { font-size: 0.72rem; color: var(--text-dim); border-left: 2px solid var(--border);
+                padding-left: 0.55rem; margin-bottom: 0.7rem; }
+    .etape-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.8rem; }
+    .etape-actions button { cursor: pointer; font-family: inherit; font-size: 0.86rem; font-weight: 700;
+                            border-radius: 8px; padding: 0.55rem 1rem; border: 1px solid transparent; }
+    .etape-actions .go { background: var(--blue); color: #fff; }
+    .etape-actions .alt { background: transparent; color: var(--text); border-color: var(--border); }
+    .etape-actions button[disabled] { opacity: .45; cursor: default; }
+    table.cd { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    table.cd th { text-align: left; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.4px;
+                  color: #c9d1d9; font-weight: 700; padding: 0.45rem 0.55rem; border-bottom: 1px solid var(--border); }
+    table.cd td { padding: 0.45rem 0.55rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    table.cd tr:last-child td { border-bottom: none; }
+    table.cd tr.ko td { background: rgba(248,113,113,0.07); }
+    table.cd tr.regression td { background: rgba(248,113,113,0.14); }
+    .boite { background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+             padding: 0.55rem 0.6rem; overflow-x: auto; }
+    .chip { font-size: 0.68rem; font-weight: 700; padding: 0.14rem 0.45rem; border-radius: 20px; white-space: nowrap; }
+    .chip.ok { background: var(--green-dim); color: var(--green); }
+    .chip.ko { background: rgba(248,113,113,0.18); color: var(--red); }
+    .chip.warn { background: rgba(251,146,60,0.16); color: var(--orange); }
+    .chip.neutre { background: rgba(255,255,255,0.07); color: #d7dae3; }
+    .bilan { display: flex; gap: 0.7rem; flex-wrap: wrap; margin: 0.7rem 0; }
+    .bilan .b { flex: 1 1 130px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+                padding: 0.6rem 0.75rem; }
+    .bilan .b .n { font-size: 1.35rem; font-weight: 800; display: block; }
+    .bilan .b .l { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px; color: #c9d1d9;
+                   font-weight: 600; }
+    .bilan .b.ok .n { color: var(--green); }
+    .bilan .b.ko .n { color: var(--red); }
+    .bilan .b.info .n { color: var(--blue); }
+    .alerte { border-left: 3px solid var(--orange); background: rgba(251,146,60,0.08); border-radius: 8px;
+              padding: 0.7rem 0.85rem; font-size: 0.84rem; line-height: 1.6; margin: 0.7rem 0; }
+    .alerte.ok { border-color: var(--green); background: rgba(16,185,129,0.08); }
+    .alerte.danger { border-color: var(--red); background: rgba(248,113,113,0.09); }
+    .us-carte { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 0.9rem;
+                margin-bottom: 0.5rem; }
+    .us-carte .t { font-weight: 700; font-size: 0.88rem; }
+    .us-carte .recit { color: var(--text-dim); font-size: 0.82rem; margin: 0.3rem 0 0.5rem; line-height: 1.55; }
+    .us-carte ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }
+    .us-carte li { font-size: 0.8rem; color: var(--text-dim); line-height: 1.55; margin-bottom: 0.25rem; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.76rem; }
+    .gris { color: var(--text-dim); }
+    .cd-foot { margin-top: 2.2rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.74rem;
+               color: var(--text-dim); line-height: 1.7; }
+    @media (max-width: 760px) {
+      .cd-hero h1 { font-size: 1.2rem; }
+      .etape-hdr { flex-wrap: wrap; }
+      .etape-hdr .titre { flex: 1 1 100%; order: 3; }
+      table.cd { font-size: 0.75rem; }
+      .bilan .b { flex: 1 1 45%; }
+    }
+  </style>
+</head>
+<body>
+<header class="header">
+  <a href="/" class="header-logo" style="text-decoration:none;">⚡ JobHunt · Chaîne de test</a>
+  <div class="header-right">
+    <a href="/poc-ct-ai" class="btn-outline" style="margin-right:.5rem;">🧠 PoC test d'IA</a>
+    <a href="/qa" class="btn-outline" style="margin-right:.5rem;">🧪 Tests QA</a>
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Basculer thème">☀️</button>
+  </div>
+</header>
+
+<div class="cd-wrap">
+  <div class="cd-hero">
+    <span class="tag">Démonstration interactive · processus de test complet</span>
+    <h1>Une livraison, du besoin métier au Go/No-Go — avec de vrais tests exécutés</h1>
+    <p>
+      Une demande métier arrive, le Product Owner l'écrit en user stories, le QA analyse le risque et
+      conçoit les tests, le développeur livre <strong>avec des défauts</strong>, le QA exécute la campagne,
+      rédige les anomalies, reçoit un correctif, puis vérifie en <strong>confirmation</strong> et en
+      <strong>régression</strong> avant de décider la mise en production.
+    </p>
+    <p>
+      Les campagnes de test ne sont pas illustrées : elles <strong>s'exécutent réellement</strong> sur le
+      serveur, sur le code de la version livrée. Le nombre d'anomalies affiché est le nombre d'échecs réels.
+      Seul le développeur est simulé.
+    </p>
+    <div class="roles">
+      <span class="role-chip">Métier</span>
+      <span class="role-chip">Product Owner</span>
+      <span class="role-chip">Développeur</span>
+      <span class="role-chip you">Vous : QA / Test Manager</span>
+    </div>
+  </div>
+
+  <div class="barre">
+    <span class="prog" id="prog">Étape 1 / 12</span>
+    <span class="jauge"><span id="jauge"></span></span>
+    <button class="primary" onclick="etapeSuivante()">Étape suivante</button>
+    <button onclick="toutDerouler()">Tout dérouler</button>
+    <button onclick="reinitialiser()">Recommencer</button>
+  </div>
+
+  <div id="timeline"></div>
+
+  <div class="cd-foot" id="pied">Chargement du scénario…</div>
+</div>
+
+<script>
+let S = null;
+let etape = 1;
+const TOTAL = 12;
+
+async function charger() {
+  const rep = await fetch('/poc-delivery/api/scenario');
+  S = await rep.json();
+  document.getElementById('pied').innerHTML =
+    'Scénario exécuté le ' + S.genere_le + ' · ' + S.cas.length + ' cas de test conçus · ' +
+    '3 livraisons simulées · Les résultats affichés proviennent de campagnes réellement exécutées.' +
+    '<br>Référentiels cités : ISTQB CTFL (processus, techniques, gestion des anomalies) et ISTQB CT-AI ' +
+    '(test des systèmes à base d\'IA, chapitres 7 à 9).';
+  construire();
+}
+
+function compter(type) {
+  return S.cas.filter(c => c.type === type).length;
+}
+
+function esc(t) {
+  return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function construire() {
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = S.etapes.map(e => `
+    <div class="etape hidden" id="e${e.n}">
+      <div class="etape-hdr">
+        <div class="etape-n">${e.n}</div>
+        <span class="acteur ${classeActeur(e.acteur)}">${esc(e.acteur)}</span>
+        <div class="titre">${esc(e.activite)}</div>
+      </div>
+      <div class="etape-corps">
+        <div class="syllabus"><i class="fas fa-book"></i> ${esc(e.syllabus)}</div>
+        <div id="c${e.n}"></div>
+      </div>
+    </div>`).join('');
+  majJauge();
+}
+
+function classeActeur(a) {
+  const x = (a || '').toLowerCase();
+  if (x.includes('qa')) return 'qa';
+  if (x.includes('dev')) return 'dev';
+  return '';
+}
+
+function majJauge() {
+  document.getElementById('prog').textContent = 'Étape ' + Math.min(etape, TOTAL) + ' / ' + TOTAL;
+  document.getElementById('jauge').style.width = (100 * (etape - 1) / TOTAL) + '%';
+}
+
+function etapeSuivante() {
+  if (etape > TOTAL) return;
+  rendre(etape);
+  document.getElementById('e' + etape).classList.remove('hidden');
+  document.getElementById('e' + etape).scrollIntoView({behavior: 'smooth', block: 'start'});
+  etape++;
+  majJauge();
+}
+
+function toutDerouler() {
+  while (etape <= TOTAL) { rendre(etape); document.getElementById('e' + etape).classList.remove('hidden'); etape++; }
+  majJauge();
+}
+
+function reinitialiser() {
+  etape = 1;
+  construire();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function rendre(n) {
+  const z = document.getElementById('c' + n);
+  if (z.dataset.fait === '1') return;
+  z.dataset.fait = '1';
+  z.innerHTML = CONTENU[n]();
+}
+
+function tableResultats(campagne, idsRegression) {
+  const reg = new Set(idsRegression || []);
+  return `<div class="boite"><table class="cd">
+    <thead><tr><th>Cas</th><th>Exigence</th><th>Technique</th><th>Priorité</th><th>Résultat</th><th>Attendu</th><th>Obtenu</th></tr></thead>
+    <tbody>${campagne.resultats.map(r => {
+      const ko = r.statut === 'en échec';
+      const cls = reg.has(r.cas) ? 'regression' : (ko ? 'ko' : '');
+      const chip = ko ? '<span class="chip ko">en échec</span>' : '<span class="chip ok">réussi</span>';
+      const extra = reg.has(r.cas) ? ' <span class="chip ko">régression</span>' : '';
+      const attendu = '<span class="mono">' + esc(JSON.stringify(r.attendu_valeur)) + '</span>';
+      const obtenu = ko
+        ? '<span class="mono" style="color:var(--red)">' + esc(JSON.stringify(r.obtenu)) + '</span>'
+        : '<span class="gris mono">conforme</span>';
+      return `<tr class="${cls}"><td class="mono">${r.cas}</td><td class="mono">${esc(r.us)} / ${esc(r.ca)}</td>
+        <td>${esc(r.technique)}</td><td>${esc(r.priorite)}</td><td>${chip}${extra}</td>
+        <td>${attendu}</td><td>${obtenu}</td></tr>`;
+    }).join('')}</tbody></table></div>`;
+}
+
+function bilan(s) {
+  return `<div class="bilan">
+    <div class="b info"><span class="n">${s.executes}</span><span class="l">tests exécutés</span></div>
+    <div class="b ok"><span class="n">${s.reussis}</span><span class="l">réussis</span></div>
+    <div class="b ko"><span class="n">${s.echecs}</span><span class="l">en échec</span></div>
+    <div class="b ${s.taux_reussite === 100 ? 'ok' : 'ko'}"><span class="n">${s.taux_reussite} %</span>
+      <span class="l">taux de réussite</span></div>
+  </div>
+  <div class="gris" style="font-size:.74rem;margin:-.3rem 0 .7rem;">
+    Le critère de sortie fixé avant la campagne exige 100 % : tout taux inférieur est un critère non satisfait,
+    affiché en rouge pour cette raison — ce n'est pas un jugement sur la qualité du travail du développeur.
+  </div>`;
+}
+
+function tableAnomalies(anomalies) {
+  if (!anomalies.length) return '<div class="alerte ok">Aucune anomalie ouverte.</div>';
+  return anomalies.map(a => `
+    <div class="boite" style="margin-bottom:.5rem;">
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:.35rem;">
+        <strong class="mono">${a.id}</strong>
+        <span class="chip ${a.severite === 'bloquante' ? 'ko' : 'warn'}">sévérité ${esc(a.severite)}</span>
+        <span class="chip neutre">${esc(a.priorite)}</span>
+        <span class="chip neutre">${esc(a.type)}</span>
+        <span class="chip neutre">détectée par ${esc(a.detecte_par)}</span>
+      </div>
+      <div style="font-size:.85rem;font-weight:600;margin-bottom:.3rem;">${esc(a.titre)}</div>
+      <div class="gris" style="font-size:.78rem;line-height:1.55;">
+        Exigence : ${esc(a.exigence)} · Technique : ${esc(a.technique)}<br>
+        Étapes : ${esc(a.etapes)}<br>
+        Résultat attendu : <span class="mono">${esc(a.attendu)}</span><br>
+        Résultat obtenu : <span class="mono">${esc(JSON.stringify(a.obtenu))}</span>
+      </div>
+    </div>`).join('');
+}
+
+function tableCriteres(c) {
+  return `<div class="boite"><table class="cd">
+    <thead><tr><th>Critère de sortie</th><th>Exigence</th><th>Mesure</th><th>Verdict</th></tr></thead>
+    <tbody>${c.criteres.map(x => `<tr>
+      <td>${esc(x.critere)}</td><td class="gris">${esc(x.exige)}</td><td class="mono">${esc(x.mesure)}</td>
+      <td>${x.ok ? '<span class="chip ok">satisfait</span>' : '<span class="chip ko">non satisfait</span>'}</td>
+    </tr>`).join('')}</tbody></table></div>
+    <div class="alerte ${c.go ? 'ok' : 'danger'}" style="margin-top:.7rem;">
+      <strong>${c.go ? 'GO' : 'NO-GO'}</strong> — ${c.go
+        ? 'tous les critères de sortie sont satisfaits : la mise en production est décidée sur des faits.'
+        : 'au moins un critère de sortie n\'est pas satisfait : la livraison repart en correction.'}
+    </div>`;
+}
+
+const CONTENU = {
+  1: () => {
+    const d = S.demande;
+    return `
+      <div class="boite">
+        <div style="font-size:.78rem;" class="gris"><span class="mono">${d.id}</span> · ${esc(d.demandeur)}</div>
+        <div style="font-weight:700;margin:.35rem 0 .5rem;">${esc(d.titre)}</div>
+        <div style="line-height:1.6;font-size:.84rem;">${esc(d.contexte)}</div>
+        <div style="margin-top:.6rem;font-size:.83rem;">
+          <strong>Valeur attendue :</strong> ${esc(d.valeur_attendue)}<br>
+          <strong>Périmètre :</strong> ${esc(d.perimetre)}<br>
+          <strong>Hors périmètre :</strong> ${esc(d.hors_perimetre)}<br>
+          <strong>Indicateurs de succès :</strong> ${d.indicateurs.map(esc).join(' · ')}
+        </div>
+      </div>
+      <div class="alerte" style="margin-top:.7rem;">
+        <strong>Ce que le QA regarde d'abord :</strong> la demande est-elle assez précise pour être testée ?
+        Ici, trois éléments manquent et devront être obtenus avant la conception : le vocabulaire exact des
+        types de télétravail acceptés par la source de données, la règle de comparaison du budget
+        (inclusif ou non) et le nombre de résultats par page. Sans ces réponses, aucun critère
+        d'acceptation n'est vérifiable — et un critère non vérifiable ne se teste pas.
+      </div>`;
+  },
+
+  2: () => `
+    ${S.user_stories.map(us => `
+      <div class="us-carte">
+        <div class="t"><span class="mono">${us.id}</span> · ${esc(us.titre)}</div>
+        <div class="recit">${esc(us.recit)}</div>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.4rem;">
+          <span class="chip neutre">priorité ${esc(us.priorite)}</span>
+          <span class="chip neutre">valeur métier ${us.valeur_metier}/5</span>
+          <span class="chip ${us.risque >= 4 ? 'warn' : 'neutre'}">risque produit ${us.risque}/5</span>
+        </div>
+        <div class="gris" style="font-size:.78rem;margin-bottom:.35rem;">${esc(us.risque_justification)}</div>
+        <ul>${us.criteres.map(c => `<li><span class="mono">${c.id}</span> — Étant donné ${esc(c.etant_donne)},
+          quand ${esc(c.quand)}, alors ${esc(c.alors)}</li>`).join('')}</ul>
+      </div>`).join('')}
+    <div class="alerte">
+      <strong>Ce que le QA valide ici :</strong> chaque critère est écrit sous forme
+      <em>Étant donné / Quand / Alors</em>, donc directement traduisible en cas de test. Un critère
+      du type « le filtre doit être rapide et fiable » n'aurait pas été accepté : il n'est pas mesurable.
+    </div>`,
+
+  3: () => `
+    <div class="boite" style="margin-bottom:.7rem;"><table class="cd">
+      <thead><tr><th>User story</th><th>Valeur métier</th><th>Risque produit</th><th>Priorité de test</th><th>Justification du risque</th></tr></thead>
+      <tbody>${S.user_stories.map(us => {
+        const critique = us.risque >= 4 || us.valeur_metier >= 5;
+        return `<tr><td class="mono">${us.id}</td><td>${us.valeur_metier}/5</td><td>${us.risque}/5</td>
+          <td>${critique ? '<span class="chip ko">critique</span>' : '<span class="chip neutre">majeur</span>'}</td>
+          <td class="gris">${esc(us.risque_justification)}</td></tr>`;
+      }).join('')}</tbody></table></div>
+    <div class="boite" style="margin-bottom:.7rem;"><table class="cd">
+      <thead><tr><th>Type de cas</th><th>Nombre conçu</th><th>Ce que ce type cherche</th></tr></thead>
+      <tbody>
+        <tr><td>Fonctionnel</td><td class="mono">${compter('fonctionnel')}</td><td class="gris">le comportement nominal de chaque règle</td></tr>
+        <tr><td>Analyse des valeurs limites</td><td class="mono">${compter('limite')}</td><td class="gris">les bornes : budget exact, casse, index de page, page hors plage</td></tr>
+        <tr><td>Table de décision</td><td class="mono">${compter('table de décision')}</td><td class="gris">la combinaison de deux filtres appliqués ensemble</td></tr>
+        <tr><td>Régression</td><td class="mono">${compter('régression')}</td><td class="gris">ce qui marchait et doit continuer de marcher</td></tr>
+      </tbody></table></div>
+    <div class="alerte">
+      <strong>Critères d'entrée et de sortie fixés AVANT l'exécution</strong> — c'est la règle qui empêche
+      de « décider au feeling » à la fin : tous les tests critiques passent · aucune anomalie bloquante ou
+      majeure ouverte · taux de réussite de la suite à 100 % · suite de régression exécutée en totalité ·
+      traçabilité exigence → test complète.
+    </div>`,
+
+  4: () => `
+    <div class="boite" style="margin-bottom:.7rem;"><table class="cd">
+      <thead><tr><th>Exigence</th><th>Critère d'acceptation</th><th>Cas de test</th><th>Technique</th></tr></thead>
+      <tbody>${S.tracabilite.map(l => `<tr>
+        <td class="mono">${l.us}</td><td style="max-width:420px;">${esc(l.enonce)}</td>
+        <td class="mono">${l.cas.join(', ') || '—'}</td><td class="gris">${esc(l.technique)}</td></tr>`).join('')}
+      </tbody></table></div>
+    <div class="boite"><table class="cd">
+      <thead><tr><th>Cas</th><th>Type</th><th>Priorité</th><th>Technique</th><th>Titre</th></tr></thead>
+      <tbody>${S.cas.map(c => `<tr><td class="mono">${c.id}</td><td>${esc(c.type)}</td>
+        <td>${esc(c.priorite)}</td><td class="gris">${esc(c.technique)}</td><td>${esc(c.titre)}</td></tr>`).join('')}
+      </tbody></table></div>
+    <div class="alerte">
+      <strong>Tracez, toujours :</strong> chaque cas est rattaché à une user story <em>et</em> à un critère
+      d'acceptation. C'est cette matrice qui permet, à la fin, d'affirmer sans approximation ce qui est
+      couvert — et d'écrire « non couvert » là où rien n'a été conçu.
+    </div>`,
+
+  5: () => {
+    const c = S.campagnes.v1_execution;
+    return `
+      <div class="gris" style="font-size:.83rem;margin-bottom:.5rem;">
+        Livraison testée : <span class="mono">${esc(c.campagne.version_libelle)}</span> —
+        ${esc(S.versions.v1.note)}
+      </div>
+      ${bilan(c.campagne.synthese)}
+      ${tableResultats(c.campagne)}
+      <div class="alerte danger">
+        <strong>Campagne terminée : ${c.campagne.synthese.echecs} tests en échec sur ${c.campagne.synthese.executes}.</strong>
+        Les échecs ne sont pas répartis au hasard : ils se concentrent sur les règles de comparaison
+        (borne du budget, casse du filtre), sur le sens du tri et sur l'index de pagination.
+        Le nombre de tests touchés par un même défaut indique aussi sa portée.
+      </div>`;
+  },
+
+  6: () => {
+    const c = S.campagnes.v1_execution;
+    return `
+      <div class="gris" style="font-size:.83rem;margin-bottom:.5rem;">
+        ${c.anomalies.length} anomalies rédigées à partir des échecs réels, chacune traçable jusqu'au
+        critère d'acceptation qu'elle met en défaut.
+      </div>
+      ${tableAnomalies(c.anomalies)}
+      <div class="alerte">
+        <strong>Un bon rapport d'anomalie contient :</strong> identifiant, titre, exigence, sévérité,
+        priorité, étapes de reproduction, résultat attendu, résultat obtenu, cas de test qui l'a détectée et
+        technique employée. Sans les deux derniers, le développeur ne peut pas rejouer le défaut.
+        Sévérité = impact sur le produit ; priorité = urgence de correction. Les deux ne se confondent pas.
+      </div>`;
+  },
+
+  7: () => `
+    <div class="boite">
+      <div style="font-weight:700;margin-bottom:.4rem;">${esc(S.versions.v2.libelle)} — livrée à ${esc(S.versions.v2.date)}</div>
+      <div style="font-size:.84rem;line-height:1.6;">${esc(S.versions.v2.note)}</div>
+      <div class="gris" style="font-size:.8rem;margin-top:.5rem;">
+        Le développeur annonce avoir corrigé les ${S.campagnes.v1_execution.anomalies.length} anomalies.
+        Une annonce n'est pas une preuve : c'est le test de confirmation qui va le dire.
+      </div>
+    </div>
+    <div class="alerte">
+      <strong>Le piège classique :</strong> ne rejouer que les tests qui échouaient. C'est nécessaire, mais
+      insuffisant — un correctif peut réparer ce qu'il visait et casser ce qui fonctionnait. La campagne
+      suivante (régression) existe exactement pour ça.
+    </div>`,
+
+  8: () => {
+    const c = S.campagnes.v2_confirmation;
+    return `
+      <div class="gris" style="font-size:.83rem;margin-bottom:.5rem;">
+        Seuls les tests en échec sur v1.0.0 sont rejoués : ${c.campagne.resultats.map(r => r.cas).join(', ')}.
+      </div>
+      ${bilan(c.campagne.synthese)}
+      ${tableResultats(c.campagne)}
+      <div class="alerte ${c.campagne.synthese.echecs ? 'danger' : 'ok'}">
+        <strong>Confirmation : ${c.campagne.synthese.reussis} cas réparés sur ${c.campagne.synthese.executes}.</strong>
+        ${c.campagne.synthese.echecs
+          ? 'Deux anomalies restent ouvertes : le correctif est incomplet. La livraison ne peut pas partir en production.'
+          : 'Toutes les anomalies sont fermées.'}
+      </div>`;
+  },
+
+  9: () => {
+    const c = S.campagnes.v2_regression;
+    const reg = S.campagnes.regressions_nouvelles;
+    return `
+      <div class="gris" style="font-size:.83rem;margin-bottom:.5rem;">
+        Toute la suite est rejouée sur v1.1.0, y compris les tests qui passaient déjà.
+      </div>
+      ${bilan(c.campagne.synthese)}
+      ${tableResultats(c.campagne, reg)}
+      <div class="alerte danger">
+        <strong>Régression détectée : ${reg.length} tests qui passaient sur v1.0.0 échouent maintenant
+        (${reg.join(', ')}).</strong><br>
+        Ces tests <em>ne faisaient pas partie</em> de la campagne de confirmation : sans la régression,
+        la régression serait passée inaperçue jusqu'en production. C'est la démonstration la plus
+        importante de cette page : <strong>confirmation ≠ régression</strong>.
+      </div>`;
+  },
+
+  10: () => `
+    <div class="boite">
+      <div style="font-weight:700;margin-bottom:.4rem;">${esc(S.versions.v3.libelle)} — livrée à ${esc(S.versions.v3.date)}</div>
+      <div style="font-size:.84rem;line-height:1.6;">${esc(S.versions.v3.note)}</div>
+      <div class="gris" style="font-size:.8rem;margin-top:.5rem;">
+        La cause racine était la recherche par sous-chaîne : « remote » se retrouvait à l'intérieur de
+        « fully_remote ». Le correctif compare désormais des familles de valeurs normalisées, ce qui traite
+        la casse et les libellés sans élargir la règle.
+      </div>
+    </div>
+    <div class="alerte">
+      <strong>Ce qu'un bon rapport d'anomalie a apporté ici :</strong> le cas de test qui a détecté la
+      régression (${S.campagnes.regressions_nouvelles.join(', ')}) désignait précisément la règle fautive,
+      ce qui a évité une correction à l'aveugle.
+    </div>`,
+
+  11: () => {
+    const conf = S.campagnes.v3_confirmation;
+    const reg = S.campagnes.v3_regression;
+    return `
+      <div style="font-weight:700;font-size:.88rem;margin-bottom:.35rem;">Test de confirmation</div>
+      ${bilan(conf.campagne.synthese)}
+      ${tableResultats(conf.campagne)}
+      <div style="font-weight:700;font-size:.88rem;margin:.9rem 0 .35rem;">Test de régression complet</div>
+      ${bilan(reg.campagne.synthese)}
+      ${tableResultats(reg.campagne)}
+      <div class="alerte ok">
+        <strong>Aucun échec sur les deux campagnes.</strong> La suite complète (${reg.campagne.synthese.executes}
+        cas) est verte, y compris les trois tests de régression.
+      </div>`;
+  },
+
+  12: () => {
+    const c = S.campagnes.v3_regression;
+    const v1 = S.campagnes.v1_execution.anomalies.length;
+    const v2 = S.campagnes.v2_regression.anomalies.length;
+    const reg = S.campagnes.regressions_nouvelles.length;
+    return `
+      ${tableCriteres(c.criteres_sortie)}
+      <div style="font-weight:700;font-size:.9rem;margin:1rem 0 .4rem;">Rapport de clôture</div>
+      <div class="boite">
+        <table class="cd"><tbody>
+          <tr><td>Demande métier</td><td class="mono">${esc(S.demande.id)}</td></tr>
+          <tr><td>Livraisons reçues</td><td class="mono">3 (v1.0.0, v1.1.0, v1.1.1)</td></tr>
+          <tr><td>Cas de test conçus</td><td class="mono">${S.cas.length}</td></tr>
+          <tr><td>Anomalies détectées</td><td class="mono">${v1} en exécution + ${reg} en régression = ${v1 + reg}</td></tr>
+          <tr><td>Anomalies corrigées et vérifiées</td><td class="mono">${v1 + reg} / ${v1 + reg}</td></tr>
+          <tr><td>Campagnes exécutées</td><td class="mono">5 (exécution v1, confirmation v2, régression v2, confirmation v3, régression v3)</td></tr>
+          <tr><td>Couverture des exigences</td><td class="mono">${S.user_stories.length} / ${S.user_stories.length} user stories,
+            ${S.tracabilite.length} / ${S.tracabilite.length} critères d'acceptation</td></tr>
+          <tr><td>Décision</td><td><span class="chip ok">GO production</span></td></tr>
+        </tbody></table>
+      </div>
+      <div class="alerte">
+        <strong>Ce que cette livraison enseigne, en trois lignes :</strong>
+        un défaut de conception se détecte par la technique, pas par la chance (la borne du budget
+        exactement au seuil a été trouvée par l'analyse des valeurs limites) ·
+        la correction d'un défaut peut en créer un autre, donc la régression n'est pas optionnelle ·
+        et la décision de livrer se prend sur des critères écrits à l'avance, pas sur une impression.
+      </div>`;
+  },
+};
+
+charger();
+</script>
+</body>
+</html>

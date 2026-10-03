@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JobHunt · QA Dashboard</title>
+  <link rel="stylesheet" href="/static/theme.css">
+  <link rel="stylesheet" href="/static/v3.css?1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .qa-wrap { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; }
+    .qa-hdr { margin-bottom: 2rem; }
+    .qa-hdr h1 { font-size: 1.8rem; margin: 0; }
+    .qa-hdr p { color: var(--text-dim); margin: 0.3rem 0 0; }
+    .qa-stats { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .qa-stat { background: var(--card); border-radius: 10px; padding: 1rem 1.5rem; min-width: 120px; text-align: center; border: 1px solid var(--border); }
+    .qa-stat .num { font-size: 1.8rem; font-weight: 700; display: block; }
+    .qa-stat .lbl { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 0.2rem; }
+    .qa-stat.pass .num { color: var(--green); }
+    .qa-stat.fail .num { color: var(--red); }
+    .qa-stat.skip .num { color: var(--orange); }
+    .qa-stat.total .num { color: var(--blue); }
+    .module { margin-bottom: 2rem; }
+    .module h2 { font-size: 1.1rem; margin: 0 0 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+    .test-card { background: var(--card); border-radius: 8px; margin-bottom: 0.4rem; overflow: hidden; border: 1px solid var(--border); }
+    .test-hdr { display: flex; align-items: center; padding: 0.7rem 1rem; cursor: pointer; gap: 0.6rem; }
+    .test-hdr:hover { background: var(--card-hover); }
+    .test-hdr .icon { font-size: 1rem; width: 20px; }
+    .test-hdr .icon.pass { color: var(--green); }
+    .test-hdr .icon.fail { color: var(--red); }
+    .test-hdr .icon.skip { color: var(--orange); }
+    .test-hdr .name { flex: 1; font-size: 0.88rem; color: var(--text); }
+    .test-hdr .badge { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 600; }
+    .badge-critical { background: var(--red-dim); color: var(--red); }
+    .badge-high { background: rgba(251,146,60,0.15); color: var(--orange); }
+    .badge-medium { background: rgba(251,191,36,0.15); color: var(--orange); }
+    .badge-low { background: var(--blue-dim); color: var(--blue); }
+    .badge-functional { background: var(--green-dim); color: var(--green); }
+    .test-detail { padding: 0 1rem 0.8rem; font-size: 0.8rem; color: var(--text-dim); display: none; line-height: 1.5; }
+    .test-detail.open { display: block; }
+    .test-detail code { background: var(--bg); padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+<header class="header">
+  <a href="/" class="header-logo" style="text-decoration:none;">⚡ JobHunt · QA Dashboard</a>
+  <div class="header-right">
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Basculer thème">☀️</button>
+  </div>
+</header>
+<div class="qa-wrap">
+  <div class="qa-hdr">
+    <h1><i class="fas fa-flask"></i> Tests QA</h1>
+    <p>Couverture fonctionnelle du projet JobHunt — <span id="ts"></span></p>
+  </div>
+
+  <div class="qa-stats" id="stats">
+    <div class="qa-stat total"><span class="num" id="total-n">0</span><span class="lbl">Total</span></div>
+    <div class="qa-stat pass"><span class="num" id="pass-n">0</span><span class="lbl">OK</span></div>
+    <div class="qa-stat fail"><span class="num" id="fail-n">0</span><span class="lbl">Échec</span></div>
+    <div class="qa-stat skip"><span class="num" id="skip-n">0</span><span class="lbl">Ignoré</span></div>
+  </div>
+
+  <div id="modules"></div>
+</div>
+
+<script>
+const TESTS = {
+  modules: [
+    {
+      name: "Filtrage & Périmètre QA",
+      tests: [
+        {name: "Titre «QA Automation» est accepté", status: "pass", severity: "critical", file: "filtre/titre_qa_automation"},
+        {name: "Titre «Game Tester» est rejeté", status: "pass", severity: "high", file: "filtre/game_tester_rejete"},
+        {name: "Description pharma est rejetée", status: "pass", severity: "high", file: "filtre/pharma_rejetee"},
+        {name: "Offre avec stack tech reconnue", status: "pass", severity: "medium", file: "filtre/stack_tech"},
+        {name: "Exclusion QA scope (7 variants)", status: "pass", severity: "critical", detail: "QA Engineer, SDET, Test Automation, Senior QA Consultant, Manual Tester → conservés. Game Tester Mobile, QA Manager non-tech → exclus."},
+        {name: "Filtre France affiche offres françaises", status: "fail", severity: "medium", file: "regression/filtre_france"},
+        {name: "Filtre LinkedIn affiche offres LinkedIn", status: "fail", severity: "medium", file: "regression/filtre_linkedin"},
+        {name: "Pagination fonctionne", status: "fail", severity: "low", file: "regression/pagination"},
+      ]
+    },
+    {
+      name: "Scraping — Sources web",
+      tests: [
+        {name: "RemoteOK API — scraping nominal", status: "fail", severity: "critical", file: "scraping/remoteok_nominal"},
+        {name: "RemoteOK — réponse API vide", status: "pass", severity: "medium", file: "scraping/remoteok_vide"},
+        {name: "RemoteOK — dédoublonnage second scraping", status: "fail", severity: "critical", file: "scraping/remoteok_dedup"},
+        {name: "RemoteOK — exclusion hors périmètre QA", status: "pass", severity: "critical", file: "scraping/exclusion_perimetre"},
+        {name: "WWR — scraping nominal via RSS", status: "fail", severity: "medium", file: "scraping/wwr_nominal"},
+        {name: "WWR — flux RSS indisponible", status: "pass", severity: "medium", file: "scraping/wwr_indisponible"},
+        {name: "LinkedIn — RSS bloqué (403)", status: "pass", severity: "medium", file: "scraping/linkedin_bloque"},
+        {name: "Wellfound — blocage Cloudflare", status: "pass", severity: "medium", file: "scraping/wellfound_bloque"},
+        {name: "Otta — JS requis", status: "pass", severity: "medium", file: "scraping/otta_js"},
+        {name: "Indeed/scraping nom. résultats valides", status: "fail", severity: "critical", file: "scraping/indeed_nominal"},
+        {name: "Indeed/scraping dédoublonnage", status: "fail", severity: "high", file: "scraping/indeed_dedup"},
+      ]
+    },
+    {
+      name: "Déduplication",
+      tests: [
+        {name: "Même URL = même offre (dédoublonnage)", status: "fail", severity: "critical", file: "dedup/meme_url"},
+        {name: "Même titre + entreprise = doublon potentiel", status: "fail", severity: "critical", file: "dedup/titre_entreprise"},
+        {name: "Deux offres même titre+boîte, URL différente", status: "fail", severity: "critical", file: "dedup/url_differente"},
+        {name: "BUG-003: Doublon avec casse différente", status: "fail", severity: "high", file: "dedup/casse"},
+        {name: "BUG-001: KeyError sur offre sans salary", status: "fail", severity: "high", file: "dedup/no_salary"},
+        {name: "BUG-002: Filtre rejetait QA Director", status: "fail", severity: "high", file: "dedup/qa_director"},
+        {name: "JOBS DU JOUR pas de doublons", status: "fail", severity: "critical", file: "regression/dedup_jdj"},
+        {name: "TOP MATCHES CV pas de doublons", status: "fail", severity: "critical", file: "regression/dedup_matches"},
+      ]
+    },
+    {
+      name: "Enrichissement IA",
+      tests: [
+        {name: "Extraction réussie depuis description complète", status: "fail", severity: "high", file: "enrich/extraction"},
+        {name: "Description vague (minimum de données)", status: "fail", severity: "medium", file: "enrich/vague"},
+        {name: "Pas de ré-enrichissement (cache)", status: "fail", severity: "high", file: "enrich/cache"},
+      ]
+    },
+    {
+      name: "API REST",
+      tests: [
+        {name: "GET /api/jobs — liste", status: "fail", severity: "critical", file: "api/jobs"},
+        {name: "GET /api/jobs?tech= — filtre stack", status: "fail", severity: "high", file: "api/jobs_filtre_tech"},
+        {name: "GET /api/stats — agrégats", status: "fail", severity: "high", file: "api/stats"},
+        {name: "GET /api/stats/advanced", status: "fail", severity: "medium", file: "api/stats_advanced"},
+        {name: "POST /api/jobs/{id}/save — sauvegarder", status: "fail", severity: "high", file: "api/save"},
+        {name: "GET /api/jobs/saved — liste sauvegardées", status: "fail", severity: "medium", file: "api/saved_list"},
+        {name: "Pages accessibles (/, /cv, /qa, /marche-qa, /about, /changelog)", status: "pass", severity: "low", file: "api/pages_accessibles"},
+        {name: "API retournent JSON valide (5 endpoints)", status: "fail", severity: "high", file: "api/json_valide"},
+      ]
+    },
+    {
+      name: "E2E / Playwright (navigateur)",
+      tests: [
+        {name: "Page dashboard — titre", status: "fail", severity: "critical", detail: "Nécessite serveur Flask + Chromium local"},
+        {name: "Hero stats — 3+ cartes", status: "fail", severity: "high", detail: "Nécessite serveur Flask + Chromium"},
+        {name: "Country tabs — 5+ onglets", status: "fail", severity: "high", detail: "Nécessite serveur Flask + Chromium"},
+        {name: "Remote filter", status: "fail", severity: "medium", detail: "Nécessite serveur Flask + Chromium"},
+        {name: "Job cards visibles", status: "fail", severity: "critical", detail: "Nécessite serveur Flask + Chromium"},
+        {name: "Top matches + score", status: "fail", severity: "high", detail: "Nécessite serveur Flask + Chromium"},
+        {name: "Pagination — clic page suivante", status: "fail", severity: "medium", detail: "Nécessite serveur Flask + Chromium"},
+      ]
+    },
+    {
+      name: "Jobs cron automatisés",
+      tests: [
+        {name: "Daily refresh à 08h00 (planification)", status: "pass", severity: "medium", detail: "Validation du format cron + déclenchement scraping"},
+        {name: "Alert check toutes les 2h", status: "pass", severity: "medium", detail: "Détection de nouvelles offres + notification"},
+        {name: "Weekly report le lundi 9h", status: "pass", severity: "low", detail: "Top 5 offres + stats hebdo"},
+      ]
+    },
+    {
+      name: "Pages & Navigation",
+      tests: [
+        {name: "Page d'accueil (/) — code 200", status: "pass", severity: "critical"},
+        {name: "Page QA (/qa) — code 200", status: "pass", severity: "high"},
+        {name: "Page Marché QA (/marche-qa) — code 200", status: "pass", severity: "medium"},
+        {name: "Page About (/about) — code 200", status: "pass", severity: "low"},
+        {name: "Page Changelog (/changelog) — code 200", status: "pass", severity: "low"},
+        {name: "Page Stats (/stats) — accessible", status: "fail", severity: "medium", file: "regression/stats_page"},
+        {name: "LinkedIn scraper navigation URL directe", status: "fail", severity: "medium", file: "regression/linkedin_nav"},
+        {name: "LinkedIn scraper dédup entre recherches", status: "fail", severity: "medium", file: "regression/linkedin_dedup"},
+        {name: "Keywords LinkedIn titres français", status: "fail", severity: "low", file: "regression/linkedin_keywords"},
+        {name: "Vision NVIDIA authentifiée", status: "fail", severity: "high", file: "regression/vision"},
+      ]
+    },
+  ]
+};
+
+function render() {
+  let total = 0, pass = 0, fail = 0, skip = 0;
+  const mods = document.getElementById('modules');
+  mods.innerHTML = '';
+  
+  TESTS.modules.forEach(mod => {
+    const section = document.createElement('div');
+    section.className = 'module';
+    
+    let h = `<h2>${mod.name} <span style="font-weight:400;font-size:0.8rem;color:var(--text-dim)">(${mod.tests.length})</span></h2>`;
+    
+    mod.tests.forEach(t => {
+      total++;
+      if (t.status === 'pass') pass++;
+      else if (t.status === 'skip') skip++;
+      else fail++;
+      
+      const icon = t.status === 'pass' ? 'fa-check-circle' : t.status === 'skip' ? 'fa-minus-circle' : 'fa-times-circle';
+      const sev = t.severity || 'medium';
+      const detail = t.detail ? t.detail : (t.file ? `Tests: <code>tests/features/${t.file}</code>` : '');
+      
+      h += `<div class="test-card">
+        <div class="test-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
+          <span class="icon ${t.status}"><i class="fas ${icon}"></i></span>
+          <span class="name">${t.name}</span>
+          <span class="badge badge-${sev}">${sev}</span>
+        </div>
+        <div class="test-detail">${detail}</div>
+      </div>`;
+    });
+    
+    section.innerHTML = h;
+    mods.appendChild(section);
+  });
+  
+  document.getElementById('total-n').textContent = total;
+  document.getElementById('pass-n').textContent = pass;
+  document.getElementById('fail-n').textContent = fail;
+  document.getElementById('skip-n').textContent = skip;
+  document.getElementById('ts').textContent = new Date().toLocaleDateString('fr-FR', {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+render();
+</script>
+<script>
+(function(){
+  var theme = localStorage.getItem('jh-theme') || '';
+  var btn = document.getElementById('theme-btn');
+  if(theme==='dark'){document.documentElement.removeAttribute('data-theme');btn.textContent='☀️';}else{document.documentElement.setAttribute('data-theme','light');btn.textContent='🌙';}
+  window.toggleTheme=function(){var t=document.documentElement.getAttribute('data-theme');if(t==='light'){document.documentElement.removeAttribute('data-theme');localStorage.setItem('jh-theme','dark');btn.textContent='☀️';}else{document.documentElement.setAttribute('data-theme','light');localStorage.setItem('jh-theme','');btn.textContent='🌙';}};
+})();
+</script>
+</body>
+</html>

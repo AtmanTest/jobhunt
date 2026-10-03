@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PoC · Tester un système d'IA — ISTQB CT-AI</title>
+  <link rel="stylesheet" href="/static/theme.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .poc-wrap { max-width: 1180px; margin: 1.5rem auto 4rem; padding: 0 1.25rem; }
+    .poc-hero { background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(16,185,129,0.10));
+                border: 1px solid var(--border); border-radius: 14px; padding: 1.6rem 1.5rem; margin-bottom: 1.5rem; }
+    .poc-hero h1 { margin: 0 0 0.4rem; font-size: 1.55rem; line-height: 1.25; }
+    .poc-hero p { margin: 0.25rem 0 0; color: var(--text-dim); font-size: 0.92rem; line-height: 1.6; }
+    .poc-tag { display: inline-block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.6px;
+               background: var(--blue-dim); color: var(--blue); padding: 0.2rem 0.55rem; border-radius: 5px;
+               font-weight: 700; margin-bottom: 0.6rem; }
+    .kpis { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1.2rem 0 2rem; }
+    .kpi { flex: 1 1 155px; background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+           padding: 0.9rem 1rem; }
+    .kpi .num { display: block; font-size: 1.7rem; font-weight: 800; line-height: 1.1; }
+    .kpi { min-height: 5.2rem; display: flex; flex-direction: column; justify-content: center; }
+    .kpi .lbl { display: block; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.4px;
+                color: #c9d1d9; font-weight: 600; margin-top: 0.25rem; line-height: 1.35; }
+    .kpi.green .num { color: var(--green); }
+    .kpi.blue .num { color: var(--blue); }
+    .kpi.orange .num { color: var(--orange); }
+    .kpi.red .num { color: var(--red); }
+    .poc-section { margin-bottom: 2.4rem; }
+    .poc-section > h2 { font-size: 1.15rem; margin: 0 0 0.3rem; }
+    .poc-section > .sub { color: var(--text-dim); font-size: 0.85rem; margin: 0 0 1rem; line-height: 1.6; }
+    .pipeline { display: flex; align-items: stretch; gap: 0.6rem; flex-wrap: wrap; }
+    .pipe-step { flex: 1 1 200px; background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+                 padding: 0.85rem 1rem; position: relative; min-height: 8.5rem; }
+    .pipe-step .tag { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;
+                      color: var(--text-dim); }
+    .pipe-step .t { font-weight: 700; font-size: 0.92rem; margin: 0.25rem 0 0.35rem; }
+    .pipe-step .d { font-size: 0.8rem; color: var(--text-dim); line-height: 1.5; }
+    .pipe-arrow { align-self: center; color: var(--text-dim); font-size: 1.1rem; }
+    .grille-portes { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 0.9rem; }
+    .porte { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem; }
+    .porte-hdr { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+    .porte-n { width: 30px; height: 30px; flex: 0 0 30px; border-radius: 8px; background: var(--blue-dim);
+               color: var(--blue); font-weight: 800; display: flex; align-items: center; justify-content: center; }
+    .porte-hdr .t { font-weight: 700; font-size: 0.98rem; }
+    .porte-chap { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim);
+                  border: 1px solid var(--border); border-radius: 4px; padding: 0.1rem 0.35rem; margin-left: auto; }
+    .porte dl { margin: 0.4rem 0 0; font-size: 0.82rem; line-height: 1.55; }
+    .porte dt { color: #c9d1d9; font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+                letter-spacing: 0.4px; margin-top: 0.55rem; }
+    .porte dd { margin: 0.15rem 0 0; }
+    .porte .preuve { border-left: 3px solid var(--green); padding-left: 0.6rem; color: var(--text); }
+    .porte-foot { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; }
+    .pill { font-size: 0.68rem; padding: 0.18rem 0.5rem; border-radius: 20px; border: 1px solid var(--border);
+            color: var(--text-dim); }
+    .pill.ok { background: var(--green-dim); color: var(--green); border-color: transparent; font-weight: 700; }
+    table.poc { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    table.poc th { text-align: left; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px;
+                   color: var(--text-dim); padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--border); }
+    table.poc td { padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    table.poc tr:last-child td { border-bottom: none; }
+    .wrap-table { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 0.6rem 0.5rem;
+                  overflow-x: auto; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.78rem; }
+    .ok { color: var(--green); font-weight: 700; }
+    .ko { color: var(--red); font-weight: 700; }
+    .matrice { display: grid; grid-template-columns: auto 1fr 1fr; gap: 1px; background: var(--border);
+               border: 1px solid var(--border); border-radius: 10px; overflow: hidden; max-width: 430px; }
+    .matrice div { background: var(--card); padding: 0.6rem 0.7rem; font-size: 0.8rem; }
+    .matrice .hd { background: var(--bg); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px;
+                   color: var(--text-dim); font-weight: 700; }
+    .matrice .val { font-weight: 800; font-size: 1rem; }
+    .matrice .tp .val, .matrice .tn .val { color: var(--green); }
+    .matrice .fp .val, .matrice .fn .val { color: var(--orange); }
+    .deux-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.2rem; }
+    .defaut { background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--orange);
+              border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 0.6rem; }
+    .defaut .t { font-weight: 700; font-size: 0.9rem; }
+    .defaut .d { font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; margin: 0.3rem 0 0.5rem; }
+    .defaut .avant-apres { font-size: 0.78rem; display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+    .defaut .avant-apres code { background: var(--bg); padding: 0.12rem 0.4rem; border-radius: 4px; }
+    .demo { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; }
+    .demo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.6rem; }
+    .demo label { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px;
+                  color: var(--text-dim); margin-bottom: 0.2rem; }
+    .demo input, .demo textarea, .demo select { width: 100%; background: var(--bg); color: var(--text);
+                  border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.6rem; font-size: 0.85rem;
+                  font-family: inherit; }
+    .demo textarea { min-height: 92px; resize: vertical; }
+    .demo-actions { display: flex; gap: 0.6rem; margin-top: 0.8rem; flex-wrap: wrap; }
+    .demo button { cursor: pointer; font-family: inherit; font-size: 0.88rem; font-weight: 700; border-radius: 8px;
+                   padding: 0.55rem 1rem; border: 1px solid transparent; }
+    .demo .go { background: var(--blue); color: #fff; }
+    .demo .alt { background: transparent; color: var(--text); border-color: var(--border); }
+    .resultat { margin-top: 1rem; display: none; }
+    .resultat.on { display: block; }
+    .score-box { display: flex; align-items: baseline; gap: 0.6rem; }
+    .score-box .n { font-size: 2.4rem; font-weight: 800; }
+    .verdict { font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 20px; }
+    .verdict.yes { background: var(--green-dim); color: var(--green); }
+    .verdict.no { background: var(--orange); color: #1b1b1b; }
+    .limites li { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 0.4rem; }
+    .poc-foot { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--border);
+                font-size: 0.75rem; color: var(--text-dim); line-height: 1.7; }
+    @media (max-width: 760px) {
+      .poc-hero h1 { font-size: 1.22rem; }
+      .kpi { flex: 1 1 118px; min-height: 4.6rem; }
+      .grille-portes { grid-template-columns: 1fr; }
+      .demo-grid { grid-template-columns: 1fr; }
+      .deux-col { grid-template-columns: 1fr; }
+      .pipeline { flex-direction: column; }
+      .pipe-arrow { transform: rotate(90deg); align-self: flex-start; margin-left: 1rem; }
+      .pipe-step { min-height: auto; }
+      .matrice { max-width: 100%; }
+      table.poc { font-size: 0.78rem; }
+    }
+  </style>
+</head>
+<body>
+<header class="header">
+  <a href="/" class="header-logo" style="text-decoration:none;">⚡ JobHunt · PoC test d'IA</a>
+  <div class="header-right">
+    <a href="/poc-delivery" class="btn-outline" style="margin-right:.5rem;">🏭 Chaîne de test</a>
+    <a href="/qa" class="btn-outline" style="margin-right:.5rem;">🧪 Tests QA</a>
+    <a href="/about" class="btn-outline" style="margin-right:.5rem;">À propos</a>
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Basculer thème">☀️</button>
+  </div>
+</header>
+
+<div class="poc-wrap">
+
+  <div class="poc-hero">
+    <span class="poc-tag">Preuve de concept · {{ evidence.syllabus if evidence else 'ISTQB CT-AI' }}</span>
+    <h1>Tester un système d'IA : le processus complet, appliqué à un vrai moteur de classement</h1>
+    <p>
+      Cette page n'est pas une démonstration d'interface : c'est la <strong>trace d'exécution</strong> d'un
+      processus de test d'IA en 8 étapes (portes) appliqué au moteur qui décide quelles offres d'emploi
+      remontent dans ce tableau de bord. Chaque chiffre affiché est produit par exécution réelle du code
+      et des tests, pas saisi à la main.
+    </p>
+    <p style="margin-top:.5rem;">
+      <strong>Ce qui est testé :</strong> un score de pertinence de 0 à 100 calculé pour chaque offre, qui
+      pilote le classement, le « top du jour » et la priorité de traitement.
+    </p>
+  </div>
+
+  {% if evidence %}
+  <div class="kpis">
+    <div class="kpi blue"><span class="num">{{ evidence.tests.passes }}</span><span class="lbl">tests exécutés · 0 échec</span></div>
+    <div class="kpi green"><span class="num">{{ evidence.metriques.precision }}</span><span class="lbl">précision · seuil {{ evidence.metriques.seuil }}</span></div>
+    <div class="kpi green"><span class="num">{{ evidence.metriques.rappel }}</span><span class="lbl">rappel · métrique clé</span></div>
+    <div class="kpi orange"><span class="num">{{ evidence.defauts|length }}</span><span class="lbl">défauts corrigés</span></div>
+    <div class="kpi blue"><span class="num">{{ evidence.invariance.conformes }}/{{ evidence.invariance.total }}</span><span class="lbl">relations métamorphiques</span></div>
+  </div>
+
+  <section class="poc-section">
+    <h2>1 · La chaîne complète, du brut à la décision</h2>
+    <p class="sub">Deux natures de composants, deux natures de risque : un modèle de langue tiers (non
+      déterministe, version non maîtrisée) et un moteur de classement déterministe dont la sortie est
+      opposable. C'est ce second composant qui est testé ici.</p>
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="tag">entrée</div>
+        <div class="t">Offres brutes</div>
+        <div class="d">Collecte multi-sources : titre, description, tags, salaire, localisation, statut freelance.</div>
+      </div>
+      <div class="pipe-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="pipe-step">
+        <div class="tag">composant IA · tiers</div>
+        <div class="t">Enrichissement LLM</div>
+        <div class="d">Technologies, séniorité, type de contrat, télétravail, fourchette. Non déterministe :
+          traité comme une source de variabilité à absorber, jamais comme une vérité.</div>
+      </div>
+      <div class="pipe-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="pipe-step">
+        <div class="tag">composant déterministe · testé</div>
+        <div class="t">Moteur de classement</div>
+        <div class="d">Score de pertinence 0-100 : titre, compétences reconnues, télétravail, statut
+          freelance, signaux mission. Explicable offre par offre.</div>
+      </div>
+      <div class="pipe-arrow"><i class="fas fa-arrow-right"></i></div>
+      <div class="pipe-step">
+        <div class="tag">décision</div>
+        <div class="t">Classement et priorité</div>
+        <div class="d">Top des offres, offres du jour, priorité de traitement, analyse du TJM face au
+          marché de référence.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="poc-section">
+    <h2>2 · Les 8 portes du processus</h2>
+    <p class="sub">Chaque porte est une étape obligatoire du référentiel, avec une exigence, un livrable
+      produit et une preuve vérifiable. Le nombre de tests indiqué est celui réellement collecté par pytest.</p>
+    <div class="grille-portes">
+      {% for p in evidence.portes %}
+      <div class="porte">
+        <div class="porte-hdr">
+          <div class="porte-n">{{ p.n }}</div>
+          <div class="t">{{ p.titre }}</div>
+          <div class="porte-chap">{{ p.chapitre }}</div>
+        </div>
+        <dl>
+          <dt>Exigence du référentiel</dt>
+          <dd>{{ p.exigence }}</dd>
+          <dt>Ce qui a été produit</dt>
+          <dd>{{ p.produit }}</dd>
+          <dt>Preuve</dt>
+          <dd class="preuve">{{ p.preuve }}</dd>
+        </dl>
+        <div class="porte-foot">
+          {% if p.nb_tests %}<span class="pill ok">{{ p.nb_tests }} tests automatisés</span>{% endif %}
+          <span class="pill">livrable : {{ p.document.split('/')[-1] }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="poc-section">
+    <h2>3 · Les métriques, et pourquoi celles-là</h2>
+    <p class="sub">Le composant rend une décision binaire à partir d'un score continu. Toutes les erreurs
+      ne se valent pas : une offre pertinente manquée est une mission jamais vue (coût élevé), une offre
+      hors sujet affichée coûte une minute de lecture (coût faible). Le <strong>rappel</strong> est donc la
+      métrique directrice, la précision sert de garde-fou, le F1 arbitre.</p>
+    <div class="deux-col">
+      <div>
+        <div class="matrice">
+          <div class="hd"></div><div class="hd">Prédit pertinent</div><div class="hd">Prédit hors sujet</div>
+          <div class="hd">Réellement pertinent</div>
+          <div class="tp"><span class="val">{{ evidence.metriques.tp }}</span><br><span style="font-size:.7rem;color:var(--text-dim)">vrais positifs</span></div>
+          <div class="fn"><span class="val">{{ evidence.metriques.fn }}</span><br><span style="font-size:.7rem;color:var(--text-dim)">faux négatif — mission manquée</span></div>
+          <div class="hd">Réellement hors sujet</div>
+          <div class="fp"><span class="val">{{ evidence.metriques.fp }}</span><br><span style="font-size:.7rem;color:var(--text-dim)">faux positifs</span></div>
+          <div class="tn"><span class="val">{{ evidence.metriques.tn }}</span><br><span style="font-size:.7rem;color:var(--text-dim)">vrais négatifs</span></div>
+        </div>
+        <p class="sub" style="margin-top:.8rem;">
+          Corpus d'évaluation : <strong>{{ evidence.metriques.n }} offres étiquetées</strong> à la main,
+          règle d'étiquetage écrite <em>avant</em> la mesure. Empreinte
+          <span class="mono">{{ evidence.metriques.empreinte_corpus }}…</span> verrouillée par un test :
+          toute modification du corpus invalide les seuils et fait échouer la suite.
+        </p>
+      </div>
+      <div class="wrap-table">
+        <table class="poc">
+          <thead><tr><th>Seuil</th><th>Précision</th><th>Rappel</th><th>F1</th></tr></thead>
+          <tbody>
+          {% for b in evidence.metriques.balayage %}
+            <tr {% if b.seuil == evidence.metriques.seuil %}style="background:var(--blue-dim)"{% endif %}>
+              <td class="mono">{{ b.seuil }}{% if b.seuil == evidence.metriques.seuil %} ← retenu{% endif %}</td>
+              <td class="mono">{{ b.precision }}</td>
+              <td class="mono">{{ b.rappel }}</td>
+              <td class="mono">{{ b.f1 }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <p class="sub" style="padding:.5rem .6rem 0;margin:0;">
+          Seuils verrouillés en non-régression : précision ≥ 0,95 · rappel ≥ 0,85 · F1 ≥ 0,90.
+          Ce sont des garde-fous, pas des objectifs commerciaux — et c'est écrit comme tel.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="poc-section">
+    <h2>4 · Technique principale : le test métamorphique</h2>
+    <p class="sub">Sur un système non déterministe, il n'existe pas de « valeur attendue exacte ». L'oracle
+      retenu est une <strong>relation entre deux exécutions</strong> : changer la forme d'une offre ne doit
+      jamais changer la décision. Les {{ evidence.invariance.total }} relations ci-dessous sont vérifiées à
+      chaque génération de cette page — sur l'offre « {{ evidence.invariance.offre }} ».</p>
+    <div class="wrap-table">
+      <table class="poc">
+        <thead><tr><th>Relation métamorphique</th><th>Référence</th><th>Score obtenu</th><th>Écart</th><th>Verdict</th></tr></thead>
+        <tbody>
+        {% for r in evidence.invariance.relations %}
+          <tr>
+            <td>{{ r.nom }}</td>
+            <td class="mono">{{ r.reference }}</td>
+            <td class="mono">{{ r.score }}</td>
+            <td class="mono">{{ r.ecart }}</td>
+            <td class="{{ 'ok' if r.identique else 'ko' }}">{{ 'conforme' if r.identique else 'divergent' }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="sub" style="margin-top:.8rem;">
+      Deux de ces relations ont révélé un défaut réel avant correction : le télétravail complet écrit
+      « Remote » ou <span class="mono">fully_remote</span> et le statut freelance écrit « validée » ne
+      rapportaient aucun point, alors que ces champs pèsent respectivement 10 et 10 points sur 100.
+    </p>
+  </section>
+
+  <section class="poc-section">
+    <h2>5 · Défauts trouvés par les tests, puis corrigés</h2>
+    <p class="sub">Un test qui ne trouve rien n'a rien prouvé. Chaque défaut ci-dessous a été reproduit par
+      un test avant correction, puis verrouillé par un test de non-régression.</p>
+    {% for d in evidence.defauts %}
+    <div class="defaut">
+      <div class="t">{{ loop.index }}. {{ d.titre }}</div>
+      <div class="d">{{ d.impact }}</div>
+      <div class="avant-apres">
+        <span class="ko">avant</span> <code>{{ d.avant }}</code>
+        <span class="ok">après</span> <code>{{ d.apres }}</code>
+        <span class="pill">{{ d.technique }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+
+  <section class="poc-section">
+    <h2>6 · Entrées adverses : le système ne se casse pas</h2>
+    <p class="sub">Le référentiel demande de traiter les systèmes complexes et non déterministes comme des
+      cibles d'attaques : entrées hostiles, bourrage, contenu malformé. Résultats réels :</p>
+    <div class="wrap-table">
+      <table class="poc">
+        <thead><tr><th>Entrée</th><th>Résultat mesuré</th></tr></thead>
+        <tbody>
+        {% for a in evidence.adverses %}
+          <tr><td>{{ a.nom }}</td><td class="mono">{{ a.resultat }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="sub" style="margin-top:.8rem;">
+      Le bourrage de mots-clés est borné par construction (titre 20 points, compétences 30, bonus 20) :
+      une offre ne peut pas dominer le classement par accumulation lexicale. C'est la protection contre
+      le « piratage de récompense » décrit par le référentiel.
+    </p>
+  </section>
+
+  <section class="poc-section">
+    <h2>7 · Essayer en direct : la décision et sa justification</h2>
+    <p class="sub">Le moteur est exposé en lecture seule : saisissez une offre, vous obtenez le score, les
+      compétences reconnues, l'analyse du TJM — et le <strong>contrôle d'invariance</strong> qui rejoue la
+      même offre écrite autrement. Tout doit rester identique.</p>
+    <div class="demo">
+      <div class="demo-grid">
+        <div>
+          <label for="d-title">Titre du poste</label>
+          <input id="d-title" value="Senior QA Engineer - Playwright Automation">
+        </div>
+        <div>
+          <label for="d-tags">Mots-clés / technologies</label>
+          <input id="d-tags" value="playwright, selenium, python">
+        </div>
+        <div>
+          <label for="d-salary">Salaire / TJM affiché</label>
+          <input id="d-salary" value="600-700 €/jour">
+        </div>
+        <div>
+          <label for="d-location">Localisation</label>
+          <input id="d-location" value="Paris">
+        </div>
+        <div>
+          <label for="d-remote">Télétravail</label>
+          <select id="d-remote">
+            <option value="remote">Remote</option>
+            <option value="fully_remote">Fully remote</option>
+            <option value="hybrid">Hybride</option>
+            <option value="onsite">Sur site</option>
+          </select>
+        </div>
+        <div>
+          <label for="d-status">Statut freelance</label>
+          <select id="d-status">
+            <option value="VALIDÉE">Validée</option>
+            <option value="AMBIGUË">Ambigüe</option>
+            <option value="REJETÉE">Rejetée</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:.6rem;">
+        <label for="d-desc">Description de l'offre</label>
+        <textarea id="d-desc">QA engineer, automation, test strategy, regression. Mission freelance, TJM 600 EUR/jour.</textarea>
+      </div>
+      <div class="demo-actions">
+        <button class="go" onclick="noter()">Évaluer cette offre</button>
+        <button class="alt" onclick="chargerExemple('hors-sujet')">Exemple : offre hors sujet</button>
+        <button class="alt" onclick="chargerExemple('qa')">Exemple : offre QA freelance</button>
+      </div>
+      <div class="resultat" id="resultat">
+        <div class="score-box">
+          <span class="n" id="r-score">–</span>
+          <span style="color:var(--text-dim);font-size:.85rem;">/ 100</span>
+          <span class="verdict" id="r-verdict"></span>
+        </div>
+        <p class="sub" style="margin:.4rem 0 .8rem;" id="r-detail"></p>
+        <div class="wrap-table">
+          <table class="poc">
+            <thead><tr><th>Variante de forme testée</th><th>Score</th><th>Identique ?</th></tr></thead>
+            <tbody id="r-controle"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="poc-section">
+    <h2>8 · Limites assumées</h2>
+    <ul class="limites">
+      <li><strong>Corpus d'évaluation restreint</strong> ({{ evidence.metriques.n }} offres) : un point de
+        rappel vaut 8 %, l'intervalle de confiance est large. Aucun relèvement de seuil ne sera décidé
+        sans un corpus étendu et échantillonné sur plusieurs sources.</li>
+      <li><strong>Surajustement évité par principe</strong> : le seuil a été choisi une fois, sur le corpus
+        verrouillé. Aucun réglage n'est fait en regardant les scores — c'est précisément l'erreur que le
+        référentiel interdit.</li>
+      <li><strong>Aucun suivi de dérive en production</strong> : la distribution des scores n'est pas
+        historisée, donc une dérive lente du marché ne serait pas détectée automatiquement. C'est la
+        première suite à mettre en place.</li>
+      <li><strong>Modèle d'enrichissement non testé en interne</strong> : API tierce, version non épinglée.
+        Traité comme source de variabilité (alias de valeurs), pas comme composant dont on prouve la justesse.</li>
+      <li><strong>Techniques non applicables, et assumées</strong> : test A/B (aucun indicateur d'usage
+        réel à comparer), mesures de couverture neuronale (le composant testé n'est pas un réseau de
+        neurones), test par paires (trop peu de paramètres pour se justifier).</li>
+    </ul>
+  </section>
+
+  <div class="poc-foot">
+    Preuve générée le {{ evidence.genere_le }} · {{ evidence.tests.passes }} tests exécutés en
+    {{ evidence.tests.duree_s }} s · Python {{ evidence.stack.python }} · pytest {{ evidence.stack.pytest }} ·
+    Flask {{ evidence.stack.flask }}<br>
+    Rapport détaillé : <span class="mono">docs/qa-ct-ai/</span> (cadrage du risque, qualité des données,
+    métriques et seuils, plan de test, techniques, journal d'usage de l'IA) ·
+    Le dépôt de ce PoC est privé : le code et la suite de tests sont présentables sur demande.
+  </div>
+  {% else %}
+  <div class="kpi red"><span class="num">!</span><span class="lbl">preuve non générée</span></div>
+  <p class="sub">Exécuter <span class="mono">python3 scripts/ct_ai_evidence.py</span> pour produire
+    <span class="mono">docs/qa-ct-ai/evidence.json</span> puis recharger cette page.</p>
+  {% endif %}
+
+</div>
+
+<script>
+async function noter() {
+  const payload = {
+    title: document.getElementById('d-title').value,
+    tags: document.getElementById('d-tags').value,
+    salary: document.getElementById('d-salary').value,
+    location: document.getElementById('d-location').value,
+    remote_type: document.getElementById('d-remote').value,
+    freelance_status: document.getElementById('d-status').value,
+    description: document.getElementById('d-desc').value
+  };
+  const rep = await fetch('/poc-ct-ai/api/score', {
+    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+  });
+  const d = await rep.json();
+  document.getElementById('resultat').classList.add('on');
+  document.getElementById('r-score').textContent = d.score;
+  const v = document.getElementById('r-verdict');
+  v.textContent = d.pertinent ? 'au-dessus du seuil de pertinence' : 'sous le seuil de pertinence';
+  v.className = 'verdict ' + (d.pertinent ? 'yes' : 'no');
+  const comp = (d.competences && d.competences.length) ? d.competences.join(', ') : 'aucune';
+  let detail = 'Compétences reconnues : ' + comp + '.';
+  if (d.tjm && d.tjm.tjm) {
+    const plage = /\d+\s*(?:[-–—]|à|a|to)\s*\d+/.test(d.salaire_source || '')
+      ? ' (moyenne de la plage « ' + d.salaire_source + ' »)' : '';
+    detail += ' TJM détecté : ' + d.tjm.tjm + ' ' + (d.tjm.currency || '') + ' ' + (d.tjm.unit || '') + plage
+      + ' — marché de référence : ' + (d.tjm.range || 'inconnu (aucune comparaison produite)')
+      + (d.tjm.flag ? ' ' + d.tjm.flag : '');
+  }
+  document.getElementById('r-detail').textContent = detail;
+  const tbody = document.getElementById('r-controle');
+  tbody.innerHTML = d.controle.map(c =>
+    `<tr><td>${c.nom}</td><td class="mono">${c.score}</td>
+     <td class="${c.identique ? 'ok' : 'ko'}">${c.identique ? 'identique' : 'DIVERGENT'}</td></tr>`).join('');
+}
+
+function chargerExemple(type) {
+  if (type === 'hors-sujet') {
+    document.getElementById('d-title').value = 'Chef de projet capital investissement';
+    document.getElementById('d-desc').value = 'Suivi des dossiers, relation client, reporting mensuel.';
+    document.getElementById('d-tags').value = '';
+    document.getElementById('d-salary').value = '';
+    document.getElementById('d-remote').value = 'onsite';
+    document.getElementById('d-status').value = 'REJETÉE';
+  } else {
+    document.getElementById('d-title').value = 'QA Lead - Plateforme de paiement';
+    document.getElementById('d-desc').value = "Définition de la stratégie de test, tests d'API, recette, gestion du cycle de vie des anomalies, cérémonies Scrum.";
+    document.getElementById('d-tags').value = 'test strategy, api, postman';
+    document.getElementById('d-salary').value = '700 €/jour';
+    document.getElementById('d-remote').value = 'fully_remote';
+    document.getElementById('d-status').value = 'VALIDÉE';
+  }
+  noter();
+}
+document.getElementById('ts');
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => { noter(); });
+</script>
+</body>
+</html>

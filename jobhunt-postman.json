@@ -1,0 +1,711 @@
+{
+  "info": {
+    "name": "JobHunt API",
+    "description": "Collection Postman pour le dashboard JobHunt — Marché QA Freelance\n\n**Environnements :**\n- `local` → http://localhost:5050\n- `recette` → https://jobhunt-recette.onrender.com\n- `prod` → https://jobhunt-1-ar3w.onrender.com",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "hermes-agent"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5050",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@test.com\",\n  \"password\": \"monmotdepasse\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@test.com\",\n  \"password\": \"monmotdepasse\",\n  \"name\": \"Mon Nom\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/signup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "signup"]
+            }
+          }
+        },
+        {
+          "name": "Me (profil connecté)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 Profil",
+      "item": [
+        {
+          "name": "GET profil",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profile"]
+            }
+          }
+        },
+        {
+          "name": "PUT profil",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mon Nouveau Nom\",\n  \"bio\": \"QA Freelance\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Upload avatar",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/profile/avatar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "profile", "avatar"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💼 Jobs",
+      "item": [
+        {
+          "name": "Dashboard (page d'accueil)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          }
+        },
+        {
+          "name": "Jobs sauvegardés",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/jobs/saved",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", "saved"]
+            }
+          }
+        },
+        {
+          "name": "Jobs postulés",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/jobs/applied",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", "applied"]
+            }
+          }
+        },
+        {
+          "name": "Sauvegarder un job",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job_id\": 123\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jobs/123/save",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", "123", "save"]
+            }
+          }
+        },
+        {
+          "name": "Marquer postulé",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"job_id\": 123\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jobs/123/apply",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", "123", "apply"]
+            }
+          }
+        },
+        {
+          "name": "Notes sur un job",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Appel téléphonique prévu demain\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jobs/123/notes",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", "123", "notes"]
+            }
+          }
+        },
+        {
+          "name": "Pipeline (changer statut)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stage\": \"interview\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jobs/123/pipeline",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", "123", "pipeline"]
+            }
+          }
+        },
+        {
+          "name": "Cliquer sur un job",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/job/123/click",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job", "123", "click"]
+            }
+          }
+        },
+        {
+          "name": "Stager un job",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/job/123/stage",
+              "host": ["{{base_url}}"],
+              "path": ["api", "job", "123", "stage"]
+            }
+          }
+        },
+        {
+          "name": "Enrichir un job",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/jobs/enrich/123",
+              "host": ["{{base_url}}"],
+              "path": ["api", "jobs", "enrich", "123"]
+            }
+          }
+        },
+        {
+          "name": "Postuler (auto-apply)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/apply/123",
+              "host": ["{{base_url}}"],
+              "path": ["api", "apply", "123"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📄 CV",
+      "item": [
+        {
+          "name": "Page CV",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/cv",
+              "host": ["{{base_url}}"],
+              "path": ["cv"]
+            }
+          }
+        },
+        {
+          "name": "CV (JSON)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/cv",
+              "host": ["{{base_url}}"],
+              "path": ["api", "cv"]
+            }
+          }
+        },
+        {
+          "name": "Générer lettre de motivation",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/generate-cover/123",
+              "host": ["{{base_url}}"],
+              "path": ["api", "generate-cover", "123"]
+            }
+          }
+        },
+        {
+          "name": "Cover letter page",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/cover-letter/123",
+              "host": ["{{base_url}}"],
+              "path": ["cover-letter", "123"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Stats & Monitoring",
+      "item": [
+        {
+          "name": "Stats dashboard",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/stats",
+              "host": ["{{base_url}}"],
+              "path": ["stats"]
+            }
+          }
+        },
+        {
+          "name": "Stats (JSON)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Stats avancées (JSON)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/stats/advanced",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stats", "advanced"]
+            }
+          }
+        },
+        {
+          "name": "Monitoring",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/monitoring",
+              "host": ["{{base_url}}"],
+              "path": ["monitoring"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💳 DeepSeek & Infra",
+      "item": [
+        {
+          "name": "DeepSeek balance",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/deepseek/balance",
+              "host": ["{{base_url}}"],
+              "path": ["api", "deepseek", "balance"]
+            }
+          }
+        },
+        {
+          "name": "Supabase status",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/supabase/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "supabase", "status"]
+            }
+          }
+        },
+        {
+          "name": "Refresh jobs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["refresh"]
+            }
+          }
+        },
+        {
+          "name": "Refresh API",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Debug",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/debug",
+              "host": ["{{base_url}}"],
+              "path": ["debug"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔗 LinkedIn API",
+      "item": [
+        {
+          "name": "LinkedIn jobs list",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/linkedin/jobs",
+              "host": ["{{base_url}}"],
+              "path": ["api", "linkedin", "jobs"]
+            }
+          }
+        },
+        {
+          "name": "LinkedIn refresh",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/linkedin/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "linkedin", "refresh"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧪 QA",
+      "item": [
+        {
+          "name": "QA Dashboard",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/qa",
+              "host": ["{{base_url}}"],
+              "path": ["qa"]
+            }
+          }
+        },
+        {
+          "name": "Test cases",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/qa/api/test-cases",
+              "host": ["{{base_url}}"],
+              "path": ["qa", "api", "test-cases"]
+            }
+          }
+        },
+        {
+          "name": "Runs (GET)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/qa/api/runs",
+              "host": ["{{base_url}}"],
+              "path": ["qa", "api", "runs"]
+            }
+          }
+        },
+        {
+          "name": "Runs (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"suite_id\": \"regression\",\n  \"name\": \"Test manuel\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/qa/api/runs",
+              "host": ["{{base_url}}"],
+              "path": ["qa", "api", "runs"]
+            }
+          }
+        },
+        {
+          "name": "Run by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/qa/api/runs/abc123",
+              "host": ["{{base_url}}"],
+              "path": ["qa", "api", "runs", "abc123"]
+            }
+          }
+        },
+        {
+          "name": "Trigger GitHub QA",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"suite\": \"regression\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/qa/api/github/trigger",
+              "host": ["{{base_url}}"],
+              "path": ["qa", "api", "github", "trigger"]
+            }
+          }
+        },
+        {
+          "name": "GitHub runs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/qa/api/github/runs",
+              "host": ["{{base_url}}"],
+              "path": ["qa", "api", "github", "runs"]
+            }
+          }
+        },
+        {
+          "name": "GitHub QA runs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/qa/api/github/qa-runs",
+              "host": ["{{base_url}}"],
+              "path": ["qa", "api", "github", "qa-runs"]
+            }
+          }
+        },
+        {
+          "name": "Download artifact",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/qa/api/github/download-artifact/1234",
+              "host": ["{{base_url}}"],
+              "path": ["qa", "api", "github", "download-artifact", "1234"]
+            }
+          }
+        },
+        {
+          "name": "Playwright run",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/qa/api/playwright/run",
+              "host": ["{{base_url}}"],
+              "path": ["qa", "api", "playwright", "run"]
+            }
+          }
+        },
+        {
+          "name": "Playwright results",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/qa/api/playwright/results",
+              "host": ["{{base_url}}"],
+              "path": ["qa", "api", "playwright", "results"]
+            }
+          }
+        },
+        {
+          "name": "Suites",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/qa/api/suites",
+              "host": ["{{base_url}}"],
+              "path": ["qa", "api", "suites"]
+            }
+          }
+        },
+        {
+          "name": "Run suite",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/qa/api/run-suite/regression",
+              "host": ["{{base_url}}"],
+              "path": ["qa", "api", "run-suite", "regression"]
+            }
+          }
+        },
+        {
+          "name": "Run plan",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/qa/api/run-plan/test-plan-1",
+              "host": ["{{base_url}}"],
+              "path": ["qa", "api", "run-plan", "test-plan-1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Pages HTML",
+      "item": [
+        {
+          "name": "Page d'accueil",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/", "host": ["{{base_url}}"], "path": [""] } }
+        },
+        {
+          "name": "CV",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/cv", "host": ["{{base_url}}"], "path": ["cv"] } }
+        },
+        {
+          "name": "Marché QA",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/marche-qa", "host": ["{{base_url}}"], "path": ["marche-qa"] } }
+        },
+        {
+          "name": "QA Dashboard",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/qa", "host": ["{{base_url}}"], "path": ["qa"] } }
+        },
+        {
+          "name": "Settings",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/settings", "host": ["{{base_url}}"], "path": ["settings"] } }
+        },
+        {
+          "name": "À propos",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/about", "host": ["{{base_url}}"], "path": ["about"] } }
+        },
+        {
+          "name": "Changelog",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/changelog", "host": ["{{base_url}}"], "path": ["changelog"] } }
+        },
+        {
+          "name": "Jobs Clôturés",
+          "request": { "method": "GET", "url": { "raw": "{{base_url}}/jobclotured", "host": ["{{base_url}}"], "path": ["jobclotured"] } }
+        }
+      ]
+    }
+  ]
+}

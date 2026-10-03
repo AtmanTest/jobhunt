@@ -1,0 +1,601 @@
+{
+  "genere_le": "16/09/2026 21:23:51",
+  "syllabus": "ISTQB CT-AI v1.0.1 FR",
+  "tests": {
+    "total_collectes": 63,
+    "par_classe": {
+      "TestPorte2Donnees": 4,
+      "TestPorte3Metriques": 3,
+      "TestPorte4NiveauxDeTest": 3,
+      "TestPorte5DefisSpecifiques": 12,
+      "TestPorte6Techniques": 35,
+      "TestPorte7Environnement": 2,
+      "TestNonRegressionMetier": 4
+    },
+    "passes": 63,
+    "echecs": 0,
+    "duree_s": 11.33
+  },
+  "metriques": {
+    "n": 24,
+    "seuil": 40,
+    "tp": 11,
+    "fp": 0,
+    "fn": 1,
+    "tn": 12,
+    "precision": 1.0,
+    "rappel": 0.917,
+    "f1": 0.957,
+    "exactitude": 0.958,
+    "detail": [
+      {
+        "id": "g01",
+        "titre": "QA Engineer - Playwright Automation",
+        "score": 71,
+        "label": 1,
+        "competences": [
+          "jira",
+          "xray",
+          "python",
+          "automation",
+          "playwright",
+          "ci/cd"
+        ],
+        "predit": true
+      },
+      {
+        "id": "g08",
+        "titre": "Consultant QA Senior - Automatisation",
+        "score": 68,
+        "label": 1,
+        "competences": [
+          "automation",
+          "api",
+          "rest",
+          "docker",
+          "ci/cd"
+        ],
+        "predit": true
+      },
+      {
+        "id": "g06",
+        "titre": "QA Lead - Plateforme de paiement",
+        "score": 60,
+        "label": 1,
+        "competences": [
+          "scrum",
+          "api",
+          "test strategy",
+          "qa lead",
+          "recette"
+        ],
+        "predit": true
+      },
+      {
+        "id": "g02",
+        "titre": "Senior QA Consultant H/F",
+        "score": 59,
+        "label": 1,
+        "competences": [
+          "jira",
+          "xray",
+          "sql",
+          "scrum",
+          "recette"
+        ],
+        "predit": true
+      },
+      {
+        "id": "g05",
+        "titre": "Ingénieur test logiciel",
+        "score": 59,
+        "label": 1,
+        "competences": [
+          "jira",
+          "gherkin",
+          "agile",
+          "scrum",
+          "regression",
+          "acceptance",
+          "recette",
+          "non-régression"
+        ],
+        "predit": true
+      },
+      {
+        "id": "g03",
+        "titre": "Test Manager",
+        "score": 51,
+        "label": 1,
+        "competences": [
+          "jira",
+          "test management",
+          "recette"
+        ],
+        "predit": true
+      },
+      {
+        "id": "g04",
+        "titre": "QA Automation Engineer (Selenium)",
+        "score": 51,
+        "label": 1,
+        "competences": [
+          "automation",
+          "selenium",
+          "regression"
+        ],
+        "predit": true
+      },
+      {
+        "id": "g10",
+        "titre": "SDET",
+        "score": 49,
+        "label": 1,
+        "competences": [
+          "python",
+          "playwright",
+          "ci/cd"
+        ],
+        "predit": true
+      },
+      {
+        "id": "g11",
+        "titre": "Testeur QA freelance",
+        "score": 48,
+        "label": 1,
+        "competences": [
+          "gherkin",
+          "regression",
+          "cas de test"
+        ],
+        "predit": true
+      },
+      {
+        "id": "g09",
+        "titre": "QA Analyst - Recette fonctionnelle",
+        "score": 47,
+        "label": 1,
+        "competences": [
+          "jira",
+          "xray",
+          "sql",
+          "recette"
+        ],
+        "predit": true
+      },
+      {
+        "id": "g12",
+        "titre": "Responsable Assurance Qualité Logicielle",
+        "score": 41,
+        "label": 1,
+        "competences": [
+          "test management",
+          "recette"
+        ],
+        "predit": true
+      },
+      {
+        "id": "g07",
+        "titre": "Tester Mobile iOS Android",
+        "score": 39,
+        "label": 1,
+        "competences": [
+          "mobile",
+          "ios",
+          "android"
+        ],
+        "predit": false
+      },
+      {
+        "id": "n10",
+        "titre": "Ingénieur DevOps",
+        "score": 36,
+        "label": 0,
+        "competences": [
+          "docker",
+          "ci/cd"
+        ],
+        "predit": false
+      },
+      {
+        "id": "n05",
+        "titre": "Site Reliability Engineer",
+        "score": 35,
+        "label": 0,
+        "competences": [],
+        "predit": false
+      },
+      {
+        "id": "n02",
+        "titre": "Développeur Java Backend",
+        "score": 34,
+        "label": 0,
+        "competences": [
+          "sql",
+          "rest",
+          "ci/cd"
+        ],
+        "predit": false
+      },
+      {
+        "id": "n01",
+        "titre": "Data Scientist",
+        "score": 33,
+        "label": 0,
+        "competences": [
+          "python"
+        ],
+        "predit": false
+      },
+      {
+        "id": "n04",
+        "titre": "Product Owner",
+        "score": 31,
+        "label": 0,
+        "competences": [
+          "agile",
+          "scrum"
+        ],
+        "predit": false
+      },
+      {
+        "id": "n06",
+        "titre": "Développeur Front-end React",
+        "score": 25,
+        "label": 0,
+        "competences": [],
+        "predit": false
+      },
+      {
+        "id": "n09",
+        "titre": "Commercial Grands Comptes",
+        "score": 25,
+        "label": 0,
+        "competences": [],
+        "predit": false
+      },
+      {
+        "id": "n03",
+        "titre": "Chef de projet BTP",
+        "score": 20,
+        "label": 0,
+        "competences": [],
+        "predit": false
+      },
+      {
+        "id": "n07",
+        "titre": "Business Analyst",
+        "score": 20,
+        "label": 0,
+        "competences": [],
+        "predit": false
+      },
+      {
+        "id": "n08",
+        "titre": "Administrateur Système Windows",
+        "score": 20,
+        "label": 0,
+        "competences": [],
+        "predit": false
+      },
+      {
+        "id": "n11",
+        "titre": "Comptable Général",
+        "score": 20,
+        "label": 0,
+        "competences": [],
+        "predit": false
+      },
+      {
+        "id": "n12",
+        "titre": "Chef de produit marketing digital",
+        "score": 20,
+        "label": 0,
+        "competences": [],
+        "predit": false
+      }
+    ],
+    "balayage": [
+      {
+        "seuil": 20,
+        "precision": 0.5,
+        "rappel": 1.0,
+        "f1": 0.667
+      },
+      {
+        "seuil": 30,
+        "precision": 0.706,
+        "rappel": 1.0,
+        "f1": 0.828
+      },
+      {
+        "seuil": 40,
+        "precision": 1.0,
+        "rappel": 0.917,
+        "f1": 0.957
+      },
+      {
+        "seuil": 50,
+        "precision": 1.0,
+        "rappel": 0.583,
+        "f1": 0.737
+      },
+      {
+        "seuil": 60,
+        "precision": 1.0,
+        "rappel": 0.25,
+        "f1": 0.4
+      },
+      {
+        "seuil": 70,
+        "precision": 1.0,
+        "rappel": 0.083,
+        "f1": 0.154
+      }
+    ],
+    "empreinte_corpus": "7ae1461cb19ae2ea"
+  },
+  "invariance": {
+    "reference": 71,
+    "offre": "QA Engineer - Playwright Automation",
+    "relations": [
+      {
+        "nom": "MR-01 · casse minuscule sur titre et description",
+        "reference": 71,
+        "score": 71,
+        "ecart": 0,
+        "reference_libelle": "forme normale",
+        "identique": true
+      },
+      {
+        "nom": "MR-02 · casse majuscule sur titre et description",
+        "reference": 71,
+        "score": 71,
+        "ecart": 0,
+        "reference_libelle": "forme normale",
+        "identique": true
+      },
+      {
+        "nom": "MR-03 · accents retirés",
+        "reference": 71,
+        "score": 71,
+        "ecart": 0,
+        "reference_libelle": "forme normale",
+        "identique": true
+      },
+      {
+        "nom": "MR-04 · espaces multiples dans le titre",
+        "reference": 71,
+        "score": 71,
+        "ecart": 0,
+        "reference_libelle": "forme normale",
+        "identique": true
+      },
+      {
+        "nom": "MR-05 · ponctuation finale ajoutée au titre",
+        "reference": 71,
+        "score": 71,
+        "ecart": 0,
+        "reference_libelle": "forme normale",
+        "identique": true
+      },
+      {
+        "nom": "MR-06 · espaces en bord de description",
+        "reference": 71,
+        "score": 71,
+        "ecart": 0,
+        "reference_libelle": "forme normale",
+        "identique": true
+      },
+      {
+        "nom": "MR-07 · ordre des phrases de la description inversé",
+        "reference": 71,
+        "score": 71,
+        "ecart": 0,
+        "reference_libelle": "forme normale",
+        "identique": true
+      },
+      {
+        "nom": "MR-08 · télétravail complet écrit autrement",
+        "reference": 71,
+        "score": 71,
+        "ecart": 0,
+        "reference_libelle": "remote",
+        "identique": true
+      },
+      {
+        "nom": "MR-09 · statut freelance écrit autrement",
+        "reference": 71,
+        "score": 71,
+        "ecart": 0,
+        "reference_libelle": "VALIDÉE",
+        "identique": true
+      },
+      {
+        "nom": "MR-10 · télétravail partiel écrit en français",
+        "reference": 66,
+        "score": 66,
+        "ecart": 0,
+        "reference_libelle": "hybrid",
+        "identique": true
+      }
+    ],
+    "conformes": 10,
+    "total": 10
+  },
+  "adverses": [
+    {
+      "nom": "Offre hors sujet bourrée de mots-clés QA",
+      "resultat": "score 13/100, aucun plantage"
+    },
+    {
+      "nom": "Contenu non textuel (liste, dictionnaire, nombre)",
+      "resultat": "score 0/100, aucun plantage"
+    },
+    {
+      "nom": "Injection HTML dans la description",
+      "resultat": "score 27/100, aucun plantage"
+    },
+    {
+      "nom": "Texte bidirectionnel et caractères de contrôle",
+      "resultat": "score 15/100, aucun plantage"
+    },
+    {
+      "nom": "Alphabet non latin",
+      "resultat": "score 10/100, aucun plantage"
+    }
+  ],
+  "defauts": [
+    {
+      "titre": "Valeurs métier comparées au caractère près",
+      "impact": "Les offres dont la source écrit « Remote », « REMOTE » ou « fully_remote » perdaient 10 points de classement (valeur produite par l'enrichissement LLM du projet lui-même).",
+      "avant": "score 71 / 100",
+      "apres": "score 71 / 100 pour toutes les écritures",
+      "correction": "Normalisation casse + accents avant comparaison",
+      "technique": "Relation métamorphique MR-08 / MR-09"
+    },
+    {
+      "titre": "Statut freelance insensible à la casse",
+      "impact": "« VALIDEE », « validée », « Validée » ne rapportaient aucun point, alors que le champ vaut 10 points — autant que le télétravail complet.",
+      "avant": "score 71 → 61 selon l'écriture",
+      "apres": "score identique quelle que soit l'écriture",
+      "correction": "Comparaison sur valeur normalisée",
+      "technique": "Relation métamorphique MR-09"
+    },
+    {
+      "titre": "Compétences détectées par sous-chaîne",
+      "impact": "« api » était détecté dans « capital » et « rapidité » : des offres hors sujet gagnaient des points et remontaient dans le classement.",
+      "avant": "« Chef de projet capital investissement » → score 3",
+      "apres": "score 0, aucune compétence fantôme",
+      "correction": "Détection sur mot entier",
+      "technique": "Analyse des faux positifs lexicaux"
+    },
+    {
+      "titre": "Marchés non reconnus",
+      "impact": "Zurich, Lausanne, Bâle, Berne étaient classés « France » : comparaison de TJM fausse (600 €/jour contre des tarifs en francs suisses).",
+      "avant": "marché = france",
+      "apres": "marché = suisse",
+      "correction": "Listes de villes complétées + normalisation des accents",
+      "technique": "Analyse des valeurs limites"
+    },
+    {
+      "titre": "Valeur par défaut silencieuse",
+      "impact": "Toute localisation inconnue était comparée au marché français : un mauvais signal affiché valait mieux qu'aucun, ce qui est faux.",
+      "avant": "marché inconnu → comparaison France",
+      "apres": "marché « inconnu » → aucune comparaison produite",
+      "correction": "Retour explicite « inconnu »",
+      "technique": "Test de non-masquage de l'information"
+    },
+    {
+      "titre": "Faisceau de caractères mort après normalisation",
+      "impact": "« 600 à 700 €/jour » n'était plus reconnu comme une plage : le TJM affiché devenait 700 au lieu de 650.",
+      "avant": "tjm = 700",
+      "apres": "tjm = 650 (moyenne de la plage)",
+      "correction": "Séparateur de plage explicite",
+      "technique": "Analyse des valeurs limites"
+    },
+    {
+      "titre": "Classement à score égal non déterministe",
+      "impact": "Deux offres à score égal s'échangeaient selon l'ordre d'insertion en base : deux rafraîchissements affichaient deux « tops » différents sans changement de données.",
+      "avant": "ordre dépendant de la base",
+      "apres": "ordre stable (score décroissant, identifiant croissant)",
+      "correction": "Départage explicite",
+      "technique": "Test de non-déterminisme"
+    },
+    {
+      "titre": "Plantage sur donnée non textuelle",
+      "impact": "Une description ou des tags renvoyés sous forme de liste faisaient échouer le calcul de score de toute la page.",
+      "avant": "TypeError",
+      "apres": "champ traité comme vide, page servie",
+      "correction": "Normalisation défensive des entrées",
+      "technique": "Entrées adverses / données invalides"
+    }
+  ],
+  "portes": [
+    {
+      "n": 1,
+      "titre": "Cadrage du risque IA",
+      "chapitre": "ch. 1 et 2",
+      "exigence": "Classer le système, identifier le mode d'approvisionnement et les 8 caractéristiques de qualité spécifiques à l'IA.",
+      "produit": "Type de système (IA étroite), deux composants (enrichissement LLM tiers + classement déterministe), tableau des 8 caractéristiques, matrice de 8 risques.",
+      "preuve": "8 risques identifiés (R1 à R8), chacun rattaché à un test",
+      "document": "docs/qa-ct-ai/01-cadrage-risque-ia.md",
+      "nb_tests": 0
+    },
+    {
+      "n": 2,
+      "titre": "Qualité des données",
+      "chapitre": "ch. 4",
+      "exigence": "Séparer les jeux de données, contrôler leur qualité, documenter la chaîne de préparation.",
+      "produit": "Corpus d'évaluation étiqueté (règle d'étiquetage écrite avant mesure), distribution réelle des champs en base, balayage permanent des données personnelles.",
+      "preuve": "24 offres étiquetées, 1 071 offres analysées en production locale, 0 coordonnée personnelle dans les fichiers suivis",
+      "document": "docs/qa-ct-ai/02-qualite-donnees.md",
+      "nb_tests": 4
+    },
+    {
+      "n": 3,
+      "titre": "Modèle et métriques",
+      "chapitre": "ch. 3 et 5",
+      "exigence": "Instrumenter la matrice de confusion, choisir la métrique selon le coût métier de l'erreur, fixer des seuils d'acceptation.",
+      "produit": "Matrice de confusion complète, précision / rappel / F1 / exactitude, seuil de pertinence à 40, seuils verrouillés en non-régression.",
+      "preuve": "Le rappel est la métrique directrice : un faux négatif est une mission jamais vue, un faux positif coûte une minute de lecture",
+      "document": "docs/qa-ct-ai/03-metriques-seuils.md",
+      "nb_tests": 3
+    },
+    {
+      "n": 4,
+      "titre": "Spécification et niveaux de test",
+      "chapitre": "ch. 7",
+      "exigence": "Spécifier le composant IA, décliner les niveaux (données, modèle, composant, intégration, système, acceptation), définir les données de test.",
+      "produit": "Fiche de spécification, 5 niveaux de test couverts, données de test (nominales, limites, hors distribution, adverses), surveillance de la dérive.",
+      "preuve": "Traçabilité exigence → test : chaque niveau a au moins un test exécutable",
+      "document": "docs/qa-ct-ai/04-plan-de-test.md",
+      "nb_tests": 3
+    },
+    {
+      "n": 5,
+      "titre": "Défis spécifiques à l'IA",
+      "chapitre": "ch. 8",
+      "exigence": "Traiter le non-déterminisme, l'autonomie, les biais, la complexité, l'explicabilité, la sûreté, la définition de l'oracle.",
+      "produit": "Oracle de répétabilité (200 exécutions), robustesse aux champs absents et invalides, entrées adverses, bornage anti-bourrage de mots-clés, explicabilité du score par compétence reconnue.",
+      "preuve": "Déterminisme prouvé, 5 familles d'entrées hostiles absorbées, score toujours justifiable",
+      "document": "docs/qa-ct-ai/04-plan-de-test.md",
+      "nb_tests": 12
+    },
+    {
+      "n": 6,
+      "titre": "Techniques de test IA",
+      "chapitre": "ch. 9",
+      "exigence": "Appliquer et justifier les techniques : adverses, empoisonnement, paires, dos à dos, A/B, métamorphique, expérimenté.",
+      "produit": "10 relations métamorphiques, test de monotonie, test dos à dos avec implémentation de référence, valeurs limites, entrées adverses.",
+      "preuve": "Techniques non applicables nommées et justifiées (A/B sans indicateur d'usage, couverture neuronale hors périmètre)",
+      "document": "docs/qa-ct-ai/05-techniques.md",
+      "nb_tests": 35
+    },
+    {
+      "n": 7,
+      "titre": "Environnements de test",
+      "chapitre": "ch. 10",
+      "exigence": "Versionner modèle, données et environnement ; garantir qu'un test est rejouable à l'identique.",
+      "produit": "Environnement isolé (base en mémoire, API d'enrichissement simulée), corpus verrouillé par empreinte SHA-256, aucun appel réseau pendant les tests.",
+      "preuve": "Un test échoue si le corpus d'évaluation change sans revue des seuils",
+      "document": "docs/qa-ct-ai/04-plan-de-test.md",
+      "nb_tests": 2
+    },
+    {
+      "n": 8,
+      "titre": "IA au service du test",
+      "chapitre": "ch. 11",
+      "exigence": "Documenter l'usage de l'IA pour produire les tests, contrôler sa sortie, mesurer ses erreurs, ne jamais l'utiliser comme oracle.",
+      "produit": "Journal d'usage : activité, outil, contrôle humain, défaut constaté et correction.",
+      "preuve": "Aucun test accepté sur la seule affirmation d'un modèle ; oracle = étiquetage humain",
+      "document": "docs/qa-ct-ai/06-journal-aide-ia.md",
+      "nb_tests": 0
+    }
+  ],
+  "stack": {
+    "python": "3.12.8",
+    "flask": "3.1.3",
+    "pytest": "9.0.3"
+  }
+}
