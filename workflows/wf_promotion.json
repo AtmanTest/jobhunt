@@ -1,0 +1,101 @@
+{
+  "id": "wf-promotion",
+  "name": "JobHunt — Promotion recette / prod (0 jeton)",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "pm-manuel",
+      "name": "1. Déclencheur — manuel",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-560, 140]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "promotion",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "pm-webhook",
+      "name": "1. Déclencheur — lien",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-560, 280],
+      "webhookId": "promotion"
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = ($json.body && typeof $json.body === 'object') ? $json.body : {};\nconst vers = String(b.vers || '').toLowerCase();\n\nif (vers !== 'recette' && vers !== 'prod') {\n  return [];\n}\n\nif (vers === 'prod' && b.go !== true) {\n  return [];\n}\n\nreturn [{ json: {\n  vers,\n  go: b.go === true,\n  motif: String(b.motif || '')\n} }];"
+      },
+      "id": "pm-verifier",
+      "name": "2. Autorisation (sinon on s'arrête)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-300, 210],
+      "notes": "Pour prod, `go` doit valoir true. Sinon zéro élément : aucune branche n'est touchée."
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/AtmanTest/jobhunt/git/ref/heads/main",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {}
+      },
+      "id": "pm-main",
+      "name": "3. Lire l'état de main",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-40, 210],
+      "credentials": {"githubApi": {"id": "githubpatcreds01", "name": "GitHub"}}
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.github.com/repos/AtmanTest/jobhunt/git/refs/heads/{{ $('2. Autorisation (sinon on s\\'arrête)').first().json.vers }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ sha: $json.object.sha, force: false }) }}",
+        "options": {}
+      },
+      "id": "pm-pousser",
+      "name": "4. Avancer la branche",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 210],
+      "credentials": {"githubApi": {"id": "githubpatcreds01", "name": "GitHub"}}
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $input.first().json;\nconst ctx = $('2. Autorisation (sinon on s\\'arrête)').first().json;\nconst sha = (r.object && r.object.sha) || '';\n\nconst message = ctx.vers === 'prod'\n  ? `PROD avancee sur le commit ${sha.slice(0,7)} (GO de Tazou).`\n  : `RECETTE avancee sur le commit ${sha.slice(0,7)}. A tester.`;\n\nreturn [{ json: {\n  branche: ctx.vers,\n  commit: sha,\n  message,\n  lien_depot: 'https://github.com/AtmanTest/jobhunt/tree/' + ctx.vers,\n  horodatage: new Date().toLocaleString('fr-FR')\n} }];"
+      },
+      "id": "pm-resume",
+      "name": "5. Résumé",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 210]
+    }
+  ],
+  "connections": {
+    "1. Déclencheur — manuel": {"main": [[{"node": "2. Autorisation (sinon on s'arrête)", "type": "main", "index": 0}]]},
+    "1. Déclencheur — lien": {"main": [[{"node": "2. Autorisation (sinon on s'arrête)", "type": "main", "index": 0}]]},
+    "2. Autorisation (sinon on s'arrête)": {"main": [[{"node": "3. Lire l'état de main", "type": "main", "index": 0}]]},
+    "3. Lire l'état de main": {"main": [[{"node": "4. Avancer la branche", "type": "main", "index": 0}]]},
+    "4. Avancer la branche": {"main": [[{"node": "5. Résumé", "type": "main", "index": 0}]]}
+  },
+  "meta": {
+    "cout": "0 jeton — aucune IA",
+    "recette": "POST /webhook/promotion  {\"vers\":\"recette\"}",
+    "prod": "POST /webhook/promotion  {\"vers\":\"prod\",\"go\":true}  — sans go:true, rien ne bouge",
+    "securite": "force:false => avancement en fast-forward seulement. Une branche divergente fait échouer l'opération au lieu de l'écraser."
+  }
+}
