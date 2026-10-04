@@ -12,7 +12,7 @@ import re
 import pytest
 from playwright.sync_api import expect
 
-pytestmark = pytest.mark.smoke
+pytestmark = [pytest.mark.playwright, pytest.mark.smoke]
 
 
 def test_dashboard_charge_et_porte_son_titre(dashboard):

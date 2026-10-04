@@ -9,6 +9,7 @@ on:
 
 jobs:
   test:
+    name: Unitaires · API · contrats · BDD
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -27,9 +28,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r tests/requirements-test.txt
 
+      # Les parcours navigateur ont leur propre job (ui-smoke) : ils exigent Chromium
+      # et une application en marche — pas la même économie qu'un test unitaire.
       - name: Run tests with coverage
         run: |
-          python -m pytest tests/ -v --cov=. --cov-report=term --cov-report=xml
+          python -m pytest tests/ -v --ignore=tests/playwright \
+            --cov=. --cov-report=term --cov-report=xml \
+            --alluredir=allure-results
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -37,3 +42,59 @@ jobs:
         with:
           name: coverage-${{ matrix.python-version }}
           path: coverage.xml
+
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-results-${{ matrix.python-version }}
+          path: allure-results/
+          retention-days: 7
+
+  ui-smoke:
+    name: Parcours UI (Playwright · @smoke)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r tests/requirements-test.txt
+
+      - name: Install Chromium
+        run: python -m playwright install --with-deps chromium
+
+      # Boucle locale uniquement : aucun service n'est exposé sur 0.0.0.0.
+      - name: Start the app
+        run: |
+          nohup python -c "import app; app.app.run(host='127.0.0.1', port=5050, debug=False)" > app.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf -m 2 http://127.0.0.1:5050/ > /dev/null; then echo "app ready"; exit 0; fi
+            sleep 2
+          done
+          echo "app did not start"; tail -50 app.log; exit 1
+
+      - name: Run @smoke
+        env:
+          JOBHUNT_BASE_URL: http://127.0.0.1:5050
+        run: |
+          python -m pytest tests/playwright/specs/smoke -m smoke -v \
+            --tracing=retain-on-failure \
+            --alluredir=allure-results
+
+      - name: Upload traces, captures et résultats
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-smoke-artifacts
+          path: |
+            test-results/
+            allure-results/
+            app.log
+          retention-days: 7
