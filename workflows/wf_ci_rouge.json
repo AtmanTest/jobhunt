@@ -1,0 +1,251 @@
+{
+  "id": "wf-ci-rouge",
+  "name": "JobHunt — CI rouge : analyse (IA en cas d'échec seulement)",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "cr-manuel",
+      "name": "1. Déclencheur — manuel",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ci-rouge",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "cr-webhook",
+      "name": "1. Déclencheur — lien",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        280
+      ],
+      "webhookId": "ci-rouge"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/AtmanTest/jobhunt/actions/runs?branch={{ ($json.body && $json.body.branche) || 'main' }}&per_page=1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {}
+      },
+      "id": "cr-run",
+      "name": "2. Lire le dernier run de main",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -300,
+        210
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const runs = $input.first().json.workflow_runs || [];\nconst d = runs[0];\n\nif (!d || d.conclusion !== 'failure') {\n  return [];\n}\n\nreturn [{ json: {\n  run_id: d.id,\n  sha: d.head_sha,\n  url: d.html_url,\n  run_name: d.name,\n  message_commit: (d.head_commit && d.head_commit.message) || '',\n  auteur: (d.head_commit && d.head_commit.author && d.head_commit.author.name) || ''\n} }];"
+      },
+      "id": "cr-porte",
+      "name": "3. Échec ? sinon on s'arrête",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        210
+      ],
+      "notes": "Retourne zéro élément quand la CI est verte : aucun appel de modèle n'a lieu, donc aucun jeton consommé."
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/AtmanTest/jobhunt/actions/runs/{{ $json.run_id }}/jobs",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {}
+      },
+      "id": "cr-jobs",
+      "name": "4. Trouver le job en échec",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        210
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const jobs = ($input.first().json.jobs || []).filter(j => j.conclusion === 'failure');\nconst ctx = $('3. Échec ? sinon on s\\'arrête').first().json;\n\nif (!jobs.length) {\n  return [];\n}\n\nconst lignes = [];\nfor (const j of jobs) {\n  const etapes = (j.steps || []).filter(s => s.conclusion === 'failure').map(s => s.name);\n  lignes.push(`- ${j.name}${etapes.length ? ' — étape en échec : ' + etapes.join(', ') : ''}`);\n}\n\nconst sujet = `Une exécution CI a échoué sur la branche main.\\n\\n` +\n  `Run : ${ctx.run_name}\\n` +\n  `Jobs en échec :\\n${lignes.join('\\n')}\\n` +\n  `Dernier commit : ${ctx.message_commit}\\n` +\n  `Lien : ${ctx.url}\\n`;\n\nconst systeme = [\n  'Tu es un analyste CI. Tu reçois le nom des jobs et des étapes en échec, rien de plus.',\n  'Tu réponds en français, en 5 lignes maximum, dans ce format exact :',\n  '',\n  'Cause probable : une phrase.',\n  'Étape à corriger : le chemin de fichier ou le nom du test le plus vraisemblable.',\n  'Vérification : la commande exacte à lancer en local pour reproduire.',\n  'Correctif : une phrase, pas de code.',\n].join('\\n');\n\nreturn [{ json: { ...ctx, corps_analyse: JSON.stringify({\n  model: 'deepseek-flash',\n  stream: false,\n  max_tokens: 700,\n  extra_body: { thinking: { type: 'disabled' } },\n  messages: [\n    { role: 'system', content: systeme },\n    { role: 'user', content: sujet },\n  ],\n}) } }];"
+      },
+      "id": "cr-preparer",
+      "name": "5. Préparer la demande",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        210
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://litellm:4000/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $json.corps_analyse }}",
+        "options": {},
+        "timeout": 120000
+      },
+      "id": "cr-ia",
+      "name": "6. Analyser (1 appel IA)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        210
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "litellmkey01",
+          "name": "LiteLLM (clé virtuelle)"
+        }
+      },
+      "notes": "Unique nœud payant du workflow — atteint uniquement si la CI est rouge."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/AtmanTest/jobhunt/commits/{{ $('3. Échec ? sinon on s\\'arrête').first().json.sha }}/comments",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ body: '## Analyse automatique de l échec CI\\n\\nRun : ' + $('3. Échec ? sinon on s\\'arrête').first().json.url + '\\n\\n' + ($json.choices[0].message.content || '(analyse vide)') + '\\n\\n---\\n_Analyse produite uniquement parce que la CI était rouge. Un run vert ne consomme aucun jeton._' }) }}",
+        "options": {}
+      },
+      "id": "cr-publier",
+      "name": "7. Publier l'analyse",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        210
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "1. Déclencheur — manuel": {
+      "main": [
+        [
+          {
+            "node": "2. Lire le dernier run de main",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. Déclencheur — lien": {
+      "main": [
+        [
+          {
+            "node": "2. Lire le dernier run de main",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Lire le dernier run de main": {
+      "main": [
+        [
+          {
+            "node": "3. Échec ? sinon on s'arrête",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. Échec ? sinon on s'arrête": {
+      "main": [
+        [
+          {
+            "node": "4. Trouver le job en échec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4. Trouver le job en échec": {
+      "main": [
+        [
+          {
+            "node": "5. Préparer la demande",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5. Préparer la demande": {
+      "main": [
+        [
+          {
+            "node": "6. Analyser (1 appel IA)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6. Analyser (1 appel IA)": {
+      "main": [
+        [
+          {
+            "node": "7. Publier l'analyse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "meta": {
+    "principe": "déterministe d'abord : le nœud 3 renvoie zéro élément quand la CI est verte, donc les nœuds 4 à 7 (dont le seul appel payant) ne s'exécutent jamais. Un run vert coûte 0 jeton.",
+    "cout": "0 jeton si la CI est verte · 1 appel si elle est rouge",
+    "declencheurs": "manuel (bouton n8n) · POST http://127.0.0.1:5678/webhook/ci-rouge"
+  }
+}
