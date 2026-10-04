@@ -1,0 +1,173 @@
+{
+  "id": "wf-cout",
+  "name": "JobHunt — Suivi des dépenses de jetons (0 jeton)",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "ct-horaire",
+      "name": "1. Déclencheur — toutes les 6 h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -560,
+        120
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "ct-manuel",
+      "name": "1. Déclencheur — manuel",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cout",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "ct-webhook",
+      "name": "1. Déclencheur — lien",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        400
+      ],
+      "webhookId": "cout"
+    },
+    {
+      "parameters": {
+        "url": "http://litellm:4000/spend/keys",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "ct-lire",
+      "name": "2. Lire les dépenses",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -300,
+        260
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "litellmviewer01",
+          "name": "LiteLLM (lecture des coûts)"
+        }
+      },
+      "notes": "Clé en LECTURE SEULE : elle lit les dépenses mais ne peut pas créer ni modifier de clé."
+    },
+    {
+      "parameters": {
+        "jsCode": "const cles = $input.all().map(i => i.json);\n\nconst SEUIL = 0.60;\n\nconst lignes = [];\nconst alertes = [];\nlet total = 0;\n\nfor (const k of cles) {\n  const nom = k.key_alias || '(sans nom)';\n  const depense = Number(k.spend || k.total_spend || 0);\n  const plafond = Number(k.max_budget || 0);\n  total += depense;\n  const ratio = plafond > 0 ? depense / plafond : 0;\n  lignes.push('| ' + nom + ' | ' + depense.toFixed(6) + ' $ | ' + (plafond > 0 ? plafond + ' $ (' + (ratio * 100).toFixed(1) + ' %)' : 'sans plafond') + ' |');\n  if (plafond > 0 && ratio >= SEUIL) alertes.push(nom + ' a consomme ' + (ratio * 100).toFixed(1) + ' % de son plafond');\n}\n\nconst rapport = [\n  '## Depenses de jetons',\n  '',\n  '| Cle | Depense | Plafond |',\n  '|---|---|---|',\n  ...lignes,\n  '',\n  '**Total : ' + total.toFixed(6) + ' $** sur ' + cles.length + ' cle(s)',\n  '',\n  alertes.length ? '### Alerte\\n' + alertes.map(a => '- ' + a).join('\\n') : 'Aucun plafond proche d etre atteint.',\n  '',\n  'Horodatage : ' + new Date().toLocaleString('fr-FR'),\n].join('\\n');\n\nreturn [{ json: { rapport, total: Number(total.toFixed(6)), alertes, nb_cles: cles.length } }];"
+      },
+      "id": "ct-analyser",
+      "name": "3. Calculer (règles, aucune IA)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $input.first().json;\nconst lignes = [r.rapport, '', '---', '_Controle deterministe : aucune IA appelee, cout 0 jeton._'];\nreturn [{ json: { ...r, rapport_complet: lignes.join('\\n') } }];"
+      },
+      "id": "ct-rapport",
+      "name": "4. Rapport",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "1. Déclencheur — toutes les 6 h": {
+      "main": [
+        [
+          {
+            "node": "2. Lire les dépenses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. Déclencheur — manuel": {
+      "main": [
+        [
+          {
+            "node": "2. Lire les dépenses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. Déclencheur — lien": {
+      "main": [
+        [
+          {
+            "node": "2. Lire les dépenses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Lire les dépenses": {
+      "main": [
+        [
+          {
+            "node": "3. Calculer (règles, aucune IA)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. Calculer (règles, aucune IA)": {
+      "main": [
+        [
+          {
+            "node": "4. Rapport",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "meta": {
+    "cout": "0 jeton",
+    "declencheurs": "toutes les 6 h · manuel · POST http://127.0.0.1:5678/webhook/cout",
+    "securite": "utilise une clé LiteLLM en lecture seule (rôle observateur) — jamais la clé maître",
+    "alerte": "signale toute clé ayant consommé 60 % ou plus de son plafond"
+  }
+}
