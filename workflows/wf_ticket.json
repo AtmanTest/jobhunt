@@ -1,0 +1,98 @@
+{
+  "id": "wf-ticket",
+  "name": "JobHunt — Créer un ticket (0 jeton)",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "tk-manuel",
+      "name": "1. Déclencheur — manuel",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-520, 140]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ticket",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "tk-webhook",
+      "name": "1. Déclencheur — lien",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-520, 280],
+      "webhookId": "ticket"
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = ($json.body && typeof $json.body === 'object') ? $json.body : {};\n\nconst types = {\n  bug:   { etiquette: 'bug',             defaut_titre: '[BUG] ' },\n  us:    { etiquette: 'user-story',      defaut_titre: '[US] '  },\n  tache: { etiquette: 'tache-technique', defaut_titre: '[TACHE] ' },\n};\n\nconst t = types[String(b.type || '').toLowerCase()];\nif (!t) {\n  return [];\n}\nif (!b.titre || !String(b.titre).trim()) {\n  return [];\n}\n\nconst corps = String(b.corps || '').trim() ||\n  '_Ticket cree sans description. Completer avant de poser agent:go._';\n\nreturn [{ json: {\n  etiquette_type: t.etiquette,\n  titre: t.defaut_titre + String(b.titre).trim(),\n  corps,\n  avec_agent_go: b.demarrer !== false\n} }];"
+      },
+      "id": "tk-classer",
+      "name": "2. Classer (sinon on s'arrête)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-260, 210],
+      "notes": "Renvoie zéro élément si le type ou le titre manque : aucune requête n'est envoyée."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.github.com/repos/AtmanTest/jobhunt/issues",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ title: $json.titre, body: $json.corps, labels: $json.avec_agent_go ? [$json.etiquette_type, 'agent:go'] : [$json.etiquette_type] }) }}",
+        "options": {}
+      },
+      "id": "tk-creer",
+      "name": "3. Créer le ticket",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [0, 210],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const t = $input.first().json;\nconst etiquettes = (t.labels || []).map(l => l.name).join(', ');\n\nreturn [{ json: {\n  numero: t.number,\n  lien: t.html_url,\n  titre: t.title,\n  etiquettes,\n  chaine_lancee: etiquettes.includes('agent:go'),\n  message: `Ticket #${t.number} cree — ${t.title}\\nEtiquettes : ${etiquettes}\\nLien : ${t.html_url}`,\n  horodatage: new Date().toLocaleString('fr-FR')\n} }];"
+      },
+      "id": "tk-resume",
+      "name": "4. Résumé",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [260, 210]
+    }
+  ],
+  "connections": {
+    "1. Déclencheur — manuel": {
+      "main": [[{"node": "2. Classer (sinon on s'arrête)", "type": "main", "index": 0}]]
+    },
+    "1. Déclencheur — lien": {
+      "main": [[{"node": "2. Classer (sinon on s'arrête)", "type": "main", "index": 0}]]
+    },
+    "2. Classer (sinon on s'arrête)": {
+      "main": [[{"node": "3. Créer le ticket", "type": "main", "index": 0}]]
+    },
+    "3. Créer le ticket": {
+      "main": [[{"node": "4. Résumé", "type": "main", "index": 0}]]
+    }
+  },
+  "meta": {
+    "cout": "0 jeton — aucune IA, uniquement des regles et un appel API GitHub",
+    "entree": "POST http://127.0.0.1:5678/webhook/ticket  avec {\"type\":\"bug|us|tache\",\"titre\":\"...\",\"corps\":\"...\",\"demarrer\":true}",
+    "sortie": "ticket GitHub cree, etiquette de type, plus agent:go si demarrer n'est pas false"
+  }
+}
