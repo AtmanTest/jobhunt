@@ -22,6 +22,16 @@
 | Contrats seuls | `pytest -m contract` |
 | Réactiver la quarantaine | `pytest --run-quarantine` |
 
+## Sécurité (non négociable)
+
+- **Aucun service de développement sur `0.0.0.0`.** `app.run` écoute `127.0.0.1` ; l'exposition
+  volontaire passe par `JOBHUNT_DEV_HOST` (jamais par défaut).
+- **`debug=True` interdit par défaut** (le debugger Werkzeug permet l'exécution de code).
+  Activation explicite seulement : `JOBHUNT_DEV_DEBUG=1`.
+- Secrets hors dépôt, fichiers en `600`. Aucune clé dans un test, un prompt ou un log.
+- Le `--bind 0.0.0.0` de `Procfile` / `render.yaml` est le **port du conteneur** chez l'hébergeur
+  (le proxy de la plateforme route vers lui) : il ne s'agit pas d'une exposition réseau locale.
+
 ## Propriété
 - Toute PR : `CODEOWNERS` → revue obligatoire
 - Une règle de test modifiée = une ligne dans le CHANGELOG

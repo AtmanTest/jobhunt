@@ -2310,4 +2310,9 @@ if __name__ == "__main__":
 ║  Ctrl+C pour arrêter                         ║
 ╚══════════════════════════════════════════════╝
     """)
-    app.run(host="0.0.0.0", port=port, debug=True)
+    # SÉCURITÉ : le serveur de développement écoute UNIQUEMENT sur la boucle locale.
+    # Ne jamais rebinder sur 0.0.0.0. Exposition volontaire et ponctuelle :
+    #     JOBHUNT_DEV_HOST=0.0.0.0   (jamais par défaut)
+    dev_host = os.environ.get("JOBHUNT_DEV_HOST", "127.0.0.1")
+    dev_debug = os.environ.get("JOBHUNT_DEV_DEBUG", "0") == "1"
+    app.run(host=dev_host, port=port, debug=dev_debug)

@@ -177,4 +177,7 @@ def stripe_webhook():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5051))
     print(f"Uptime Monitor — http://localhost:{port}")
-    app.run(host="0.0.0.0", port=port, debug=True)
+    # SÉCURITÉ : boucle locale uniquement (le debugger Werkzeug n'est jamais exposé).
+    dev_host = os.environ.get("MONITOR_DEV_HOST", "127.0.0.1")
+    dev_debug = os.environ.get("MONITOR_DEV_DEBUG", "0") == "1"
+    app.run(host=dev_host, port=port, debug=dev_debug)
