@@ -54,7 +54,7 @@ jobs:
           retention-days: 7
 
   ui-smoke:
-    name: Parcours UI (Playwright · @smoke)
+    name: Navigateur (Playwright · @smoke + BDD @frontend)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
