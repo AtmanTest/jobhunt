@@ -90,6 +90,14 @@ jobs:
             --tracing=retain-on-failure \
             --alluredir=allure-results
 
+      # Étage E2E de régression : parcours utilisateur réels, serveur déterministe
+      # démarré par les fixtures (boucle locale, base temporaire réamorcée par test).
+      - name: Run E2E @regression
+        run: |
+          python -m pytest tests/playwright -m regression -v \
+            --tracing=retain-on-failure \
+            --alluredir=allure-results
+
       # Scénarios BDD étiquetés @frontend : ils démarrent eux-mêmes l'application
       # sur une boucle locale avec une base de test ensemencée et pilotent Chromium.
       - name: Run BDD @frontend (browser)

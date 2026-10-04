@@ -7,7 +7,9 @@ Requires: the Flask app to be running on http://localhost:5050
 import os, sys, json, time
 
 # Use the Playwright venv we set up
-PW_PYTHON = "/tmp/pw_venv/bin/python3"
+# Interpréteur courant (l'ancien chemin /tmp/pw_venv n'existe que sur une
+# seule machine et rendait ce lanceur inutilisable partout ailleurs).
+PW_PYTHON = os.environ.get("PW_PYTHON", sys.executable)
 
 TEST_FILE = os.path.join(os.path.dirname(__file__), "test_dashboard.py")
 

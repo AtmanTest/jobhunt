@@ -24,3 +24,10 @@ venv/
 .coverage
 htmlcov/
 .pytest_cache/
+
+# artefacts de test (jamais commits)
+tests/playwright/screenshots/
+allure-results/
+allure-report/
+test-results/
+monitor-app/*.db
