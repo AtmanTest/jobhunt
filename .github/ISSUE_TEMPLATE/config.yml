@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Stratégie de test et architecture des agents
+    url: https://github.com/AtmanTest/jobhunt/blob/main/docs/standard-multi-agents.md
+    about: Rôles, portes de qualité et référentiels appliqués (CTFL, CT-GenAI, PSPO).
+  - name: Signaler une faille de sécurité
+    url: https://github.com/AtmanTest/jobhunt/security/advisories/new
+    about: Ne jamais ouvrir d'issue publique pour une vulnérabilité.

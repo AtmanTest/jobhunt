@@ -1,0 +1,67 @@
+name: "🔧 Tâche technique"
+description: "Dette, outillage, refactor, sécurité — avec plan de vérification et impact."
+title: "[TECH] "
+labels: ["technique", "backlog"]
+body:
+  - type: textarea
+    id: contexte
+    attributes:
+      label: Contexte
+      description: Le problème technique et pourquoi il compte maintenant.
+    validations:
+      required: true
+
+  - type: textarea
+    id: objectif
+    attributes:
+      label: Objectif et résultat observable
+      description: Ce qui sera vrai après, vérifiable sans lire le code.
+      placeholder: La CI exécute la suite UI en moins de 5 minutes.
+    validations:
+      required: true
+
+  - type: textarea
+    id: contraintes
+    attributes:
+      label: Contraintes techniques
+      description: Stack, sécurité, performance, compatibilité. Ce qui est interdit compte autant.
+      placeholder: |
+        - Boucle locale uniquement, jamais 0.0.0.0
+        - Aucune dépendance nouvelle sans justification
+    validations:
+      required: true
+
+  - type: textarea
+    id: verification
+    attributes:
+      label: Plan de vérification
+      description: Comment on prouve que c'est fait. Commandes exactes.
+      placeholder: |
+        - bash tests/run_tests.sh — vert
+        - pytest tests/playwright/specs/smoke -m smoke — 5 passed
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact et retour arrière
+      description: Ce que ça peut casser, et comment on revient en arrière.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: dod
+    attributes:
+      label: Definition of Done (dev)
+      options:
+        - label: Branche dédiée, commits conventionnels, jamais de push sur main
+          required: true
+        - label: TNR vert avant push (bash tests/run_tests.sh)
+          required: true
+        - label: Un test de régression par bug corrigé
+          required: true
+        - label: Aucun secret, aucune donnée personnelle dans le diff
+          required: true
+        - label: Décision d'architecture consignée (ADR) si structurante
+          required: false

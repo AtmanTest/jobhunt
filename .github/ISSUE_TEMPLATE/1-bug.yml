@@ -1,0 +1,125 @@
+name: "🐞 Bug"
+description: "Anomalie constatée — reproduction, sévérité, test de non-régression."
+title: "[BUG] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Un bug n'est complet que s'il est **reproductible** et qu'il laisse derrière lui un
+        **test de non-régression**. C'est la règle du dépôt (ISTQB CTFL : le test de
+        non-régression est un test de régression ciblé sur le défaut corrigé).
+
+  - type: checkboxes
+    id: recherche
+    attributes:
+      label: Vérification préalable
+      options:
+        - label: J'ai cherché une anomalie existante (issues ouvertes et fermées)
+          required: true
+
+  - type: textarea
+    id: resume
+    attributes:
+      label: Résumé
+      description: Une phrase. Ce qui ne va pas, pas pourquoi.
+      placeholder: Le filtre « remote » affiche aussi les offres sur site.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Étapes de reproduction
+      description: Numérotées, minimales, déterministes. Sans étape inutile.
+      placeholder: |
+        1. Ouvrir /
+        2. Sélectionner le filtre Remote
+        3. Observer le compteur
+    validations:
+      required: true
+
+  - type: textarea
+    id: attendu
+    attributes:
+      label: Résultat attendu
+      placeholder: Seules les offres marquées remote sont listées.
+    validations:
+      required: true
+
+  - type: textarea
+    id: obtenu
+    attributes:
+      label: Résultat obtenu
+      description: Le fait observé, sans interprétation.
+      placeholder: 12 offres sur site restent affichées.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severite
+    attributes:
+      label: Sévérité
+      description: Impact utilisateur, pas difficulté technique.
+      options:
+        - Bloquant — fonctionnalité inutilisable
+        - Majeur — contournement pénible
+        - Mineur — gêne sans blocage
+        - Cosmétique — présentation
+    validations:
+      required: true
+
+  - type: dropdown
+    id: technique
+    attributes:
+      label: Technique de test qui aurait dû le détecter
+      description: Analyse post-mortem ISTQB CTFL (v4.0).
+      options:
+        - Analyse des valeurs limites
+        - Partitionnement par équivalence
+        - Test par tables de décisions
+        - Test de transition d'état
+        - Test exploratoire
+        - Couverture des exigences
+        - Non applicable
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      placeholder: v1.0.0 · c3c7c14
+    validations:
+      required: false
+
+  - type: dropdown
+    id: environnement
+    attributes:
+      label: Environnement
+      options: [Local, CI, Préproduction, Production]
+    validations:
+      required: true
+
+  - type: textarea
+    id: preuves
+    attributes:
+      label: Preuves
+      description: Logs, trace, captures, réponse d'API. Jamais de secret ni de donnée personnelle.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: regression
+    attributes:
+      label: Test de non-régression à ajouter
+      description: Le scénario Gherkin ou le test pytest qui empêchera la réapparition.
+      placeholder: |
+        Scénario: Filtre remote exclut les offres sur site
+          Soit une offre marquée « remote »
+          Et une offre marquée « sur site »
+          Quand je filtre sur « Remote »
+          Alors seule l'offre distante est listée
+    validations:
+      required: true
