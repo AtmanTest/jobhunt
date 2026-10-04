@@ -1,0 +1,1173 @@
+{
+  "id": "wf2agentsjobhunt",
+  "name": "JobHunt — WF2 Chaîne d'agents (issue → PR)",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "id": "tr-horaire",
+      "name": "Déclencheur — sondage",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2200,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.github.com/repos/AtmanTest/jobhunt/issues?labels=agent:go&state=open&per_page=20",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi"
+      },
+      "id": "gh-lire-les-issues",
+      "name": "Lire les issues",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2000,
+        180
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Choisit LA prochaine issue à traiter, par sondage sortant.\n// Sont écartées : les pull requests (l'API issues les renvoie aussi) et les\n// issues déjà prises ou terminées — le cycle de vie est porté par les étiquettes.\nconst liste = Array.isArray($json) ? $json : ($json.issues || $json.items || []);\nconst issues = liste.filter(i => i && !i.pull_request);\n\nconst aTraiter = issues.filter(i => {\n  const noms = (i.labels || []).map(l => (typeof l === 'string' ? l : l.name));\n  return noms.includes('agent:go')\n      && !noms.includes('agent:running')\n      && !noms.includes('agent:done');\n});\n\nif (!aTraiter.length) {\n  return [{ json: { ignore: true, raison: 'aucune issue étiquetée agent:go à traiter' } }];\n}\n\nconst issue = aTraiter[0];\n// Forme normalisée identique à celle d'un webhook GitHub : le reste de la\n// chaîne ne sait pas d'où vient le ticket.\nreturn [{ json: {\n  action: 'labeled',\n  label: { name: 'agent:go' },\n  issue,\n  repository: { full_name: 'AtmanTest/jobhunt' },\n} }];\n"
+      },
+      "id": "code-sélectionner-l-issue",
+      "name": "Sélectionner l'issue",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1800,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Prépare le contexte du run.\n// Le prompt de rôle (message system) est IDENTIQUE d'un run à l'autre : c'est la\n// partie stable, placée en tête pour être servie depuis le cache du fournisseur.\nconst evt = $json.body ?? $json;\nconst issue = evt.issue ?? {};\nconst action = String(evt.action ?? '');\nconst label = String((evt.label && evt.label.name) || '');\nconst labels = (issue.labels || []).map(l => (typeof l === 'string' ? l : l.name));\n\nconst declencheur = ['opened', 'edited', 'reopened', 'labeled'].includes(action);\nconst autorise = label === 'agent:go' || labels.includes('agent:go');\n\nif (!declencheur || !autorise) {\n  return [{ json: { ignore: true, raison: `action=${action} label=${label}` } }];\n}\nif (!evt.repository || !issue.number) {\n  return [{ json: { ignore: true, raison: 'charge utile GitHub incomplète' } }];\n}\n\nconst repo = evt.repository.full_name;\nconst numero = issue.number;\nconst titre = String(issue.title || '').trim();\nconst corps = String(issue.body || '').trim();\n\nreturn [{ json: {\n  ignore: false,\n  runId: `${repo}#${numero}-${Date.now()}`,\n  repo, numero, titre,\n  issue_url: issue.html_url,\n  // Seul le ticket est transmis : pas d'historique, pas de contexte parasite.\n  issue_text: `# ${titre}\\n\\n${corps}`,\n  roles: {\"PO\": \"# RÔLE — Agent PO (Product Owner)\\n\\n**Référentiels** : PSPO I & II (empirisme, ordering, Evidence-Based Management) · ISTQB CTFL v4.0\\n(testabilité des exigences) · ISTQB CT-GenAI (risques IA).\\n\\n## Contexte\\nTu reçois une demande brute (issue GitHub) pour le produit JobHunt. Tu n'écris pas de code et tu\\nne choisis pas de technologie. Tu transformes un besoin en **exigences testables et ordonnées**.\\n\\n## Instruction\\nProduis, dans cet ordre exact :\\n\\n1. **Objectif produit visé** — à quel Product Goal cette demande contribue.\\n2. **Valeur attendue (outcome)** — un résultat observable, avec sa mesure. Jamais une liste de tâches.\\n3. **Hypothèses à valider** — ce qui doit être vrai pour que la valeur apparaisse.\\n4. **Critères d'acceptation** — numérotés `AC-01`, `AC-02`…, format **Étant donné / Quand / Alors**.\\n5. **Hors périmètre** — explicitement, pour empêcher la dérive.\\n6. **Cas limites et comportements d'erreur** attendus.\\n7. **Risques** — dont les risques propres à l'IA générative (hallucination, biais, données\\n   personnelles, non-déterminisme) si la demande touche à une sortie de modèle.\\n8. **Questions ouvertes** — uniquement celles qui bloquent réellement.\\n\\n## Contraintes\\n- Minimum 5 critères d'acceptation ; chacun doit être **vérifiable par un test automatisé**.\\n- Un critère non testable n'est pas un critère : reformule-le ou supprime-le.\\n- Aucun détail d'implémentation (pas de table, pas de framework, pas de fichier, pas d'API).\\n- Ne gonfle jamais la portée : une demande = une story.\\n- N'invente jamais une donnée métier absente de l'entrée : liste-la en question ouverte.\\n\\n## Format de sortie\\nMarkdown, exactement ces titres de niveau 2, dans cet ordre :\\n`## Objectif produit`, `## Valeur attendue`, `## Hypothèses`, `## Critères d'acceptation`,\\n`## Hors périmètre`, `## Cas limites`, `## Risques`, `## Questions ouvertes`.\\nAucun texte avant `## Objectif produit`, aucun texte après la dernière section.\\n\", \"SpecReview\": \"# RÔLE — Agent Spec Review (attaque de la spécification)\\n\\n**Référentiels** : ISTQB CTFL v4.0 (revue, testabilité) · ISTQB CT-GenAI (vérification des sorties,\\nmitigation des hallucinations et biais).\\n\\n## Contexte\\nTu n'as PAS produit cette spécification. Tu es le relecteur adversarial. Ton travail est de\\ntrouver ce qui empêchera une implémentation sûre — pas de féliciter.\\n\\n## Instruction\\nAttaque la spécification fournie et rends un verdict. Cherche, dans cet ordre :\\nambiguïtés, critères d'acceptation non testables, cas limites manquants, états vides et d'erreur,\\nhypothèses non vérifiables, contradictions internes, exigences implicites non écrites, atteinte\\npossible à la vie privée, et tout ce qu'une implémentation paresseuse pourrait ignorer.\\n\\n## Contraintes\\n- Chaque remarque cite le passage visé et dit **pourquoi** c'est bloquant ou non.\\n- Sépare strictement **bloquant** (empêche d'implémenter) et **non bloquant** (amélioration).\\n- Ne réécris pas la spécification : tu pointes, tu ne corriges pas.\\n- Ne propose pas d'implémentation technique.\\n- Si la spécification est saine, dis-le franchement — sans inventer des remarques pour remplir.\\n\\n## Format de sortie\\nMarkdown :\\n`## Verdict` — une ligne : `GO`, `GO SOUS CONDITIONS` ou `NO-GO`.\\n`## Bloquants` — liste numérotée (ou « aucun »).\\n`## Non bloquants` — liste (ou « aucun »).\\n`## Ce qui manque pour lever les bloquants` — liste courte et actionnable.\\n\", \"Architecte\": \"# RÔLE — Agent Architecte\\n\\n**Référentiels** : ISTQB CTFL v4.0 (conception de test, testabilité) · bonnes pratiques\\nd'ingénierie (ADR, décisions explicites, réversibilité).\\n\\n## Contexte\\nTu reçois des critères d'acceptation validés. Tu produis le plan technique qui les rend\\nimplémentables et testables. Tu ne produis pas de code.\\n\\n## Instruction\\nProduis, dans cet ordre :\\n1. **Décisions techniques** — chacune avec la raison et l'alternative écartée.\\n2. **Impact sur les données** — tables, colonnes, contraintes, migrations nécessaires.\\n3. **Impact sur les interfaces** — routes, contrats de réponse, cas d'erreur.\\n4. **Point de testabilité** — comment chaque critère d'acceptation devient observable.\\n5. **Risques techniques** et leur mitigation.\\n6. **Hors périmètre technique** — ce que cette itération ne touche pas.\\n\\n## Contraintes\\n- Toute décision structurante doit être écrite comme une décision, pas comme une suggestion.\\n- Aucune dépendance nouvelle sans justification explicite.\\n- Respecte les invariants du dépôt : boucle locale uniquement, secrets hors dépôt, migrations\\n  versionnées, aucune donnée personnelle dans les tests.\\n- Pas de pseudo-code long : des décisions et des contrats.\\n\\n## Format de sortie\\nMarkdown : `## Décisions`, `## Impact données`, `## Impact interfaces`, `## Testabilité`,\\n`## Risques`, `## Hors périmètre technique`.\\n\", \"QA\": \"# RÔLE — Agent QA\\n\\n**Référentiels** : ISTQB CTFL v4.0 (techniques de conception de test) · ISTQB CT-GenAI\\n(conception assistée, données synthétiques, évaluation des sorties).\\n\\n## Contexte\\nTu reçois un plan technique et des critères d'acceptation. Tu produis les cas de test **avant**\\nque le code existe. C'est toi qui décides ce que « terminé » signifie.\\n\\n## Instruction\\nProduis :\\n1. **Traçabilité** — table `AC-xx → cas de test`. Aucun critère sans au moins un cas.\\n2. **Cas de test** en Gherkin (Scénario / Étant donné / Quand / Alors), nommés\\n   `CT-01`, `CT-02`… Chaque cas indique le niveau (contrat, API, BDD, UI) et le type.\\n3. **Choix des techniques** — pour chaque ensemble de cas, nomme la technique employée, en\\n   terminologie ISTQB v4.0 française : *partitionnement par équivalence*, *analyse des valeurs\\n   limites*, *test par tables de décisions*, *test de transition d'état*, *couverture des exigences*.\\n4. **Cas négatifs** — erreurs, droits refusés, données invalides, états vides.\\n5. **Données de test** — jeu minimal déterministe, à construire via les fabriques du dépôt.\\n   Jamais de donnée personnelle réelle ; données synthétiques si nécessaire.\\n6. **Critères de sortie** — ce qui doit être vert pour considérer l'itération livrable.\\n\\n## Contraintes\\n- Un scénario = une intention. Pas de scénario fourre-tout.\\n- Aucun `sleep`, aucune attente arbitraire : on attend une condition observable.\\n- Les tests UI se limitent aux parcours critiques ; le reste va au niveau contrat ou API.\\n- Ne teste jamais ce qu'on ne contrôle pas (service tiers) : simule-le.\\n- Marque explicitement ce qui doit devenir un test de non-régression.\\n\\n## Format de sortie\\nMarkdown : `## Traçabilité`, `## Cas de test`, `## Techniques employées`, `## Données de test`,\\n`## Critères de sortie`.\\n\", \"Dev\": \"# RÔLE — Agent Dev\\n\\n**Référentiels** : ISTQB CTFL v4.0 (ordre de test, TDD) · bonnes pratiques d'ingénierie.\\n\\n## Contexte\\nTu implémentes le plan technique dans une branche dédiée, en respectant les cas de test déjà\\nécrits par l'agent QA. Tu ne réécris ni les critères d'acceptation, ni les cas de test.\\n\\n## Instruction\\n1. Écris les tests d'abord quand le comportement est spécifié, puis l'implémentation.\\n2. Limite le diff au strict nécessaire pour faire passer les critères d'acceptation.\\n3. Nomme les commits selon la convention `type(portée): description` (feat, fix, test, docs,\\n   refactor, chore).\\n4. Ne touche à aucune dépendance, à aucun fichier de configuration ni à aucune interface publique\\n   sans que le plan technique ne l'exige.\\n5. Si tu découvres un écart entre le plan et la réalité, **arrête-toi et décris l'écart** au lieu\\n   d'improviser une solution hors périmètre.\\n\\n## Contraintes\\n- Aucun secret, aucune donnée personnelle, aucun identifiant réel — ni dans le code, ni dans les\\n  tests, ni dans les commentaires.\\n- Aucun service exposé sur `0.0.0.0` ; aucune protection désactivée.\\n- Pas de dépendance nouvelle sans justification écrite.\\n- Pas de « correction » de code hors sujet, pas de reformatage massif.\\n- Jamais de commit direct sur `main` : une branche, puis une pull request.\\n\\n## Format de sortie\\nMarkdown : `## Branche`, `## Fichiers modifiés` (chemin + intention), `## Tests ajoutés`,\\n`## Commande de vérification`, `## Écarts constatés`.\\n\", \"Fix\": \"# RÔLE — Agent Fix\\n\\n**Référentiels** : ISTQB CTFL v4.0 (analyse de cause racine, test de non-régression).\\n\\n## Contexte\\nLa QA Review a listé ce qui empêche le passage au vert. Tu corriges **uniquement** cela.\\n\\n## Instruction\\n1. Énonce la **cause racine** en une phrase — pas le symptôme.\\n2. Applique la correction minimale qui traite la cause.\\n3. **Ajoute un test de non-régression** qui échouait avant et passe après. Sans ce test, la\\n   correction est refusée.\\n4. Rejoue la suite complète.\\n\\n## Contraintes\\n- Le périmètre ne bouge pas : aucun test existant n'est affaibli, ignoré ou supprimé pour passer.\\n- Jamais de `skip`, de `xfail` ni de commentaire déplaçant la responsabilité.\\n- Une tentative de correction = un écart traité. S'il en reste, dis-le.\\n- Après trois tentatives sans succès, arrête-toi et remonte le blocage.\\n\\n## Format de sortie\\nMarkdown : `## Cause racine`, `## Correction`, `## Test de non-régression`,\\n`## Résultat de la suite`, `## Reste à traiter`.\\n\", \"QAReview\": \"# RÔLE — Agent QA Review\\n\\n**Référentiels** : ISTQB CTFL v4.0 (rapport de test, critères de sortie) · ISTQB CT-GenAI\\n(évaluation des sorties, non-déterminisme, traçabilité).\\n\\n## Contexte\\nTu analyses le résultat de la CI et l'implémentation proposée. Tu ne corriges rien : tu juges.\\n\\n## Instruction\\n1. **Verdict** — `green`, `red` ou `refused`, en une ligne, avec le motif.\\n2. **Comparaison à l'empreinte** — la CI a-t-elle testé exactement le commit proposé ?\\n   Si l'empreinte testée diffère de la tête, le verdict est `refused`.\\n3. **Couverture des critères** — chaque `AC-xx` est-il réellement vérifié par un test qui a tourné ?\\n4. **Cas limites** — lesquels sont couverts, lesquels ne le sont pas.\\n5. **Défauts d'implémentation** — comportements hors périmètre, contournements, dette introduite.\\n6. **Ce qui manque** pour passer au vert, en liste actionnable pour l'agent Fix.\\n\\n## Contraintes\\n- Aucun verdict sans preuve : chaque affirmation renvoie à un test, un journal ou un fichier.\\n- Ne déclare jamais un critère couvert parce que le code « semble » le faire.\\n- Un test rouge, un test instable non expliqué ou une empreinte incohérente imposent `red` ou `refused`.\\n- Ne propose pas de réécriture complète : des correctifs ciblés.\\n\\n## Format de sortie\\nMarkdown : `## Verdict`, `## Empreinte`, `## Couverture des critères`, `## Cas limites`,\\n`## Défauts`, `## À corriger`.\\n\"},\n} }];\n"
+      },
+      "id": "code-préparer",
+      "name": "Préparer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.ignore }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-ticket-éligible-",
+      "name": "Ticket éligible ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "insert into public.pipeline_events (workflow, event, payload) values ('wf2-agents','run_demarre', jsonb_build_object('run', '{{ $json.runId }}', 'repo', '{{ $json.repo }}', 'issue', {{ $json.numero }}, 'titre', '{{ $('Préparer').first().json.titre }}'));",
+        "options": {}
+      },
+      "id": "pg-journal-début",
+      "name": "Journal — début",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -1000,
+        300
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "supabasepg00001",
+          "name": "Supabase (Postgres)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://hermes:8642/v1/chat/completions",
+        "options": {
+          "timeout": 900000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 1200, messages: [  { role: 'system', content: $('Préparer').first().json.roles.PO },  { role: 'user', content: $('Préparer').first().json.issue_text } ] }) }}"
+      },
+      "id": "llm-PO",
+      "name": "PO — critères",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -800,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hermesapitoken01",
+          "name": "Hermes API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://hermes:8642/v1/chat/completions",
+        "options": {
+          "timeout": 900000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 600, messages: [  { role: 'system', content: $('Préparer').first().json.roles.SpecReview },  { role: 'user', content: $('PO — critères').first().json.choices[0].message.content } ] }) }}"
+      },
+      "id": "llm-SpecReview",
+      "name": "Spec Review",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -600,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hermesapitoken01",
+          "name": "Hermes API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c2",
+              "leftValue": "={{ $json.choices[0].message.content }}",
+              "rightValue": "NO-GO",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-porte-spec-review",
+      "name": "Porte — Spec Review",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://hermes:8642/v1/chat/completions",
+        "options": {
+          "timeout": 900000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 900, messages: [  { role: 'system', content: $('Préparer').first().json.roles.Architecte },  { role: 'user', content: $('PO — critères').first().json.choices[0].message.content + '\\n\\n## Revue de la spécification\\n' + $('Spec Review').first().json.choices[0].message.content } ] }) }}"
+      },
+      "id": "llm-Architecte",
+      "name": "Architecte — plan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -200,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hermesapitoken01",
+          "name": "Hermes API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://hermes:8642/v1/chat/completions",
+        "options": {
+          "timeout": 900000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 1500, messages: [  { role: 'system', content: $('Préparer').first().json.roles.QA },  { role: 'user', content: $('Architecte — plan').first().json.choices[0].message.content } ] }) }}"
+      },
+      "id": "llm-QA",
+      "name": "QA — cas de test",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hermesapitoken01",
+          "name": "Hermes API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/git/trees/main?recursive=1",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi"
+      },
+      "id": "gh-arborescence",
+      "name": "Arborescence",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        100,
+        480
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Liste des chemins existants du dépôt — NOMS SEULS, jamais le contenu.\n// Objectif : que l'agent Dev sache où il écrit sans qu'on lui envoie le code\n// (envoyer l'arborescence complète coûterait des milliers de tokens par run).\nconst arbre = ($json.tree || []).filter(e => e.type === 'blob');\nconst plafond = 400;\nconst chemins = arbre.slice(0, plafond).map(e => e.path).join('\\n');\nreturn [{ json: {\n  nb_fichiers: arbre.length,\n  tronque: arbre.length > plafond,\n  chemins: tronque ? chemins + '\\n(…)' : chemins,\n} }];\n"
+      },
+      "id": "code-chemins-du-dépôt",
+      "name": "Chemins du dépôt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        150,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://hermes:8642/v1/chat/completions",
+        "options": {
+          "timeout": 900000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 4000, messages: [  { role: 'system', content: $('Préparer').first().json.roles.Dev },  { role: 'user', content: $('QA — cas de test').first().json.choices[0].message.content + '\\n\\n## Ticket\\n' + $('Préparer').first().json.issue_text + '\\n\\n## Chemins existants du dépôt (n'écris que ce qui manque)\\n' + $('Chemins du dépôt').first().json.chemins } ] }) }}"
+      },
+      "id": "llm-Dev",
+      "name": "Dev — fichiers",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hermesapitoken01",
+          "name": "Hermes API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Transforme la sortie de l'agent Dev en écritures de fichiers réelles.\n// L'agent Dev doit répondre en JSON : {branch, commit_message, files:[{path, content}]}.\n$('Dev — fichiers').first().json;\nconst ctx = $('Préparer').first().json;\nconst brut = $('Dev — fichiers').first().json.choices[0].message.content;\n\nfunction extraireJson(txt) {\n  const bloc = txt.match(/```(?:json)?\\s*([\\s\\S]*?)```/);\n  const candidat = bloc ? bloc[1] : txt;\n  const debut = candidat.indexOf('{');\n  const fin = candidat.lastIndexOf('}');\n  if (debut === -1 || fin === -1) throw new Error('réponse Dev sans JSON exploitable');\n  return JSON.parse(candidat.slice(debut, fin + 1));\n}\n\nconst dev = extraireJson(brut);\nconst slug = (ctx.titre || 'issue').toLowerCase()\n  .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')\n  .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'issue';\nconst branche = dev.branch || `agent/issue-${ctx.numero}-${slug}`;\n\n// Les artefacts de spécification sont versionnés avec le code : le ticket\n// devient un dossier de specs, pas un prompt jetable.\nconst artefacts = [\n  { path: `specs/${ctx.numero}-${slug}/spec.md`,\n    content: `# ${ctx.titre}\\n\\n_Source : ${ctx.issue_url}_\\n\\n## Spécification (agent PO)\\n\\n${$('PO — critères').first().json.choices[0].message.content}\\n` },\n  { path: `specs/${ctx.numero}-${slug}/review.md`,\n    content: `# Revue de spécification\\n\\n${$('Spec Review').first().json.choices[0].message.content}\\n` },\n  { path: `specs/${ctx.numero}-${slug}/plan.md`,\n    content: `# Plan technique\\n\\n${$('Architecte — plan').first().json.choices[0].message.content}\\n\\n## Cas de test (agent QA)\\n\\n${$('QA — cas de test').first().json.choices[0].message.content}\\n` },\n];\n\nconst fichiers = [...(dev.files || []), ...artefacts];\nif (!fichiers.length) throw new Error(\"l'agent Dev n'a produit aucun fichier\");\n\nreturn [{\n  json: {\n    ...ctx,\n    branche,\n    commit_message: dev.commit_message || `feat: ${ctx.titre}`,\n    fichiers,\n    // main est lu à l'exécution : la branche part toujours de l'état courant.\n    sha_base: $('Référence main').first().json.object.sha,\n  },\n}];\n"
+      },
+      "id": "code-préparer-l-écriture",
+      "name": "Préparer l'écriture",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.github.com/repos/{{ $json.repo }}/git/ref/heads/main",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi"
+      },
+      "id": "gh-référence-main",
+      "name": "Référence main",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        600,
+        120
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/git/refs",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ ref: 'refs/heads/' + $json.branche, sha: $json.sha_base }) }}"
+      },
+      "id": "gh-créer-la-branche",
+      "name": "Créer la branche",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        300
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Un item par fichier : l'écriture se fait par appel unitaire à l'API Contents.\nconst d = $json;\nreturn d.fichiers.map(f => ({ json: {\n  path: f.path,\n  contenu_base64: Buffer.from(String(f.content || ''), 'utf8').toString('base64'),\n  branche: d.branche,\n  repo: d.repo,\n  commit_message: d.commit_message,\n} }));\n"
+      },
+      "id": "code-normaliser-les-écritures",
+      "name": "Normaliser les écritures",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1000,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "https://api.github.com/repos/{{ $json.repo }}/contents/{{ $json.path }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ message: $json.commit_message, content: $json.contenu_base64, branch: $json.branche }) }}"
+      },
+      "id": "gh-écrire-les-fichiers",
+      "name": "Écrire les fichiers",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        300
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/git/ref/heads/{{ $('Préparer l\\'écriture').first().json.branche }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi"
+      },
+      "id": "gh-lire-le-commit",
+      "name": "Lire le commit",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1400,
+        300
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/pulls",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ title: $('Préparer').first().json.titre, head: $('Préparer l\\'écriture').first().json.branche, base: 'main', body: 'Chaîne d\\'agents — artefacts dans specs/. Ticket : ' + $('Préparer').first().json.issue_url }) }}"
+      },
+      "id": "gh-ouvrir-la-pr",
+      "name": "Ouvrir la PR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        300
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/actions/runs?head_sha={{ $('Lire le commit').first().json.object.sha }}",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi"
+      },
+      "id": "gh-ci-statut",
+      "name": "CI — statut",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1800,
+        300
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Verdict de la CI, rattaché au commit RÉELLEMENT produit (et non au dernier\n// run du dépôt, ce que faisait la version précédente : le verdict ne portait\n// alors sur rien).\nconst runs = Array.isArray($json.workflow_runs) ? $json.workflow_runs : [];\nconst ctx = $('Préparer').first().json;\nconst sha = $('Lire le commit').first().json.object.sha;\nconst tentative = (ctx.tentative || 0) + 1;\n\nconst run = runs.find(r => r.head_sha === sha) || null;\nconst statut = run ? run.status : 'absent';\nconst conclusion = run ? (run.conclusion || 'en_cours') : 'absent';\n\nlet decision = 'attendre';\nif (statut === 'completed') {\n  if (conclusion === 'success') decision = 'succes';\n  else if (tentative < 3) decision = 'corriger';\n  else decision = 'abandon';\n}\n\nreturn [{ json: {\n  ...ctx,\n  sha,\n  run_url: run ? run.html_url : null,\n  statut, conclusion, tentative, decision,\n} }];\n"
+      },
+      "id": "code-analyser-la-ci",
+      "name": "Analyser la CI",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c3",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "attendre",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-ci-terminée-",
+      "name": "CI terminée ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c4",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "succes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-résultat-",
+      "name": "Résultat ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://hermes:8642/v1/chat/completions",
+        "options": {
+          "timeout": 900000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 2000, messages: [  { role: 'system', content: $('Préparer').first().json.roles.Fix },  { role: 'user', content: $('Analyser la CI').first().json.conclusion + '\\n\\n## Cas de test\\n' + $('QA — cas de test').first().json.choices[0].message.content } ] }) }}"
+      },
+      "id": "llm-Fix",
+      "name": "Fix",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2400,
+        520
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hermesapitoken01",
+          "name": "Hermes API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://hermes:8642/v1/chat/completions",
+        "options": {
+          "timeout": 900000
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 800, messages: [  { role: 'system', content: $('Préparer').first().json.roles.QAReview },  { role: 'user', content: $('Analyser la CI').first().json.conclusion + '\\n\\n## Critères\\n' + $('PO — critères').first().json.choices[0].message.content } ] }) }}"
+      },
+      "id": "llm-QAReview",
+      "name": "QA Review",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2600,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hermesapitoken01",
+          "name": "Hermes API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Rapport de livraison, posté en commentaire de la PR.\nconst ctx = $('Préparer').first().json;\nconst ci = $('Analyser la CI').first().json;\nconst verdict = $('QA Review').first().json.choices[0].message.content || '(vide)';\nconst sha = ci.sha || '';\n\nconst md = [\n  '# Rapport de livraison',\n  '',\n  `- Ticket : ${ctx.issue_url}`,\n  `- Branche : \\`${$('Préparer l\\'écriture').first().json.branche}\\``,\n  `- Commit testé : \\`${sha.slice(0, 7)}\\``,\n  `- CI : ${ci.conclusion} (${ci.run_url || 'sans run'})`,\n  `- Tentatives de correction : ${ci.tentative - 1}`,\n  `- Horodatage : ${new Date().toLocaleString('fr-FR')}`,\n  '',\n  '## Revue QA', '', verdict, '',\n  '## Traçabilité', '',\n  '| Étape | Artefact |',\n  '|---|---|',\n  `| PO — critères | \\`specs/${ctx.numero}-*/spec.md\\` |`,\n  `| Spec Review | \\`specs/${ctx.numero}-*/review.md\\` |`,\n  '| Architecte + QA | `plan.md` |',\n].join('\\n');\n\nreturn [{ json: { ...ctx, corps_rapport: md } }];\n"
+      },
+      "id": "code-rapport",
+      "name": "Rapport",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2800,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.github.com/repos/{{ $json.repo }}/issues/{{ $json.numero }}/comments",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ body: $json.corps_rapport }) }}"
+      },
+      "id": "gh-poster-le-rapport",
+      "name": "Poster le rapport",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3000,
+        300
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "insert into public.gates (run_id, porte, verdict, motif, empreinte_tested, empreinte_head) values ('{{ $('Préparer').first().json.runId }}', 'ci', '{{ $('Analyser la CI').first().json.conclusion }}', '{{ $('Analyser la CI').first().json.decision }}', '{{ $('Analyser la CI').first().json.sha }}', '{{ $('Analyser la CI').first().json.sha }}');",
+        "options": {}
+      },
+      "id": "pg-journal-verdict",
+      "name": "Journal — verdict",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        3200,
+        300
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "supabasepg00001",
+          "name": "Supabase (Postgres)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/issues/{{ $('Préparer').first().json.numero }}/labels",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ labels: ['agent:done'] }) }}"
+      },
+      "id": "gh-marquer-traitée",
+      "name": "Marquer traitée",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3400,
+        300
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/issues/{{ $('Préparer').first().json.numero }}/labels/agent:go",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi"
+      },
+      "id": "gh-retirer-la-demande",
+      "name": "Retirer la demande",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3600,
+        300
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "noop-fin",
+      "name": "Fin",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3800,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Déclencheur — sondage": {
+      "main": [
+        [
+          {
+            "node": "Lire les issues",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lire les issues": {
+      "main": [
+        [
+          {
+            "node": "Sélectionner l'issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sélectionner l'issue": {
+      "main": [
+        [
+          {
+            "node": "Préparer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Préparer": {
+      "main": [
+        [
+          {
+            "node": "Ticket éligible ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ticket éligible ?": {
+      "main": [
+        [
+          {
+            "node": "Journal — début",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Journal — début": {
+      "main": [
+        [
+          {
+            "node": "PO — critères",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PO — critères": {
+      "main": [
+        [
+          {
+            "node": "Spec Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Spec Review": {
+      "main": [
+        [
+          {
+            "node": "Porte — Spec Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Porte — Spec Review": {
+      "main": [
+        [
+          {
+            "node": "Architecte — plan",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Architecte — plan": {
+      "main": [
+        [
+          {
+            "node": "QA — cas de test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QA — cas de test": {
+      "main": [
+        [
+          {
+            "node": "Arborescence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Arborescence": {
+      "main": [
+        [
+          {
+            "node": "Chemins du dépôt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chemins du dépôt": {
+      "main": [
+        [
+          {
+            "node": "Dev — fichiers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dev — fichiers": {
+      "main": [
+        [
+          {
+            "node": "Préparer l'écriture",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Préparer l'écriture": {
+      "main": [
+        [
+          {
+            "node": "Référence main",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Référence main": {
+      "main": [
+        [
+          {
+            "node": "Créer la branche",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Créer la branche": {
+      "main": [
+        [
+          {
+            "node": "Normaliser les écritures",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normaliser les écritures": {
+      "main": [
+        [
+          {
+            "node": "Écrire les fichiers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Écrire les fichiers": {
+      "main": [
+        [
+          {
+            "node": "Lire le commit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lire le commit": {
+      "main": [
+        [
+          {
+            "node": "Ouvrir la PR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ouvrir la PR": {
+      "main": [
+        [
+          {
+            "node": "CI — statut",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CI — statut": {
+      "main": [
+        [
+          {
+            "node": "Analyser la CI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyser la CI": {
+      "main": [
+        [
+          {
+            "node": "CI terminée ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CI terminée ?": {
+      "main": [
+        [
+          {
+            "node": "Résultat ?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Résultat ?": {
+      "main": [
+        [
+          {
+            "node": "QA Review",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fix",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fix": {
+      "main": [
+        [
+          {
+            "node": "Préparer l'écriture",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QA Review": {
+      "main": [
+        [
+          {
+            "node": "Rapport",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rapport": {
+      "main": [
+        [
+          {
+            "node": "Poster le rapport",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Poster le rapport": {
+      "main": [
+        [
+          {
+            "node": "Journal — verdict",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Journal — verdict": {
+      "main": [
+        [
+          {
+            "node": "Marquer traitée",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marquer traitée": {
+      "main": [
+        [
+          {
+            "node": "Retirer la demande",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retirer la demande": {
+      "main": [
+        [
+          {
+            "node": "Fin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "meta": {
+    "généré par": "workflows/build_wf2.py",
+    "prompts": "lus depuis prompts/*.md — ne pas éditer ce JSON à la main"
+  }
+}
