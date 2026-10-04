@@ -139,7 +139,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.deepseek.com/v1/chat/completions",
+        "url": "http://litellm:4000/v1/chat/completions",
         "options": {
           "timeout": 900000
         },
@@ -147,7 +147,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 2000, thinking: { type: 'disabled' }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.PO },  { role: 'user', content: $('Préparer').first().json.issue_text } ] }) }}"
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 2000, extra_body: { thinking: { type: 'disabled' } }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.PO },  { role: 'user', content: $('Préparer').first().json.issue_text } ] }) }}"
       },
       "id": "llm-PO",
       "name": "PO — critères",
@@ -159,15 +159,15 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "deepseekapi01",
-          "name": "DeepSeek API"
+          "id": "litellmkey01",
+          "name": "LiteLLM (clé virtuelle)"
         }
       }
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.deepseek.com/v1/chat/completions",
+        "url": "http://litellm:4000/v1/chat/completions",
         "options": {
           "timeout": 900000
         },
@@ -175,7 +175,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 900, thinking: { type: 'disabled' }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.SpecReview },  { role: 'user', content: $('PO — critères').first().json.choices[0].message.content } ] }) }}"
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 900, extra_body: { thinking: { type: 'disabled' } }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.SpecReview },  { role: 'user', content: $('PO — critères').first().json.choices[0].message.content } ] }) }}"
       },
       "id": "llm-SpecReview",
       "name": "Spec Review",
@@ -187,8 +187,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "deepseekapi01",
-          "name": "DeepSeek API"
+          "id": "litellmkey01",
+          "name": "LiteLLM (clé virtuelle)"
         }
       }
     },
@@ -228,7 +228,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.deepseek.com/v1/chat/completions",
+        "url": "http://litellm:4000/v1/chat/completions",
         "options": {
           "timeout": 900000
         },
@@ -236,7 +236,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 1500, thinking: { type: 'disabled' }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.Architecte },  { role: 'user', content: $('PO — critères').first().json.choices[0].message.content + '\\n\\n## Revue de la spécification\\n' + $('Spec Review').first().json.choices[0].message.content } ] }) }}"
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 1500, extra_body: { thinking: { type: 'disabled' } }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.Architecte },  { role: 'user', content: $('PO — critères').first().json.choices[0].message.content + '\\n\\n## Revue de la spécification\\n' + $('Spec Review').first().json.choices[0].message.content } ] }) }}"
       },
       "id": "llm-Architecte",
       "name": "Architecte — plan",
@@ -248,15 +248,15 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "deepseekapi01",
-          "name": "DeepSeek API"
+          "id": "litellmkey01",
+          "name": "LiteLLM (clé virtuelle)"
         }
       }
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.deepseek.com/v1/chat/completions",
+        "url": "http://litellm:4000/v1/chat/completions",
         "options": {
           "timeout": 900000
         },
@@ -264,7 +264,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 2000, thinking: { type: 'disabled' }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.QA },  { role: 'user', content: $('Architecte — plan').first().json.choices[0].message.content } ] }) }}"
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 2000, extra_body: { thinking: { type: 'disabled' } }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.QA },  { role: 'user', content: $('Architecte — plan').first().json.choices[0].message.content } ] }) }}"
       },
       "id": "llm-QA",
       "name": "QA — cas de test",
@@ -276,8 +276,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "deepseekapi01",
-          "name": "DeepSeek API"
+          "id": "litellmkey01",
+          "name": "LiteLLM (clé virtuelle)"
         }
       }
     },
@@ -323,7 +323,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.deepseek.com/v1/chat/completions",
+        "url": "http://litellm:4000/v1/chat/completions",
         "options": {
           "timeout": 900000
         },
@@ -331,7 +331,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 4000, thinking: { type: 'disabled' }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.Dev },  { role: 'user', content: $('QA — cas de test').first().json.choices[0].message.content + '\\n\\n## Ticket\\n' + $('Préparer').first().json.issue_text + '\\n\\n## Chemins existants du dépôt , à compléter si nécessaire\\n' + $('Chemins du dépôt').first().json.chemins } ] }) }}"
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 4000, extra_body: { thinking: { type: 'disabled' } }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.Dev },  { role: 'user', content: $('QA — cas de test').first().json.choices[0].message.content + '\\n\\n## Ticket\\n' + $('Préparer').first().json.issue_text + '\\n\\n## Chemins existants du dépôt , à compléter si nécessaire\\n' + $('Chemins du dépôt').first().json.chemins } ] }) }}"
       },
       "id": "llm-Dev",
       "name": "Dev — fichiers",
@@ -343,8 +343,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "deepseekapi01",
-          "name": "DeepSeek API"
+          "id": "litellmkey01",
+          "name": "LiteLLM (clé virtuelle)"
         }
       }
     },
@@ -633,7 +633,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.deepseek.com/v1/chat/completions",
+        "url": "http://litellm:4000/v1/chat/completions",
         "options": {
           "timeout": 900000
         },
@@ -641,7 +641,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 2000, thinking: { type: 'disabled' }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.Fix },  { role: 'user', content: $('Analyser la CI').first().json.conclusion + '\\n\\n## Cas de test\\n' + $('QA — cas de test').first().json.choices[0].message.content } ] }) }}"
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 2000, extra_body: { thinking: { type: 'disabled' } }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.Fix },  { role: 'user', content: $('Analyser la CI').first().json.conclusion + '\\n\\n## Cas de test\\n' + $('QA — cas de test').first().json.choices[0].message.content } ] }) }}"
       },
       "id": "llm-Fix",
       "name": "Fix",
@@ -653,15 +653,15 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "deepseekapi01",
-          "name": "DeepSeek API"
+          "id": "litellmkey01",
+          "name": "LiteLLM (clé virtuelle)"
         }
       }
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.deepseek.com/v1/chat/completions",
+        "url": "http://litellm:4000/v1/chat/completions",
         "options": {
           "timeout": 900000
         },
@@ -669,7 +669,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 1000, thinking: { type: 'disabled' }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.QAReview },  { role: 'user', content: $('Analyser la CI').first().json.conclusion + '\\n\\n## Critères\\n' + $('PO — critères').first().json.choices[0].message.content } ] }) }}"
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 1000, extra_body: { thinking: { type: 'disabled' } }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.QAReview },  { role: 'user', content: $('Analyser la CI').first().json.conclusion + '\\n\\n## Critères\\n' + $('PO — critères').first().json.choices[0].message.content } ] }) }}"
       },
       "id": "llm-QAReview",
       "name": "QA Review",
@@ -681,8 +681,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "deepseekapi01",
-          "name": "DeepSeek API"
+          "id": "litellmkey01",
+          "name": "LiteLLM (clé virtuelle)"
         }
       }
     },

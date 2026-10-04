@@ -78,8 +78,8 @@ MODELE = {
 # contre 38 tokens en direct. Soit ~98 000 tokens d'entrée par run, dont ~800
 # utiles. Les étapes de la chaîne sont de simples complétions : aucun outil n'est
 # nécessaire, donc aucun contexte d'agent ne doit être payé.
-LLM_URL = "https://api.deepseek.com/v1/chat/completions"
-CRED_LLM = {"httpHeaderAuth": {"id": "deepseekapi01", "name": "DeepSeek API"}}
+LLM_URL = "http://litellm:4000/v1/chat/completions"
+CRED_LLM = {"httpHeaderAuth": {"id": "litellmkey01", "name": "LiteLLM (clé virtuelle)"}}
 CRED_GITHUB = {"githubApi": {"id": "githubpatcreds01", "name": "GitHub"}}
 CRED_PG = {"postgres": {"id": "supabasepg00001", "name": "Supabase (Postgres)"}}
 
@@ -115,7 +115,11 @@ def noeud_llm(nom: str, role: str, entree_js: str, x: int, y: int) -> dict:
         # de sortie part dans le raisonnement et `message.content` revient VIDE
         # (le texte utile se retrouve dans `reasoning_content`). Les étapes
         # suivantes recevraient alors une chaîne vide.
-        " thinking: { type: 'disabled' },"
+        # `thinking` doit voyager dans `extra_body` : l'adaptateur OpenAI de
+        # LiteLLM refuse un paramètre de premier niveau. Mesuré : sans lui,
+        # DeepSeek raisonne (28 tokens de raisonnement) ; avec, la sortie
+        # tombe de 37 à 8 tokens pour la même réponse.
+        " extra_body: { thinking: { type: 'disabled' } },"
         " messages: ["
         "  { role: 'system', content: $('Préparer').first().json.roles." + role + " },"
         "  { role: 'user', content: " + entree_js + " }"
