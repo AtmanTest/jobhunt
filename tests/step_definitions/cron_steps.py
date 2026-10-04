@@ -72,7 +72,7 @@ def then_git_push():
     assert CRON_STATE.get("triggered")
 
 
-@then("les {count} offres sont détectées")
+@then(parsers.parse("les {count:d} offres sont détectées"))
 def then_jobs_detected(count):
     """Stub: new jobs are detected for alert."""
     assert CRON_STATE.get("alert_checked")

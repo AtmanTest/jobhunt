@@ -1252,7 +1252,7 @@ def api_stats_advanced():
     stack_counts = {}
     for s in all_stacks:
         stack_counts[s] = stack_counts.get(s, 0) + 1
-    stats["top_tech_stacks"] = sorted(stack_counts.items(), key=lambda x: x[1], reverse=True)[:20]
+    stats["top_stacks"] = sorted(stack_counts.items(), key=lambda x: x[1], reverse=True)[:20]
     
     # Salary stats
     cur = conn.execute("SELECT salary_min, salary_max FROM jobs WHERE salary_min IS NOT NULL OR salary_max IS NOT NULL")

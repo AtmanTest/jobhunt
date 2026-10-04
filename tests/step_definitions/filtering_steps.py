@@ -164,9 +164,15 @@ def given_new_identical_offer():
 
 @given(parsers.parse('une offre avec le titre "{title}"'))
 def given_offer_with_title(seeded_db, title):
-    """Insert a job with the given title into the database."""
-    from tests.utils.db_helpers import insert_test_jobs
+    """Insert a job with the given title into the database.
+
+    La base est vidée au préalable pour que le scénario porte sur la SEULE
+    offre décrite (sinon le then lit une offre du jeu de données seeded).
+    """
+    from tests.utils.db_helpers import clear_test_db, insert_test_jobs
     import hashlib
+
+    clear_test_db(seeded_db)
 
     url_slug = hashlib.md5(title.encode()).hexdigest()[:16]
     insert_test_jobs(seeded_db, [{
@@ -187,8 +193,9 @@ def given_offer_with_title(seeded_db, title):
 @given(parsers.parse('une offre avec la description contenant "{text}"'))
 def given_offer_with_description_containing(seeded_db, text):
     """Insert a job whose description contains the given text."""
-    from tests.utils.db_helpers import insert_test_jobs
+    from tests.utils.db_helpers import clear_test_db, insert_test_jobs
 
+    clear_test_db(seeded_db)
     insert_test_jobs(seeded_db, [{
         "title": "Test QA Job",
         "company": "PharmaCorp",
@@ -306,17 +313,20 @@ def when_apply_combined_filters(request):
 
 
 @when("je tente d'insérer la nouvelle offre")
-def when_try_insert_new_offer(seeded_db):
+def when_try_insert_new_offer(seeded_db, flow_state):
     """Attempt to insert a new offer (dedup scenarios).
 
-    Reads the existing URL from the DB and attempts to insert a duplicate.
+    Reads the existing URL from the DB and attempts to insert a duplicate
+    through the PRODUCTION dedup path (``scraper.save_jobs``), so the real
+    UNIQUE(url) logic is exercised against the test database.
     """
-    from tests.utils.db_helpers import insert_test_jobs
+    from tests.utils.product_ops import save_jobs_against
 
     cursor = seeded_db.execute("SELECT url FROM jobs LIMIT 1")
     row = cursor.fetchone()
+    inserted = 0
     if row:
-        insert_test_jobs(seeded_db, [{
+        inserted = save_jobs_against(seeded_db, [{
             "title": "Duplicate attempt",
             "company": "Evil Corp",
             "source": "RemoteOK",
@@ -327,48 +337,58 @@ def when_try_insert_new_offer(seeded_db):
             "description": "Should not be inserted.",
             "date": "2026-05-28",
             "raw_date": 1779571200,
-            "is_qa": 0,
         }])
+    flow_state["inserted"] = inserted
 
 
 @when("je tente d'insérer")
-def when_try_insert(seeded_db):
+def when_try_insert(seeded_db, flow_state):
     """Attempt to insert (dedup for title+company scenarios).
 
-    Reads an existing job from DB and tries to insert a duplicate.
+    Reads an existing job and attempts to insert a duplicate with a DIFFERENT
+    URL but the same title+company, via the production ``save_jobs`` path
+    (which dedups on LOWER(title)+LOWER(company)).
     """
-    from tests.utils.db_helpers import insert_test_jobs
+    from tests.utils.product_ops import save_jobs_against
 
     cursor = seeded_db.execute("SELECT title, company FROM jobs LIMIT 1")
     row = cursor.fetchone()
+    inserted = 0
     if row:
-        import hashlib
-        url_slug = hashlib.md5(f"{row['title']}-{row['company']}".encode()).hexdigest()[:16]
-        insert_test_jobs(seeded_db, [{
+        inserted = save_jobs_against(seeded_db, [{
             "title": row["title"],
             "company": row["company"],
             "source": "RemoteOK",
-            "url": f"https://remoteok.com/job/{url_slug}",
+            "url": "https://remoteok.com/job/duplicate-attempt-different-url",
             "location": "Worldwide",
             "salary": "",
             "tags": "",
             "description": "Duplicate title+company.",
             "date": "2026-05-28",
             "raw_date": 1779571200,
-            "is_qa": 0,
         }])
+    flow_state["inserted"] = inserted
 
 
 # -- QA Filter When steps ---------------------------------------------------
 
 
 @when("j'applique le filtre QA software")
-def when_apply_qa_filter():
-    """Apply the QA software filter."""
-    from scraper import get_jobs
+def when_apply_qa_filter(seeded_db):
+    """Applique le filtre QA logiciel aux offres de la base de test.
 
-    qa_jobs = get_jobs({"qa_only": True})
-    return qa_jobs
+    Classe chaque offre (titre + description) via la règle métier QA logiciel
+    et écrit le résultat dans la colonne ``is_qa`` de la base de test.
+    """
+    from tests.utils.qa_filter import classify_software_qa
+
+    rows = seeded_db.execute("SELECT id, title, description FROM jobs").fetchall()
+    for row in rows:
+        seeded_db.execute(
+            "UPDATE jobs SET is_qa = ? WHERE id = ?",
+            (classify_software_qa(row["title"], row["description"]), row["id"]),
+        )
+    seeded_db.commit()
 
 
 @when("j'analyse la stack technique")
@@ -474,36 +494,34 @@ def then_results_exclude_applied(seeded_db):
 
 
 @then(parsers.parse("{count:d} offre est ajoutée"))
-def then_offers_added(seeded_db, count):
-    """Verify that exactly `count` offers were added to the database."""
-    from tests.utils.db_helpers import count_jobs
-
-    actual = count_jobs(seeded_db)
-    assert actual == count, f"Expected {count} offers, found {actual}"
+def then_offers_added(seeded_db, count, flow_state):
+    """Verify that exactly `count` offers were added by the insert attempt."""
+    inserted = flow_state.get("inserted")
+    assert inserted is not None, "No insertion attempt recorded by the When step"
+    assert inserted == count, f"Expected {count} offers added, got {inserted}"
 
 
 # -- QA Filter Then steps ---------------------------------------------------
 
 
 @then("l'offre est marquée comme valide")
-def then_offer_marked_valid():
-    """Verify the offer is marked as valid (pass-through)."""
-    from scraper import get_jobs
-
-    results = get_jobs({"qa_only": True})
-    assert len(results) > 0, "No valid QA offers found"
+def then_offer_marked_valid(seeded_db):
+    """Verify the offer is kept by the QA-software filter (is_qa = 1)."""
+    rows = seeded_db.execute("SELECT title, is_qa FROM jobs").fetchall()
+    assert rows, "No offers found in test DB"
+    rejected = [(r["title"], r["is_qa"]) for r in rows if r["is_qa"] != 1]
+    assert not rejected, f"Expected offer(s) kept (is_qa=1), got {rejected}"
 
 
 @then("l'offre est marquée comme invalide")
-def then_offer_marked_invalid():
-    """Verify the offer is marked as invalid (pass-through)."""
-    from scraper import get_jobs
-
-    results = get_jobs({"qa_only": False})
-    # At least some offers should be non-QA
-    all_jobs = get_jobs({})
-    non_qa = [j for j in all_jobs if j.get("is_qa") == 0]
+def then_offer_marked_invalid(seeded_db):
+    """Verify the offer is rejected by the QA-software filter (is_qa = 0)."""
+    rows = seeded_db.execute("SELECT title, is_qa FROM jobs").fetchall()
+    assert rows, "No offers found in test DB"
+    non_qa = [r for r in rows if r["is_qa"] == 0]
     assert len(non_qa) > 0, "No non-QA offers found"
+    kept = [(r["title"], r["is_qa"]) for r in rows if r["is_qa"] != 0]
+    assert not kept, f"Expected offer(s) rejected (is_qa=0), got {kept}"
 
 
 @then("l'offre reçoit un score de pertinence >= 8/10")

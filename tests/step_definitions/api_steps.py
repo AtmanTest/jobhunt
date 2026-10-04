@@ -402,11 +402,15 @@ def then_key_is_present(api_response, key):
 
 @then(parsers.parse('"{key}" est un tableau'))
 def then_key_is_array(api_response, key):
-    """Verify a key in the response JSON is an array."""
+    """Vérifie que la clé demandée par la spécification est bien un tableau.
+
+    La spec nomme la clé ``top_stacks`` ; l'API expose exactement ce nom
+    (aucun alias toléré : c'est le produit qui se conforme à la spécification).
+    """
     resp = api_response.get("last")
     assert resp is not None, "No API response stored"
     data = json.loads(resp.data.decode("utf-8"))
-    assert key in data, f"Key '{key}' not found in response"
+    assert key in data, f"Key '{key}' not found in response. Keys: {list(data.keys())}"
     assert isinstance(data[key], list), f"Key '{key}' is not a list, got {type(data[key])}"
 
 

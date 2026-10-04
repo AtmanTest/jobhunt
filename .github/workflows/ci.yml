@@ -28,11 +28,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r tests/requirements-test.txt
 
-      # Les parcours navigateur ont leur propre job (ui-smoke) : ils exigent Chromium
+      # Les parcours navigateur ont leur propre job (ui-bdd-e2e) : ils exigent Chromium
       # et une application en marche — pas la même économie qu'un test unitaire.
+      # `-m "not frontend"` écarte les 11 scénarios BDD @frontend, qui pilotent un vrai
+      # navigateur (marqueur posé par les tags des .feature, aucune spec modifiée).
       - name: Run tests with coverage
         run: |
-          python -m pytest tests/ -v --ignore=tests/playwright \
+          python -m pytest tests/ -v --ignore=tests/playwright -m "not frontend" \
             --cov=. --cov-report=term --cov-report=xml \
             --alluredir=allure-results
 
@@ -85,6 +87,14 @@ jobs:
           JOBHUNT_BASE_URL: http://127.0.0.1:5050
         run: |
           python -m pytest tests/playwright/specs/smoke -m smoke -v \
+            --tracing=retain-on-failure \
+            --alluredir=allure-results
+
+      # Scénarios BDD étiquetés @frontend : ils démarrent eux-mêmes l'application
+      # sur une boucle locale avec une base de test ensemencée et pilotent Chromium.
+      - name: Run BDD @frontend (browser)
+        run: |
+          python -m pytest tests/test_scenarios.py -m frontend -v \
             --tracing=retain-on-failure \
             --alluredir=allure-results
 

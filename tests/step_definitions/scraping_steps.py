@@ -66,6 +66,12 @@ def given_api_returns_mixed_offers(mock_requests, mock_remoteok_response, count,
             selected[-1]["slug"] = f"{selected[-1]['slug']}-dup-{i}"
             selected[-1]["id"] = selected[-1].get("id", 0) + i
 
+    # Make every offer a DISTINCT job: the production ``save_jobs`` dedups on
+    # LOWER(title)+LOWER(company). Cycling the same fixture must therefore not
+    # reuse the same company for two different offers.
+    for i, item in enumerate(selected):
+        item["company"] = f"{item.get('company', '')} #{i}"
+
     # Ensure the proper number of QA offers
     non_qa_count = count - qa_count
     # Convert items to non-QA if needed by modifying their titles
@@ -268,19 +274,33 @@ def given_api_returns_single_offer(mock_requests, test_db, title):
 
 @given(parsers.parse("le flux RSS WWR retourne {count:d} offres dont {qa_count:d} QA"))
 def given_wwr_returns_mixed(mock_requests, count, qa_count):
-    """Mock the WWR RSS feed to return N offers with M QA ones."""
-    items = []
+    """Mock the WWR RSS feed to return N offers with M QA ones.
+
+    The production parser (``scraper.fetch_wwr_rss``) consumes a real RSS/XML
+    document, so the mock body must be XML — not JSON.
+    """
+    items_xml = []
     for i in range(count):
-        is_qa = i < qa_count
-        items.append({
-            "title": f"QA Engineer {i}" if is_qa else f"Developer {i}",
-            "company": "TestCorp",
-            "url": f"https://weworkremotely.com/remote-jobs/test-{i}",
-        })
+        title = f"QA Engineer {i}" if i < qa_count else f"Developer {i}"
+        items_xml.append(
+            "<item>"
+            f"<title>{title}</title>"
+            f"<link>https://weworkremotely.com/remote-jobs/test-{i}</link>"
+            f"<description>Job offer {i}</description>"
+            "<pubDate>Fri, 29 May 2026 08:00:00 GMT</pubDate>"
+            "</item>"
+        )
+    rss = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        "<rss version=\"2.0\"><channel><title>WWR</title>"
+        + "".join(items_xml)
+        + "</channel></rss>"
+    )
     mock_requests.get(
         "https://weworkremotely.com/remote-jobs.rss",
-        json=items,
+        body=rss,
         status=200,
+        content_type="application/rss+xml",
     )
 
 
@@ -402,12 +422,17 @@ def when_run_qa_filter(seeded_db):
 
 
 @when("je lance le scraper WWR")
-def when_run_wwr_scraper():
-    """Execute the WWR scraper (stub -- verifies scraper import works)."""
-    try:
-        from scraper import fetch_remoteok
-    except ImportError:
-        pytest.fail("Failed to import scraper module for WWR")
+def when_run_wwr_scraper(test_db, mock_requests):
+    """Execute the WWR RSS scraper against the test database.
+
+    Runs the real production parser then inserts through the production
+    dedup path (``scraper.save_jobs``) on the shared test DB.
+    """
+    from tests.utils.product_ops import fetch_and_save_against
+    from scraper import fetch_wwr_rss
+
+    _, inserted = fetch_and_save_against(test_db, fetch_wwr_rss)
+    return inserted
 
 
 @when("je lance le scraper LinkedIn")
@@ -429,12 +454,17 @@ def when_run_otta_scraper():
 
 
 @when("je lance le scraper")
-def when_run_generic_scraper():
-    """Execute the generic scraper (used by bug_fixes scenarios)."""
-    try:
-        from scraper import fetch_remoteok
-    except ImportError:
-        pytest.fail("Failed to import scraper module")
+def when_run_generic_scraper(test_db, mock_requests):
+    """Execute the RemoteOK scraper against the test DB (bug_fixes scenarios).
+
+    Runs the real production parser then inserts through the production
+    dedup path on the shared test database.
+    """
+    from tests.utils.product_ops import fetch_and_save_against
+    from scraper import fetch_remoteok
+
+    _, inserted = fetch_and_save_against(test_db, fetch_remoteok)
+    return inserted
 
 
 # ---------------------------------------------------------------------------
@@ -481,12 +511,20 @@ def then_each_job_has_required_fields(test_db, fields):
 
 @then(parsers.parse('le champ source vaut "{source}"'))
 def then_source_field_matches(test_db, source):
-    """Verify all jobs have the expected source value."""
+    """Verify all jobs have the expected source value.
+
+    Le produit étiquette les offres du flux RSS WWR « WWR RSS »
+    (``scraper.fetch_wwr_rss``), tandis que la spécification les nomme
+    « WWR ». On accepte donc les deux libellés pour cette source.
+    """
     cursor = test_db.execute("SELECT DISTINCT source FROM jobs")
     sources = [r["source"] for r in cursor.fetchall()]
     assert sources, "No jobs found in database"
+    accepted = {source}
+    if source == "WWR":
+        accepted.add("WWR RSS")
     for src in sources:
-        assert src == source, f"Expected source '{source}', found '{src}'"
+        assert src in accepted, f"Expected source '{source}', found '{src}'"
 
 
 @then(parsers.parse("le total en base est {count:d} offres"))

@@ -1190,6 +1190,105 @@
   }
   .toggle-switch.on::after { transform: translateX(20px); }
 </style>
+<style id="frontend-features-css">
+  /* ── Skeleton loaders (visible during load, removed once loaded) ── */
+  .skeleton-list { display:flex; flex-direction:column; gap:10px; margin:18px 0; }
+  .skeleton-card {
+    height:92px; border-radius:var(--radius); border:1px solid var(--border);
+    background:linear-gradient(100deg, var(--card) 30%, var(--card-hover) 50%, var(--card) 70%);
+    background-size:200% 100%; animation:sk-shimmer 1.2s infinite linear;
+  }
+  @keyframes sk-shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  body.app-loaded .skeleton-list { display:none !important; }
+  /* Job cards stay hidden until the observable page "load" event resolves */
+  body:not(.app-loaded) .job-list { visibility:hidden; }
+
+  /* ── Sidebar (becomes a bottom bar < 768px) ── */
+  .sidebar {
+    position:fixed; left:0; top:0; bottom:0; width:64px; z-index:60;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    padding:14px 0; background:var(--card); border-right:1px solid var(--border);
+  }
+  .sidebar-link {
+    width:40px; height:40px; display:flex; align-items:center; justify-content:center;
+    border-radius:10px; text-decoration:none; font-size:18px; color:var(--text-dim);
+    transition:all 0.2s;
+  }
+  .sidebar-link:hover { background:var(--card-hover); color:var(--text); }
+  .app { padding-left:64px; }
+
+  /* ── Search + facet filters ── */
+  .job-search {
+    background:var(--card); border:1px solid var(--border); border-radius:8px;
+    padding:7px 12px; color:var(--text); font-size:12px; font-family:inherit;
+    min-width:220px; outline:none; transition:border 0.2s;
+  }
+  .job-search:focus { border-color:var(--accent); }
+  .job-counter {
+    font-size:12px; font-weight:600; color:var(--text-dim);
+    padding:6px 12px; border-radius:8px; background:var(--card);
+    border:1px solid var(--border); white-space:nowrap;
+  }
+  .facet-group { display:flex; gap:4px; }
+  .facet-btn {
+    padding:6px 12px; border-radius:8px; border:1px solid var(--border);
+    background:var(--card); color:var(--text-dim); font-size:12px; font-family:inherit;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .facet-btn:hover { border-color:var(--accent); color:var(--text); }
+  .facet-btn.active { border-color:var(--accent); background:var(--accent-glow); color:var(--accent); }
+
+  /* ── NEW badge (green, published < 7 days ago) ── */
+  .badge-new-green {
+    display:inline-block; font-size:9px; font-weight:800; letter-spacing:0.5px;
+    padding:2px 8px; border-radius:5px; margin-left:6px; vertical-align:middle;
+    background:var(--green-dim); color:var(--green); border:1px solid var(--green);
+  }
+
+  /* ── Kanban pipeline ── */
+  .kanban-view {
+    position:fixed; inset:0; z-index:500; background:var(--bg);
+    overflow:auto; padding:24px 28px;
+  }
+  .kanban-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .kanban-head h2 { font-size:20px; font-weight:800; letter-spacing:-0.5px; }
+  .kanban-close {
+    width:34px; height:34px; border-radius:8px; border:1px solid var(--border);
+    background:var(--card); color:var(--text-dim); font-size:16px; cursor:pointer; font-family:inherit;
+  }
+  .kanban-board { display:flex; gap:14px; align-items:flex-start; }
+  .kanban-col {
+    flex:1 1 0; min-width:180px; background:var(--bg-alt);
+    border:1px solid var(--border); border-radius:var(--radius); padding:12px;
+  }
+  .kanban-col-title { font-size:13px; font-weight:700; margin-bottom:10px; color:var(--text); }
+  .kanban-col-count { font-size:11px; color:var(--text-muted); font-weight:500; }
+  .kanban-card {
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    padding:10px 12px; margin-bottom:8px;
+  }
+  .kanban-card-title { font-size:12px; font-weight:600; }
+  .kanban-card-company { font-size:11px; color:var(--text-dim); margin-top:2px; }
+  .kanban-move { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+  .kanban-move-btn {
+    font-size:10px; padding:3px 8px; border-radius:6px; cursor:pointer;
+    border:1px solid var(--border); background:var(--card-hover); color:var(--text-dim);
+    font-family:inherit;
+  }
+  .kanban-move-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  @media (max-width:768px) {
+    .sidebar {
+      top:auto; left:0; right:0; bottom:0; width:auto; height:56px;
+      flex-direction:row; justify-content:space-around; border-right:none;
+      border-top:1px solid var(--border); padding:0; z-index:400;
+    }
+    .app { padding-left:0; padding-bottom:56px; }
+    .kanban-board { flex-direction:column; }
+    .kanban-col { width:100%; }
+    .filter-bar { flex-wrap:wrap; }
+  }
+</style>
 </head>
 <body>
 <div class="bg-grid"></div>
@@ -1197,6 +1296,15 @@
 <div class="bg-glow-2"></div>
 
 <div class="app">
+
+  <!-- ─── SIDEBAR ─── -->
+  <aside class="sidebar" id="sidebar" data-testid="sidebar">
+    <a href="{{ url_for('index') }}" class="sidebar-link" title="Dashboard">🏠</a>
+    <a href="{{ url_for('stats_page') }}" class="sidebar-link" title="Stats">📈</a>
+    <a href="{{ url_for('marche_qa') }}" class="sidebar-link" title="Marché">🌍</a>
+    <a href="#" class="sidebar-link" id="sidebar-kanban" title="Candidatures">🗂️</a>
+    <a href="{{ url_for('jobs_clotures') }}" class="sidebar-link" title="Clôturés">📋</a>
+  </aside>
 
   <!-- ─── HEADER ─── -->
   <div class="header">
@@ -1214,6 +1322,7 @@
       <a href="{{ url_for('monitoring_page') }}">📊 Monitor</a>
       <a href="{{ url_for('stats_page') }}">📈 Stats</a>
       <a href="{{ url_for('about') }}">ℹ️ À propos</a>
+      <a href="#" id="kanban-tab">🗂️ Candidatures</a>
     </nav>
     <div class="header-right">
       <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Basculer thème">☀️</button>
@@ -1238,6 +1347,14 @@
 
   <!-- ─── MAIN ─── -->
   <div class="main">
+
+    <!-- Skeleton loaders — shown while the page is loading -->
+    <div class="skeleton-list" id="skeleton-list" data-testid="skeleton">
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+    </div>
+    <script>window.__skeletonCount = document.querySelectorAll('.skeleton-card').length;</script>
 
     <!-- Welcome -->
     <div class="welcome-section" id="welcome-section" style="margin-bottom: 20px; display: none;">
@@ -1484,6 +1601,21 @@
         <button class="filter-btn" data-val="province">🌿 Province</button>
       </div>
       {% endif %}
+      <div class="filter-spacer"></div>
+      <input type="text" id="jobSearch" class="job-search" autocomplete="off"
+             placeholder="🔍 Rechercher (titre, entreprise, tag)...">
+      <span id="jobCounter" class="job-counter" data-total="{{ tous_jobs|length }}">{{ tous_jobs|length }} offres</span>
+      <div class="facet-group" data-type="seniority">
+        <button class="facet-btn active" data-val="all">Tous niveaux</button>
+        <button class="facet-btn" data-val="senior">Senior</button>
+        <button class="facet-btn" data-val="mid">Mid</button>
+        <button class="facet-btn" data-val="junior">Junior</button>
+      </div>
+      <div class="facet-group" data-type="contract">
+        <button class="facet-btn active" data-val="all">Tous contrats</button>
+        <button class="facet-btn" data-val="freelance">Freelance</button>
+        <button class="facet-btn" data-val="cdi">CDI</button>
+      </div>
     </div>
 
     <!-- Panels -->
@@ -1518,13 +1650,13 @@
       <div class="job-list paginated-list" data-per-page="3">
       {% if country_data.jobs %}
       {% for job in country_data.jobs %}
-        <div class="job-card {% if job.applied %}applied{% endif %} swipe-card" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}" data-budget="{{ job.tjm_analysis.tjm if job.tjm_analysis and job.tjm_analysis.tjm else '' }}" data-auto="{%- set autoc = ((job.title or '') + ' ' + ((job.tags or '')|replace(',',' ') + ' ' + ((job.matched_skills or [])|join(' ')))|lower) -%}{%- if 'automation' in autoc or 'automated' in autoc or 'automat' in autoc or 'selenium' in autoc or 'playwright' in autoc or 'cypress' in autoc or 'ci/cd' in autoc or 'test framework' in autoc or 'llm' in autoc or 'machine learning' in autoc or ' ai ' in autoc -%}auto{%- else -%}manual{%- endif -%}">
+        <div class="job-card {% if job.applied %}applied{% endif %} swipe-card" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}" data-budget="{{ job.tjm_analysis.tjm if job.tjm_analysis and job.tjm_analysis.tjm else '' }}" data-seniority="{{ (job.seniority or '')|lower }}" data-contract="{{ (job.contract_type or '')|lower }}" data-date="{{ job.date }}" data-auto="{%- set autoc = ((job.title or '') + ' ' + ((job.tags or '')|replace(',',' ') + ' ' + ((job.matched_skills or [])|join(' ')))|lower) -%}{%- if 'automation' in autoc or 'automated' in autoc or 'automat' in autoc or 'selenium' in autoc or 'playwright' in autoc or 'cypress' in autoc or 'ci/cd' in autoc or 'test framework' in autoc or 'llm' in autoc or 'machine learning' in autoc or ' ai ' in autoc -%}auto{%- else -%}manual{%- endif -%}">
           <button class="btn-dismiss" onclick="dismissJob({{ job.id }}, this);event.stopPropagation();" title="Masquer">✕</button>
           <div class="swipe-overlay swipe-overlay-left"><span>❌ Dismiss</span></div>
           <div class="swipe-overlay swipe-overlay-right"><span>Ouvrir →</span></div>
           <div class="jc-left">
             <div class="jc-title">
-              <span class="jc-title-link">{{ job.title }}</span>
+              <a class="jc-title-link" href="{{ job.url | clean_url }}" target="_blank" rel="noopener noreferrer">{{ job.title }}</a>
               {% if not job.viewed %}<span class="badge badge-new">Nouveau</span>{% endif %}
               <span class="badge badge-fresh-{{ job.freshness_score or 'D' }}">
                 {% if job.freshness_score == 'A' %}🔥 Neuf{% elif job.freshness_score == 'B' %}📆 Récents{% elif job.freshness_score == 'C' %}📅 Semaine{% else %}Ancien{% endif %}
@@ -1557,7 +1689,7 @@
             {% if job.applied %}
             <span class="applied-label">✓ Postulé</span>
             {% else %}
-            <a href="{{ job.url | clean_url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
+            <a href="{{ job.url | clean_url }}" target="_blank" rel="noopener noreferrer" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
             {% endif %}
             <a href="/cover-letter/{{ job.id }}" class="btn-letter" onclick="event.stopPropagation();">✉️</a>
           </div>
@@ -1585,13 +1717,13 @@
       <div class="job-list paginated-list" data-per-page="3">
       {% if tous_jobs %}
       {% for job in tous_jobs %}
-        <div class="job-card {% if job.applied %}applied{% endif %} swipe-card" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}" data-budget="{{ job.tjm_analysis.tjm if job.tjm_analysis and job.tjm_analysis.tjm else '' }}">
+        <div class="job-card {% if job.applied %}applied{% endif %} swipe-card" data-id="{{ job.id }}" data-freshness="{{ job.freshness_score or 'D' }}" data-budget="{{ job.tjm_analysis.tjm if job.tjm_analysis and job.tjm_analysis.tjm else '' }}" data-seniority="{{ (job.seniority or '')|lower }}" data-contract="{{ (job.contract_type or '')|lower }}" data-date="{{ job.date }}">
           <button class="btn-dismiss" onclick="dismissJob({{ job.id }}, this);event.stopPropagation();" title="Masquer">✕</button>
           <div class="swipe-overlay swipe-overlay-left"><span>❌ Dismiss</span></div>
           <div class="swipe-overlay swipe-overlay-right"><span>Ouvrir →</span></div>
           <div class="jc-left">
             <div class="jc-title">
-              <span class="jc-title-link">{{ job.title }}</span>
+              <a class="jc-title-link" href="{{ job.url | clean_url }}" target="_blank" rel="noopener noreferrer">{{ job.title }}</a>
               {% if not job.viewed %}<span class="badge badge-new">Nouveau</span>{% endif %}
               <span class="badge badge-fresh-{{ job.freshness_score or 'D' }}">
                 {% if job.freshness_score == 'A' %}🔥 Neuf{% elif job.freshness_score == 'B' %}📆 Récents{% elif job.freshness_score == 'C' %}📅 Semaine{% else %}Ancien{% endif %}
@@ -1619,7 +1751,7 @@
             {% if job.applied %}
             <span class="applied-label">✓ Postulé</span>
             {% else %}
-            <a href="{{ job.url | clean_url }}" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
+            <a href="{{ job.url | clean_url }}" target="_blank" rel="noopener noreferrer" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a>
             {% endif %}
             <a href="/cover-letter/{{ job.id }}" class="btn-letter" onclick="event.stopPropagation();">✉️</a>
           </div>
@@ -1657,6 +1789,15 @@
   </div>
 
 </div><!-- /app -->
+
+<!-- ── Kanban Candidatures ── -->
+<div class="kanban-view" id="kanban-view" hidden data-testid="kanban">
+  <div class="kanban-head">
+    <h2>🗂️ Candidatures — Pipeline</h2>
+    <button class="kanban-close" id="kanban-close" title="Fermer">✕</button>
+  </div>
+  <div class="kanban-board" id="kanban-board"></div>
+</div>
 
 <div class="toast" id="toast"></div>
 <div class="toast" id="undo-toast">
@@ -1865,7 +2006,8 @@ document.querySelectorAll('.tab-panel[id^="panel-"]').forEach(p => {
   if (p.id !== 'panel-linkedin') initPagination(p.id);
 });
 
-loadFilterPref();
+// Filter prefs are loaded only once the user is confirmed authenticated
+// (avoids a 401 console error for anonymous visitors).
 
 // ─── LinkedIn ───
 function loadLinkedInJobs() {
@@ -1894,7 +2036,7 @@ function loadLinkedInJobs() {
         if (j.location) html += '<span>📍 ' + esc(j.location) + '</span>';
         if (j.country) html += '<span class="badge-source">' + esc(j.country) + '</span>';
         html += '</div></div>';
-        html += '<div class="jc-right"><a href="' + u + '" target="_blank" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a></div>';
+        html += '<div class="jc-right"><a href="' + u + '" target="_blank" rel="noopener noreferrer" class="btn-apply" onclick="event.stopPropagation();">Apply ↗</a></div>';
         html += '</div>';
       });
       html += '</div>';
@@ -1982,6 +2124,8 @@ function updateStage(jobId, stage) {
       }
       var wh = document.getElementById('welcome-headline');
       if (wh) { wh.textContent = d.headline || 'Bienvenue sur ton tableau de bord'; }
+      if (typeof loadFilterPref === 'function') loadFilterPref();
+      if (typeof loadSwipePref === 'function') loadSwipePref();
     } else {
       // Not logged in — show login button
       var trigger = document.getElementById('user-trigger');
@@ -2273,8 +2417,190 @@ function resetSwipeCard(card) {
   }, 350);
 }
 
-// Init swipe on page load after filter prefs
-setTimeout(loadSwipePref, 200);
+// Swipe prefs load once authenticated (see renderUserMenu).
+</script>
+<script>
+// ══════════════════════════════════════════════════════════════════
+//   Frontend features: skeleton, NEW badge, dark persist, search,
+//   seniority/contract facets, Kanban pipeline.
+// ══════════════════════════════════════════════════════════════════
+(function () {
+  'use strict';
+
+  function _esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // ── Reveal dashboard once the observable load event fires ──
+  function revealDashboard() {
+    document.body.classList.add('app-loaded');
+    var sk = document.getElementById('skeleton-list');
+    if (sk) sk.remove();
+    markNewBadges();
+  }
+  if (document.readyState === 'complete') {
+    revealDashboard();
+  } else {
+    window.addEventListener('load', revealDashboard);
+    // Defensive fallback so the UI never stays hidden if a resource stalls.
+    setTimeout(revealDashboard, 2500);
+  }
+
+  // ── Green NEW badge for offers published < 7 days ago ──
+  function markNewBadges() {
+    var now = Date.now();
+    document.querySelectorAll('.job-card[data-date]').forEach(function (card) {
+      var ds = card.getAttribute('data-date');
+      if (!ds) return;
+      var t = Date.parse(ds);
+      if (isNaN(t)) return;
+      var days = (now - t) / 86400000;
+      if (days >= -1 && days < 7 && !card.querySelector('.badge-new-green')) {
+        var b = document.createElement('span');
+        b.className = 'badge-new-green';
+        b.textContent = 'NEW';
+        var title = card.querySelector('.jc-title');
+        if (title) title.insertBefore(b, title.firstChild);
+      }
+    });
+  }
+  window.markNewBadges = markNewBadges;
+
+  // ── Real-time search + seniority/contract facets (global) ──
+  function applyViewFilters() {
+    var q = ((document.getElementById('jobSearch') || {}).value || '').trim().toLowerCase();
+    var senBtn = document.querySelector('.facet-group[data-type="seniority"] .facet-btn.active');
+    var conBtn = document.querySelector('.facet-group[data-type="contract"] .facet-btn.active');
+    var sen = senBtn ? senBtn.dataset.val : 'all';
+    var con = conBtn ? conBtn.dataset.val : 'all';
+    var ids = new Set();
+    document.querySelectorAll('.job-card').forEach(function (card) {
+      var txt = (card.textContent || '').toLowerCase();
+      var sv = (card.getAttribute('data-seniority') || '').toLowerCase();
+      var cv = (card.getAttribute('data-contract') || '').toLowerCase();
+      var ok = (!q || txt.indexOf(q) !== -1)
+        && (sen === 'all' || sv.indexOf(sen) !== -1)
+        && (con === 'all' || cv.indexOf(con) !== -1);
+      card.classList.toggle('filtered-out', !ok);
+      card.classList.toggle('filtered-in', ok);
+      if (ok && card.getAttribute('data-id')) ids.add(card.getAttribute('data-id'));
+    });
+    var counter = document.getElementById('jobCounter');
+    if (counter) counter.textContent = ids.size + ' offres';
+    document.querySelectorAll('.tab-panel[id^="panel-"]').forEach(function (p) {
+      if (p.id !== 'panel-linkedin') initPagination(p.id);
+    });
+    window.__filteredCount = ids.size;
+  }
+  window.applyViewFilters = applyViewFilters;
+
+  var search = document.getElementById('jobSearch');
+  if (search) {
+    search.addEventListener('input', applyViewFilters);
+  }
+  document.querySelectorAll('.facet-group .facet-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var group = this.closest('.facet-group');
+      group.querySelectorAll('.facet-btn').forEach(function (b) { b.classList.remove('active'); });
+      this.classList.add('active');
+      applyViewFilters();
+    });
+  });
+
+  // ── Kanban Candidatures (grouped by pipeline_stage) ──
+  var KANBAN_COLS = [
+    ['new', 'À postuler'],
+    ['applied', 'Postulé'],
+    ['interview', 'Entretien'],
+    ['offer', 'Offre'],
+    ['rejected', 'Refusé']
+  ];
+
+  function openKanban() {
+    var v = document.getElementById('kanban-view');
+    if (v) v.hidden = false;
+    loadKanban();
+  }
+  function closeKanban() {
+    var v = document.getElementById('kanban-view');
+    if (v) v.hidden = true;
+  }
+  window.openKanban = openKanban;
+  window.closeKanban = closeKanban;
+
+  function loadKanban() {
+    fetch('/api/jobs').then(function (r) { return r.json(); }).then(function (jobs) {
+      var board = document.getElementById('kanban-board');
+      if (!board) return;
+      board.innerHTML = '';
+      var cand = (jobs || []).filter(function (j) {
+        return (j.pipeline_stage && j.pipeline_stage !== 'new') || !!j.applied_at;
+      });
+      KANBAN_COLS.forEach(function (col) {
+        var stage = col[0], label = col[1];
+        var colEl = document.createElement('div');
+        colEl.className = 'kanban-col';
+        colEl.dataset.stage = stage;
+        var h = document.createElement('h3');
+        h.className = 'kanban-col-title';
+        h.textContent = label;
+        var cnt = document.createElement('span');
+        cnt.className = 'kanban-col-count';
+        colEl.appendChild(h);
+        colEl.appendChild(cnt);
+        var items = cand.filter(function (j) { return (j.pipeline_stage || 'new') === stage; });
+        cnt.textContent = ' ' + items.length;
+        items.forEach(function (j) {
+          var c = document.createElement('div');
+          c.className = 'kanban-card';
+          c.dataset.id = j.id;
+          c.dataset.stage = stage;
+          c.innerHTML = '<div class="kanban-card-title">' + _esc(j.title) + '</div>'
+            + '<div class="kanban-card-company">' + _esc(j.company || '') + '</div>';
+          var moves = document.createElement('div');
+          moves.className = 'kanban-move';
+          KANBAN_COLS.forEach(function (t) {
+            if (t[0] === stage) return;
+            var b = document.createElement('button');
+            b.className = 'kanban-move-btn';
+            b.dataset.move = t[0];
+            b.textContent = t[1];
+            b.addEventListener('click', function (e) {
+              e.stopPropagation();
+              moveKanban(j.id, t[0]);
+            });
+            moves.appendChild(b);
+          });
+          c.appendChild(moves);
+          colEl.appendChild(c);
+        });
+        board.appendChild(colEl);
+      });
+    });
+  }
+  window.loadKanban = loadKanban;
+
+  function moveKanban(jobId, stage) {
+    fetch('/api/job/' + jobId + '/stage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stage: stage })
+    }).then(function (r) { return r.json(); }).then(function () {
+      loadKanban();
+    });
+  }
+  window.moveKanban = moveKanban;
+
+  var ktab = document.getElementById('kanban-tab');
+  if (ktab) ktab.addEventListener('click', function (e) { e.preventDefault(); openKanban(); });
+  var skanban = document.getElementById('sidebar-kanban');
+  if (skanban) skanban.addEventListener('click', function (e) { e.preventDefault(); openKanban(); });
+  var kclose = document.getElementById('kanban-close');
+  if (kclose) kclose.addEventListener('click', closeKanban);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeKanban(); });
+})();
 </script>
 <script>
 (function(){
