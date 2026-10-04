@@ -1,0 +1,123 @@
+{
+  "id": "wf-tnr-playwright",
+  "name": "JobHunt — TNR (Playwright) à la demande",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true
+  },
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "tnr-manuel",
+      "name": "1. Déclencheur — manuel",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-460, 160]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tnr",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "tnr-webhook",
+      "name": "1. Déclencheur — lien",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-460, 300],
+      "webhookId": "tnr"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.github.com/repos/AtmanTest/jobhunt/actions/workflows/ci.yml/dispatches",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"ref\": \"main\"\n}",
+        "options": {}
+      },
+      "id": "tnr-dispatch",
+      "name": "2. Lancer la TNR dans la CI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-200, 230],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "amount": 25,
+        "unit": "seconds"
+      },
+      "id": "tnr-attente",
+      "name": "3. Attendre le démarrage",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [60, 230],
+      "webhookId": "tnr-attente"
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/AtmanTest/jobhunt/actions/runs?per_page=3",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {}
+      },
+      "id": "tnr-resultat",
+      "name": "4. Lire le résultat",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [320, 230],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const brut = $input.first().json;\nconst runs = brut.workflow_runs || [];\n\nif (!runs.length) {\n  return [{ json: {\n    message: \"Aucune exécution visible. Le déclenchement a probablement échoué (vérifier les droits 'Actions' du jeton).\",\n    run_url: \"\", statut: \"inconnu\", conclusion: null } }];\n}\n\nconst d = runs[0];\nconst etat = d.status === \"completed\" ? (d.conclusion || \"?\") : d.status;\n\nconst lignes = runs.map(r => {\n  const s = r.status === \"completed\" ? (r.conclusion || \"?\") : r.status;\n  return `- ${r.name} · ${s} · ${r.html_url}`;\n});\n\nreturn [{ json: {\n  ticket: \"—\",\n  message: `TNR (Playwright + pytest) : ${etat}\\n\\n${lignes.join(\"\\n\")}`,\n  run_url: d.html_url || \"\",\n  statut: d.status,\n  conclusion: d.conclusion || null,\n  horodatage: new Date().toLocaleString(\"fr-FR\")\n} }];"
+      },
+      "id": "tnr-resume",
+      "name": "5. Résumé",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [580, 230]
+    }
+  ],
+  "connections": {
+    "1. Déclencheur — manuel": {
+      "main": [[{"node": "2. Lancer la TNR dans la CI", "type": "main", "index": 0}]]
+    },
+    "1. Déclencheur — lien": {
+      "main": [[{"node": "2. Lancer la TNR dans la CI", "type": "main", "index": 0}]]
+    },
+    "2. Lancer la TNR dans la CI": {
+      "main": [[{"node": "3. Attendre le démarrage", "type": "main", "index": 0}]]
+    },
+    "3. Attendre le démarrage": {
+      "main": [[{"node": "4. Lire le résultat", "type": "main", "index": 0}]]
+    },
+    "4. Lire le résultat": {
+      "main": [[{"node": "5. Résumé", "type": "main", "index": 0}]]
+    }
+  },
+  "meta": {
+    "but": "Lancer la suite complète (TNR) sans passer par la chaîne d'agents",
+    "declencheurs": "manuel (bouton n8n) · POST http://127.0.0.1:5678/webhook/tnr",
+    "etapes": "5 nœuds : 2 déclencheurs → lancement CI → attente → lecture → résumé"
+  }
+}
