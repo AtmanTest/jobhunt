@@ -1,13 +1,47 @@
-"""
-Playwright scenarios for JobHunt Dashboard QA demo.
-Each scenario is a standalone function that returns {"passed": bool, "details": str}.
+"""Scénarios Playwright du dashboard JobHunt.
+
+Ce fichier contient les scénarios historiques du dashboard (filtre budget, stats,
+onglets pays, filtre remote, cartes, top matches, pagination, dismiss, Apply).
+
+Deux façons de les exécuter :
+
+  * sous pytest — la voie normale :
+        JOBHUNT_BASE_URL=... python -m pytest tests/playwright/test_dashboard.py
+    Ils utilisent le serveur E2E déterministe de la fixture `e2e_url` ;
+
+  * hors pytest, via `run_scenario(nom)`, utilisé par le tableau de bord /qa :
+    la fonction démarre son propre serveur en boucle locale sur une base
+    temporaire ensemencée, puis renvoie {"passed", "error", "screenshot"}.
 """
 
-import json, os
+import os
+import socket
+import sys
+import tempfile
+import threading
 
-BASE_URL = os.environ.get("JOBHUNT_URL", "http://localhost:5050")
+import pytest
+
+# La racine du dépôt doit être importable : `app` et `tests.*` y vivent.
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
+# Ces scénarios appartiennent à l'étage de régression E2E (pas à la fumée).
+pytestmark = pytest.mark.regression
+
 SCREENSHOTS_DIR = os.path.join(os.path.dirname(__file__), "screenshots")
 os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
+
+
+@pytest.fixture
+def e2e_url(seeded):
+    """Serveur E2E déterministe (port libre de 127.0.0.1, base réamorcée).
+
+    Remplace l'ancienne constante figée sur `localhost:5050`, qui faisait échouer
+    ces scénarios par simple absence de serveur sur ce port.
+    """
+    return seeded["base_url"]
 
 
 def _screenshot(page, name):
@@ -16,15 +50,85 @@ def _screenshot(page, name):
     return path
 
 
-def test_budget_filter(page):
-    """E2E du filtre budget : cliquer ≥ 600 ne doit laisser que les offres à TJM >= 600.
+def _serve_deterministic():
+    """Démarre l'app en boucle locale sur une base temporaire ensemencée.
+
+    Returns:
+        (url, arret) — `arret` est la fonction à appeler pour éteindre le serveur.
+    """
+    import urllib.request
+
+    import scraper
+
+    # Neutralise le thread de scraping LinkedIn lancé à l'import de app.py :
+    # il polluerait la base déterministe avec des offres réelles.
+    scraper.fetch_linkedin_countries = lambda *a, **k: []
+
+    import app as app_module
+    from werkzeug.serving import make_server
+
+    from tests.playwright.fixtures.e2e_data import seed_database
+
+    db_path = os.path.join(tempfile.mkdtemp(prefix="qa_run_"), "e2e_jobs.db")
+    seed_database(db_path)
+
+    app_module.DB_PATH = db_path
+    scraper.DB_PATH = db_path
+    app_module.DB_POPULATED = True
+    app_module._ensure_db_populated = lambda: None
+
+    probe = socket.socket()
+    probe.bind(("127.0.0.1", 0))
+    port = probe.getsockname()[1]
+    probe.close()
+
+    server = make_server("127.0.0.1", port, app_module.app, threaded=True)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+
+    url = f"http://127.0.0.1:{port}"
+    deadline = 20
+    while deadline > 0:
+        try:
+            urllib.request.urlopen(url + "/api/stats", timeout=1).read()
+            break
+        except Exception:
+            deadline -= 1
+    return url, server.shutdown
+
+
+def _attendre_actif(page, element, timeout=10000):
+    """Attend que l'élément cliqué porte la classe `active`.
+
+    Remplace les attentes arbitraires (`wait_for_timeout`) par une condition
+    observable : le filtre est appliqué quand son bouton devient actif.
+    """
+    page.wait_for_function(
+        "el => (el.className || '').includes('active')", arg=element, timeout=timeout
+    )
+
+
+def _attendre_liste_changee(page, avant, timeout=10000):
+    """Attend que la liste visible des offres change par rapport à `avant`.
+
+    Condition observable : le nombre de cartes visibles diffère de l'état
+    précédent. Utilisé quand le filtre ne marque pas de bouton actif.
+    """
+    page.wait_for_function(
+        "n => [...document.querySelectorAll('.job-card')]"
+        ".filter(e => e.offsetParent !== null).length !== n",
+        arg=avant, timeout=timeout,
+    )
+
+
+def test_budget_filter(page, e2e_url):
+    """Le filtre budget « ≥ 600 » ne laisse passer aucune offre sous le seuil.
 
     Vérifie trois choses observables depuis le navigateur :
-      1. le groupe de filtres « budget » existe et porte les bornes attendues ;
+      1. le groupe de filtres « budget » existe et porte la borne 600 ;
       2. après clic sur « ≥ 600 », aucune carte visible n'a un budget analysé < 600 ;
       3. les cartes sans budget analysé sont écartées (règle métier).
     """
-    page.goto(BASE_URL)
+    page.goto(e2e_url)
     page.wait_for_selector(".job-card", timeout=15000)
 
     groupe = page.query_selector('[data-type="budget"]')
@@ -37,7 +141,7 @@ def test_budget_filter(page):
 
     bouton = [b for b in groupe.query_selector_all(".filter-btn") if "600" in b.text_content()][0]
     bouton.click()
-    page.wait_for_timeout(700)
+    _attendre_actif(page, bouton)
 
     visibles = [c for c in page.query_selector_all(".job-card") if c.is_visible()]
     assert len(visibles) <= len(avant), "le filtre a ajouté des cartes"
@@ -54,116 +158,125 @@ def test_budget_filter(page):
 
     assert not hors_seuil, f"offres sous le seuil encore visibles : {hors_seuil}"
     assert not sans_budget, f"offres sans budget analysé encore visibles : {sans_budget[:5]}"
-    return {"passed": True,
-            "details": f"{len(avant)} cartes avant, {len(visibles)} après filtrage ≥ 600 (aucune sous le seuil)"}
 
 
-def test_page_title(page):
-    page.goto(BASE_URL)
+def test_page_title(page, e2e_url):
+    """Le titre de la page identifie bien JobHunt."""
+    page.goto(e2e_url)
     title = page.title()
-    assert "JobHunt" in title or "Marché" in title or "QA" in title, f"Unexpected title: {title}"
-    return {"passed": True, "details": f"Title: {title}"}
+    assert "JobHunt" in title or "Marché" in title or "QA" in title, f"titre inattendu : {title}"
 
 
-def test_hero_stats(page):
-    page.goto(BASE_URL)
+def test_hero_stats(page, e2e_url):
+    """Les cartes de statistiques du bandeau sont présentes et non vides."""
+    page.goto(e2e_url)
     page.wait_for_selector(".hero-card", timeout=10000)
     cards = page.query_selector_all(".hero-card")
-    assert len(cards) >= 3, f"Expected 3+ stat cards, got {len(cards)}"
-    texts = [c.text_content().strip() for c in cards]
-    return {"passed": True, "details": f"Stat cards: {len(cards)} — {' | '.join(t[:30] for t in texts)}"}
+    assert len(cards) >= 3, f"3 cartes de stats attendues au minimum, {len(cards)} trouvées"
+    textes = [c.text_content().strip() for c in cards]
+    assert all(textes), "une carte de statistiques est vide"
 
 
-def test_country_tabs(page):
-    page.goto(BASE_URL)
+def test_country_tabs(page, e2e_url):
+    """Les onglets pays sont présents et un changement d'onglet est possible."""
+    page.goto(e2e_url)
     page.wait_for_selector(".country-btn", timeout=10000)
     tabs = page.query_selector_all(".country-btn")
-    tab_count = len(tabs)
-    assert tab_count >= 5, f"Expected 5+ country tabs, got {tab_count}"
-    # Click Switzerland
-    swiss = [t for t in tabs if "Suisse" in t.text_content() or "Switzerland" in t.text_content()]
-    if swiss:
-        swiss[0].click()
-        page.wait_for_timeout(500)
-    return {"passed": True, "details": f"Country tabs: {tab_count}, switched to Suisse OK"}
+    assert len(tabs) >= 5, f"5 onglets pays attendus au minimum, {len(tabs)} trouvés"
+
+    suisse = [t for t in tabs if "Suisse" in t.text_content() or "Switzerland" in t.text_content()]
+    assert suisse, "onglet Suisse absent"
+    suisse[0].click()
+    _attendre_actif(page, suisse[0])
+    assert suisse[0].is_visible(), "l'onglet Suisse a disparu après le clic"
 
 
-def test_remote_filter(page):
-    page.goto(BASE_URL)
+def test_remote_filter(page, e2e_url):
+    """Le filtre « Remote » existe et son clic ne casse pas la liste."""
+    page.goto(e2e_url)
     page.wait_for_selector(".filter-btn", timeout=10000)
     filters = page.query_selector_all(".filter-btn")
     remote_btn = [f for f in filters if "Remote" in f.text_content()]
-    assert len(remote_btn) > 0, "Remote filter button not found"
+    assert remote_btn, "bouton de filtre « Remote » introuvable"
+
     remote_btn[0].click()
-    page.wait_for_timeout(500)
-    return {"passed": True, "details": "Remote filter clicked successfully"}
+    _attendre_actif(page, remote_btn[0])
+    assert page.query_selector_all(".job-card"), "le filtre Remote a vidé la liste d'offres"
 
 
-def test_job_cards(page):
-    page.goto(BASE_URL)
+def test_job_cards(page, e2e_url):
+    """Au moins une offre est visible à l'écran."""
+    page.goto(e2e_url)
     page.wait_for_selector(".job-card", timeout=15000)
     cards = page.query_selector_all(".job-card")
     visible = [c for c in cards if c.is_visible()]
-    assert len(visible) > 0, "No visible job cards"
-    return {"passed": True, "details": f"{len(visible)} job cards visible"}
+    assert visible, "aucune carte d'offre visible"
 
 
-def test_top_matches(page):
-    page.goto(BASE_URL)
+def test_top_matches(page, e2e_url):
+    """Les meilleures correspondances affichent un score de pertinence."""
+    page.goto(e2e_url)
     page.wait_for_selector(".top-match-card", timeout=10000)
     cards = page.query_selector_all(".top-match-card")
-    scores = [c.query_selector(".tm-score") for c in cards if c.query_selector(".tm-score")]
-    score_texts = [s.text_content().strip() for s in scores if s]
-    return {"passed": True, "details": f"{len(cards)} top matches — scores: {', '.join(score_texts[:5])}"}
+    assert cards, "aucune carte de correspondance affichée"
+    scores = [c.query_selector(".tm-score") for c in cards]
+    scores = [s for s in scores if s]
+    assert scores, "aucun score de correspondance affiché"
+    assert all(s.text_content().strip() for s in scores), "un score de correspondance est vide"
 
 
-
-def test_pagination(page):
-    page.goto(BASE_URL)
+def test_pagination(page, e2e_url):
+    """La pagination est présente ; la page suivante est atteignable si elle existe."""
+    page.goto(e2e_url)
     page.wait_for_selector(".page-btn", timeout=10000)
     btns = page.query_selector_all(".page-btn")
-    next_btn = [b for b in btns if b.text_content().strip() == "›" and not b.is_disabled()]
-    if next_btn:
-        next_btn[0].click()
-        page.wait_for_timeout(500)
-        return {"passed": True, "details": "Pagination: clicked next page"}
-    return {"passed": True, "details": "Only 1 page, pagination not needed"}
+    assert btns, "aucun bouton de pagination"
+    suivants = [b for b in btns if b.text_content().strip() == "›" and not b.is_disabled()]
+    assert suivants, "aucun bouton de page suivante actif"
+    page_active = page.query_selector(".page-btn.active")
+    assert page_active is not None, "aucune page marquée active"
+    numero_avant = page_active.text_content().strip()
+
+    suivants[0].click()
+    # Condition observable : la page marquée active n'est plus celle d'avant.
+    page.wait_for_function(
+        "n => { const a = document.querySelector('.page-btn.active');"
+        " return a && a.textContent.trim() !== n; }",
+        arg=numero_avant,
+    )
+    assert page.query_selector_all(".job-card"), "la page suivante n'affiche aucune offre"
 
 
-def test_dismiss_button_does_not_navigate(page):
-    """Verify that clicking the dismiss button (✕) does NOT navigate away."""
-    page.goto(BASE_URL)
+def test_dismiss_button_does_not_navigate(page, e2e_url):
+    """Cliquer sur la croix de rejet (✕) ne doit PAS quitter la page."""
+    page.goto(e2e_url)
     page.wait_for_selector(".btn-dismiss", timeout=15000)
-    current_url = page.url
     dismiss_btn = page.query_selector(".btn-dismiss")
-    if not dismiss_btn:
-        return {"passed": True, "details": "No dismiss buttons found, skip"}
+    assert dismiss_btn is not None, "aucun bouton de rejet trouvé alors que les cartes en portent"
+
+    url_avant = page.url
+    visibles_avant = len([c for c in page.query_selector_all(".job-card") if c.is_visible()])
     dismiss_btn.click()
-    page.wait_for_timeout(1000)
-    assert page.url == current_url, f"Page navigated! {current_url} → {page.url}"
-    return {"passed": True, "details": "Dismiss button click did NOT navigate away"}
+    _attendre_liste_changee(page, visibles_avant)
+    assert page.url == url_avant, f"la page a navigué ! {url_avant} → {page.url}"
 
 
-def test_apply_button_is_only_clickable_link(page):
-    """Verify that clicking a job card body does NOT navigate, only the btn-apply link."""
-    page.goto(BASE_URL)
+def test_apply_button_is_only_clickable_link(page, e2e_url):
+    """Le corps de la carte ne navigue pas ; seul le lien Apply est cliquable."""
+    page.goto(e2e_url)
     page.wait_for_selector(".job-card", timeout=15000)
     card = page.query_selector(".job-card")
-    if not card:
-        return {"passed": True, "details": "No job cards found"}
-    current_url = page.url
-    # Click the card body (not the button)
+    assert card is not None, "aucune carte d'offre trouvée"
+
+    url_avant = page.url
     card.click(position={"x": 50, "y": 50})
-    page.wait_for_timeout(500)
-    assert page.url == current_url, "Job card click navigated away!"
-    # Click the Apply button
+    page.wait_for_function("() => document.readyState === 'complete'")
+    assert page.url == url_avant, "un clic sur le corps de la carte a navigué"
+
     apply_btn = card.query_selector(".btn-apply")
-    if not apply_btn:
-        return {"passed": True, "details": "No Apply button, skip"}
-    # Don't actually click the link - just verify it has a valid href
+    assert apply_btn is not None, "la carte ne porte pas de lien Apply"
     href = apply_btn.get_attribute("href")
-    assert href and href.startswith("http"), f"Apply button has no valid href: {href}"
-    return {"passed": True, "details": f"Card body non-clickable ✓, Apply → {href}"}
+    assert href and href.startswith("http"), f"le lien Apply n'a pas d'URL valide : {href}"
 
 
 SCENARIOS = {
@@ -181,20 +294,37 @@ SCENARIOS = {
 
 
 def run_scenario(name: str) -> dict:
-    """Run a single scenario by name."""
+    """Exécute un scénario hors pytest (appelé par le tableau de bord /qa).
+
+    Démarre son propre serveur en boucle locale sur une base temporaire
+    ensemencée : le scénario est reproductible et n'exige aucun serveur externe.
+
+    Returns:
+        {"scenario", "passed", "error", "screenshot"}
+    """
     from playwright.sync_api import sync_playwright
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        context = browser.new_context(viewport={"width": 1280, "height": 800})
-        page = context.new_page()
-        try:
-            if name in SCENARIOS:
-                result = SCENARIOS[name](page)
-                result["scenario"] = name
-                return result
-            return {"scenario": name, "passed": False, "error": f"Unknown scenario: {name}"}
-        except Exception as e:
-            shot = _screenshot(page, f"fail_{name}")
-            return {"scenario": name, "passed": False, "error": str(e)[:300], "screenshot": shot}
-        finally:
-            browser.close()
+
+    if name not in SCENARIOS:
+        return {"scenario": name, "passed": False, "error": f"Unknown scenario: {name}"}
+
+    url, arret = _serve_deterministic()
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context(viewport={"width": 1280, "height": 800})
+            page = context.new_page()
+            try:
+                SCENARIOS[name](page, url)
+                return {"scenario": name, "passed": True, "error": ""}
+            except Exception as exc:  # noqa: BLE001 — on remonte le verdict, pas l'exception
+                shot = _screenshot(page, f"fail_{name}")
+                return {
+                    "scenario": name,
+                    "passed": False,
+                    "error": str(exc)[:300],
+                    "screenshot": shot,
+                }
+            finally:
+                browser.close()
+    finally:
+        arret()
