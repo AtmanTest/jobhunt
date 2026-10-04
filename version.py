@@ -102,3 +102,5 @@ def set_db_schema_version(conn, version):
     conn.execute("CREATE TABLE IF NOT EXISTS app_config (key TEXT PRIMARY KEY, value TEXT)")
     conn.execute("INSERT OR REPLACE INTO app_config (key, value) VALUES ('schema_version', ?)", (str(version),))
     conn.commit()
+
+# sonde garde-fou : modification de code sans test associe
