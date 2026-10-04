@@ -95,7 +95,7 @@ REPO = "AtmanTest/jobhunt"
 LABEL_DEMANDE = "agent:go"
 LABEL_EN_COURS = "agent:running"
 LABEL_TRAITEE = "agent:done"
-INTERVALLE_MINUTES = 2
+INTERVALLE_MINUTES = 10
 
 
 def lire_prompts() -> dict[str, str]:
@@ -442,6 +442,29 @@ def construire(roles: dict[str, str]) -> dict:
             "typeVersion": 1.2,
             "position": [-2200, 180],
         },
+        # Déclencheur d'événement : GitHub appelle cette URL quand le label
+        # `agent:go` est posé — c'est le chemin nominal, il ne coûte rien
+        # quand rien ne se passe.
+        {
+            "parameters": {"httpMethod": "POST", "path": "jobhunt-agents",
+                           "responseMode": "onReceived", "options": {}},
+            "id": "tr-webhook",
+            "name": "Déclencheur — ticket",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2,
+            "position": [-2200, 340],
+            "webhookId": "jobhunt-agents",
+        },
+        # Déclencheur manuel : le bouton « Execute workflow » de l'interface,
+        # et la possibilité de lancer la chaîne à la demande.
+        {
+            "parameters": {},
+            "id": "tr-manuel",
+            "name": "Déclencheur — manuel",
+            "type": "n8n-nodes-base.manualTrigger",
+            "typeVersion": 1,
+            "position": [-2200, 500],
+        },
         noeud_github(
             "Lire les issues",
             "GET",
@@ -641,6 +664,8 @@ def construire(roles: dict[str, str]) -> dict:
 
     connections = {
         "Déclencheur — sondage": lien("Lire les issues"),
+        "Déclencheur — ticket": lien("Lire les issues"),
+        "Déclencheur — manuel": lien("Lire les issues"),
         "Lire les issues": lien("Sélectionner l'issue"),
         "Sélectionner l'issue": lien("Préparer"),
         "Préparer": lien("Ticket éligible ?"),
