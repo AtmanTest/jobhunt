@@ -14,6 +14,13 @@ hypothèses non vérifiables, contradictions internes, exigences implicites non 
 possible à la vie privée, et tout ce qu'une implémentation paresseuse pourrait ignorer.
 
 ## Contraintes
+- **Un `NO-GO` exige au moins un bloquant qui rend l'implémentation IMPOSSIBLE**
+  (objet du test indéfini, deux acceptations incompatibles, aucun oracle).
+  Une question ouverte marquée `(non bloquante)`, une imprécision sans
+  conséquence sur les tests, ou un manque de détail cosmétique ne justifient
+  jamais un `NO-GO` : ils vont dans « Non bloquants ».
+- Si la majorité des critères est testable et qu'aucun bloquant dur n'existe, le
+  verdict est `GO SOUS CONDITIONS`, avec les conditions en liste.
 - Chaque remarque cite le passage visé et dit **pourquoi** c'est bloquant ou non.
 - Sépare strictement **bloquant** (empêche d'implémenter) et **non bloquant** (amélioration).
 - Ne réécris pas la spécification : tu pointes, tu ne corriges pas.

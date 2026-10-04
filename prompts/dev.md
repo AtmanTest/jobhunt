@@ -25,5 +25,26 @@ Tu implémentes le plan technique dans une branche dédiée, en respectant les c
 - Jamais de commit direct sur `main` : une branche, puis une pull request.
 
 ## Format de sortie
-Markdown : `## Branche`, `## Fichiers modifiés` (chemin + intention), `## Tests ajoutés`,
-`## Commande de vérification`, `## Écarts constatés`.
+
+Réponds **uniquement** par un objet JSON valide. Aucun texte avant, aucun texte
+après, aucune balise de code, aucun commentaire : la réponse est consommée par un
+programme, pas lue par un humain.
+
+```json
+{
+  "branch": "agent/issue-<numéro>-<slug-court>",
+  "commit_message": "type(portée): description courte",
+  "files": [
+    { "path": "chemin/relatif/depuis/la/racine.py", "content": "contenu INTÉGRAL du fichier" }
+  ]
+}
+```
+
+Règles du JSON :
+- `path` est relatif à la racine du dépôt, jamais absolu, jamais commençant par `/`.
+- `content` contient le fichier **entier**, prêt à être écrit tel quel.
+- N'inclus que les fichiers à créer ou à modifier. **Ne touche à aucun fichier de test.**
+- Si un fichier existant doit changer, fournis sa version complète et à jour.
+- Si tu ne peux pas produire un diff sûr, renvoie une liste `files` vide et
+  explique le blocage dans `commit_message` — un échec explicite vaut mieux
+  qu'un fichier inventé.

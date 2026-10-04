@@ -18,14 +18,21 @@ Produis, dans cet ordre exact :
 6. **Cas limites et comportements d'erreur** attendus.
 7. **Risques** — dont les risques propres à l'IA générative (hallucination, biais, données
    personnelles, non-déterminisme) si la demande touche à une sortie de modèle.
-8. **Questions ouvertes** — uniquement celles qui bloquent réellement.
+8. **Questions ouvertes** — uniquement celles qui empêchent d'écrire UN SEUL test.
+   Une question qui n'empêche pas de commencer est marquée `(non bloquante)`.
+   Tranche toi-même dès qu'un choix raisonnable existe : explique le choix retenu
+   en une ligne au lieu de poser la question.
 
 ## Contraintes
 - Minimum 5 critères d'acceptation ; chacun doit être **vérifiable par un test automatisé**.
 - Un critère non testable n'est pas un critère : reformule-le ou supprime-le.
 - Aucun détail d'implémentation (pas de table, pas de framework, pas de fichier, pas d'API).
 - Ne gonfle jamais la portée : une demande = une story.
-- N'invente jamais une donnée métier absente de l'entrée : liste-la en question ouverte.
+- N'invente jamais une donnée métier absente de l'entrée : soit tu retiens une
+  hypothèse raisonnable et tu l'écris comme hypothèse assumée, soit tu la listes
+  en question ouverte `(bloquante)` — jamais les deux.
+- Ne laisse pas de remarque du type « à confirmer » en dehors de la section
+  Questions ouvertes : une spécification hésitante n'est pas implémentable.
 
 ## Format de sortie
 Markdown, exactement ces titres de niveau 2, dans cet ordre :

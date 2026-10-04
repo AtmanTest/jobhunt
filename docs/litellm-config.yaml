@@ -1,0 +1,48 @@
+# Documentation : https://docs.litellm.ai/docs/proxy/configs
+
+model_list:
+  # Le modèle réellement appelé par la chaîne d'agents.
+  # On passe par `openai/` + `api_base` pour router STRICTEMENT comme avant
+  # (même URL, même nom de modèle côté DeepSeek) : LiteLLM ajoute le suivi et
+  # le plafond, il ne change pas le comportement du modèle.
+  - model_name: deepseek-flash
+    litellm_params:
+      model: openai/deepseek-flash
+      api_base: https://api.deepseek.com/v1
+      api_key: os.environ/DEEPSEEK_API_KEY
+    model_info:
+      # Tarifs « off-peak » (heures creuses). En heures pleines DeepSeek double :
+      # ce chiffre est une estimation de pilotage, pas une facture.
+      input_cost_per_token: 0.00000022            # 0,22 $ / 1M
+      output_cost_per_token: 0.00000066           # 0,66 $ / 1M
+      cache_read_input_token_cost: 0.000000007    # 0,007 $ / 1M (cache de préfixe)
+
+  - model_name: deepseek-v4-pro
+    litellm_params:
+      model: openai/deepseek-v4-pro
+      api_base: https://api.deepseek.com/v1
+      api_key: os.environ/DEEPSEEK_API_KEY
+
+  # Modèle local (LM Studio sur la machine hôte) : coût nul.
+  # Sert aux étapes mécaniques de la chaîne — le routage par étape est prévu
+  # côté workflow, ce modèle n'est appelé que si on le choisit.
+  - model_name: local-qwen
+    litellm_params:
+      model: openai/qwen3.5-9b-mlx
+      api_base: http://host.docker.internal:1234/v1
+      api_key: sk-local
+    model_info:
+      input_cost_per_token: 0
+      output_cost_per_token: 0
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL
+
+litellm_settings:
+  # Pas de `drop_params` volontairement : on veut voir les erreurs si un
+  # paramètre n'est pas transmis. En particulier `thinking: {type: disabled}`
+  # est indispensable (sinon le raisonnement consomme tout `max_tokens` et le
+  # contenu revient vide) — le faire disparaître silencieusement serait pire
+  # que l'erreur.
+  set_verbose: false

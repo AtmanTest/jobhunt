@@ -1,0 +1,63 @@
+# LiteLLM — passerelle LLM auto-hébergée pour la chaîne d'agents JobHunt.
+#
+# Deux conteneurs, tous deux SANS exposition publique :
+#   * litellm-db  : Postgres interne (clés virtuelles, journal de dépense).
+#                   Aucun port publié : joignable seulement depuis ce réseau.
+#   * litellm     : la passerelle + son UI d'admin, publiée sur 127.0.0.1
+#                   uniquement (jamais 0.0.0.0), et branchée sur le réseau de
+#                   n8n pour être appelée en http://litellm:4000.
+#
+# Secrets dans ./.env (droits 600). Rien en clair ici.
+
+services:
+  litellm-db:
+    image: postgres:16-alpine
+    container_name: litellm-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: llmuser
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: litellm
+    volumes:
+      - litellm_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U llmuser -d litellm"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+    networks:
+      - interne
+
+  litellm:
+    image: ghcr.io/berriai/litellm-database:main-stable
+    container_name: litellm
+    restart: unless-stopped
+    depends_on:
+      litellm-db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:4000:4000"
+    environment:
+      DATABASE_URL: postgresql://llmuser:${POSTGRES_PASSWORD}@litellm-db:5432/litellm
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY}
+      LITELLM_SALT_KEY: ${LITELLM_SALT_KEY}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      LITELLM_LOG: INFO
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    networks:
+      - interne
+      - partage
+
+networks:
+  interne:
+    driver: bridge
+  # Réseau existant de n8n (et du conteneur hermes) : la passerelle y est
+  # joignable sous le nom `litellm`.
+  partage:
+    external: true
+    name: n8n_default
+
+volumes:
+  litellm_pgdata:
