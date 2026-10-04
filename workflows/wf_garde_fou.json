@@ -1,0 +1,279 @@
+{
+  "id": "wf-garde-fou",
+  "name": "JobHunt — Garde-fou qualité des PR (0 jeton)",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "gf-horaire",
+      "name": "1. Déclencheur — sondage 15 min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -620,
+        140
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "gf-manuel",
+      "name": "1. Déclencheur — manuel",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -620,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/AtmanTest/jobhunt/pulls?state=open&per_page=20",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {}
+      },
+      "id": "gf-prs",
+      "name": "2. Lire les PR ouvertes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -360,
+        210
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const prs = $input.all().flatMap(i => Array.isArray(i.json) ? i.json : [i.json]);\nconst deja = l => (l || []).some(x => x.name === 'qualite:verifiee' || x.name === 'qualite:refusee');\nconst a_faire = prs.filter(p => p && p.number && !deja(p.labels));\nreturn a_faire.map(p => ({ json: { pr: p.number, titre: p.title, branche: p.head.ref, sha: p.head.sha } }));"
+      },
+      "id": "gf-filtrer",
+      "name": "3. Écarter les PR déjà vérifiées",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -100,
+        210
+      ],
+      "notes": "Renvoie zéro élément si tout est déjà vérifié : aucune requête supplémentaire."
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/AtmanTest/jobhunt/pulls/{{ $json.pr }}/files?per_page=100",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {}
+      },
+      "id": "gf-fichiers",
+      "name": "4. Lire les fichiers modifiés",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        210
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const fichiers = $input.all().map(i => i.json);\nconst ctx = $('3. Écarter les PR déjà vérifiées').first().json;\n\nconst estTest = f => /(^|\\/)tests?\\//.test(f) || /(^|\\/)(specs?)\\.(py|js|ts)$/.test(f) || /(^|\\/)test_[^\\/]*$/.test(f) || /_test\\.(py|js|ts)$/.test(f);\nconst estCode = f => /\\.(py|js|ts|tsx|html|css)$/.test(f) && !estTest(f);\n\nconst tous = fichiers.map(f => f.filename);\nconst code = tous.filter(estCode);\nconst tests = tous.filter(estTest);\n\nconst motifs = [\n  ['sk-', /sk-[A-Za-z0-9]{16,}/],\n  ['jeton GitHub', /(ghp_|github_pat_)[A-Za-z0-9_]{12,}/],\n  ['mot de passe en dur', /(password|passwd)\\s*=\\s*['\"][^'\"]{6,}/i],\n  ['cle de service', /service_role/],\n];\nconst secrets = [];\nconst aFaire = [];\nfor (const f of fichiers) {\n  const patch = f.patch || '';\n  for (const [nom, re] of motifs) if (re.test(patch) && !secrets.includes(nom)) secrets.push(nom);\n  if (/^\\+.*\\b(TODO|FIXME)\\b/m.test(patch)) aFaire.push(f.filename);\n}\n\nconst refus = [];\nif (code.length && !tests.length) {\n  refus.push(`Aucun fichier de test modifié alors que ${code.length} fichier(s) de code le sont : ${code.slice(0, 5).join(', ')}`);\n}\nif (secrets.length) {\n  refus.push(`Secret potentiel détecté dans le diff : ${secrets.join(', ')}`);\n}\n\nconst verdict = refus.length ? 'qualite:refusee' : 'qualite:verifiee';\nconst lignes = [\n  '## Garde-fou qualité',\n  '',\n  `- Fichiers de code modifiés : ${code.length}`,\n  `- Fichiers de test modifiés : ${tests.length}`,\n  `- Secret potentiel : ${secrets.length ? secrets.join(', ') : 'aucun'}`,\n  `- TODO/FIXME ajoutés : ${aFaire.length ? aFaire.join(', ') : 'aucun'}`,\n  '',\n];\nif (refus.length) {\n  lignes.push('### Refusé', '');\n  refus.forEach(r => lignes.push(`- ${r}`));\n  lignes.push('', '_Corriger puis retirer l étiquette `qualite:refusee` pour relancer la vérification._');\n} else {\n  lignes.push('_Vérification passée : chaque modification de code est accompagnée d un test._');\n}\nlignes.push('', '---', '_Contrôle déterministe : aucune IA appelée, coût 0 jeton._');\n\nreturn [{ json: { ...ctx, verdict, corps: lignes.join('\\n') } }];"
+      },
+      "id": "gf-verdict",
+      "name": "5. Vérifier (règles, aucune IA)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        210
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/AtmanTest/jobhunt/issues/{{ $json.pr }}/comments",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ body: $json.corps }) }}",
+        "options": {}
+      },
+      "id": "gf-commenter",
+      "name": "6. Commenter la PR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        210
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/AtmanTest/jobhunt/issues/{{ $('5. Vérifier (règles, aucune IA)').first().json.pr }}/labels",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ labels: [ $('5. Vérifier (règles, aucune IA)').first().json.verdict ] }) }}",
+        "options": {}
+      },
+      "id": "gf-etiqueter",
+      "name": "7. Poser le verdict",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        210
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "qualite",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "gf-webhook",
+      "name": "1. Déclencheur — lien",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -620,
+        420
+      ],
+      "webhookId": "qualite"
+    }
+  ],
+  "connections": {
+    "1. Déclencheur — sondage 15 min": {
+      "main": [
+        [
+          {
+            "node": "2. Lire les PR ouvertes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. Déclencheur — manuel": {
+      "main": [
+        [
+          {
+            "node": "2. Lire les PR ouvertes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Lire les PR ouvertes": {
+      "main": [
+        [
+          {
+            "node": "3. Écarter les PR déjà vérifiées",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. Écarter les PR déjà vérifiées": {
+      "main": [
+        [
+          {
+            "node": "4. Lire les fichiers modifiés",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4. Lire les fichiers modifiés": {
+      "main": [
+        [
+          {
+            "node": "5. Vérifier (règles, aucune IA)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5. Vérifier (règles, aucune IA)": {
+      "main": [
+        [
+          {
+            "node": "6. Commenter la PR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6. Commenter la PR": {
+      "main": [
+        [
+          {
+            "node": "7. Poser le verdict",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. Déclencheur — lien": {
+      "main": [
+        [
+          {
+            "node": "2. Lire les PR ouvertes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "meta": {
+    "cout": "0 jeton — uniquement des règles sur la liste des fichiers et le diff",
+    "regles": "code modifié sans aucun test modifié = refus · secret potentiel dans le diff = refus · TODO/FIXME ajouté = signalé",
+    "idempotence": "une PR étiquetée qualite:verifiee ou qualite:refusee n est plus revérifiée"
+  }
+}
