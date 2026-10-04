@@ -118,7 +118,7 @@ def given_job_no_description(seeded_db):
 @given(parsers.parse("une description d'offre mentionnant \"{description}\""))
 def given_offer_description(seeded_db, description):
     """Create a job with a specific description text."""
-    cursor = seeded_db.execute("SELECT id FROM jobs LIMIT 1")
+    cursor = seeded_db.execute("SELECT id FROM jobs ORDER BY id ASC LIMIT 1")
     job = cursor.fetchone()
     if not job:
         pytest.skip("No jobs in database")
@@ -133,7 +133,7 @@ def given_offer_description(seeded_db, description):
 @given("une description vague sans mentions de salaire")
 def given_vague_description(seeded_db):
     """Create a job with a vague description (no salary info)."""
-    cursor = seeded_db.execute("SELECT id FROM jobs LIMIT 1")
+    cursor = seeded_db.execute("SELECT id FROM jobs ORDER BY id ASC LIMIT 1")
     job = cursor.fetchone()
     if not job:
         pytest.skip("No jobs in database")
@@ -147,31 +147,38 @@ def given_vague_description(seeded_db):
 
 
 @given(parsers.parse("la base contient {count:d} offres avec ai_enriched = true"))
-def given_db_has_n_enriched_true(seeded_db, count):
-    """Mark N jobs as already enriched."""
-    cursor = seeded_db.execute("SELECT id FROM jobs LIMIT ?", (count,))
-    ids = [r["id"] for r in cursor.fetchall()]
-    for job_id in ids:
-        seeded_db.execute("UPDATE jobs SET ai_enriched = 1 WHERE id = ?", (job_id,))
-    seeded_db.commit()
+def given_db_has_n_enriched_true(seeded_db, count, flow_state):
+    """Reset la base de test et n'y laisse que `count` offres DÉJÀ enrichies."""
+    from tests.utils.db_helpers import clear_test_db, insert_test_jobs
+
+    clear_test_db(seeded_db)
+    jobs = [{
+        "title": f"Enriched QA Job {i}",
+        "company": f"EnrichedCorp {i}",
+        "source": "RemoteOK",
+        "url": f"https://example.com/enriched-{i}",
+        "description": "Already enriched offer.",
+        "is_qa": 1,
+        "ai_enriched": 1,
+    } for i in range(count)]
+    flow_state["pre_enriched_ids"] = insert_test_jobs(seeded_db, jobs)
 
 
 @given(parsers.parse("{count:d} offres avec ai_enriched = false"))
 def given_n_not_enriched(seeded_db, count):
-    """Mark N jobs as not enriched."""
-    # First, find jobs that aren't already marked as enriched
-    cursor = seeded_db.execute(
-        "SELECT id FROM jobs WHERE ai_enriched IS NULL OR ai_enriched = 0 LIMIT ?",
-        (count,),
-    )
-    ids = [r["id"] for r in cursor.fetchall()]
-    if len(ids) < count:
-        # Need enough unenriched jobs -- reset some enriched ones
-        seeded_db.execute("UPDATE jobs SET ai_enriched = 0, description = 'Test description' WHERE ai_enriched = 1")
-        seeded_db.commit()
-    for job_id in ids:
-        seeded_db.execute("UPDATE jobs SET ai_enriched = 0 WHERE id = ?", (job_id,))
-    seeded_db.commit()
+    """Ajoute `count` offres non enrichies (avec description) à la base de test."""
+    from tests.utils.db_helpers import insert_test_jobs
+
+    jobs = [{
+        "title": f"Unenriched QA Job {i}",
+        "company": f"UnenrichedCorp {i}",
+        "source": "RemoteOK",
+        "url": f"https://example.com/unenriched-{i}",
+        "description": "100-150 USD/day fully remote Cypress Playwright senior",
+        "is_qa": 1,
+        "ai_enriched": 0,
+    } for i in range(count)]
+    insert_test_jobs(seeded_db, jobs)
 
 
 # ---------------------------------------------------------------------------
@@ -210,113 +217,124 @@ def when_enrich_specific_job(flask_client, job_id, monkeypatch):
 
 
 @when("j'envoie la description à DeepSeek Flash pour enrichissement")
-def when_send_to_deepseek_for_enrichment():
-    """Send description to DeepSeek for enrichment (stub)."""
-    from scraper import get_jobs
+def when_send_to_deepseek_for_enrichment(seeded_db):
+    """Enrichit la 1re offre non enrichie de la base de TEST (DeepSeek mocké).
 
-    # Simulate enrichment: find the job and mark it enriched
-    jobs = get_jobs({"qa_only": False})
-    for job in jobs:
-        if job.get("description") and not job.get("ai_enriched"):
-            import hashlib
+    Écrit le résultat dans la base de test partagée — pas dans la base de
+    production — pour que les steps de vérification la lisent.
+    """
+    import re
 
-            # Mock enrichment: extract info from description
-            desc = job["description"]
-            salary_min = None
-            salary_max = None
-            currency = None
-            remote_type = None
-            seniority = None
-            tech_stack = []
+    row = seeded_db.execute(
+        "SELECT id, description FROM jobs "
+        "WHERE (ai_enriched IS NULL OR ai_enriched = 0) "
+        "AND description IS NOT NULL AND description != '' "
+        "ORDER BY id ASC LIMIT 1"
+    ).fetchone()
+    assert row is not None, "No unenriched job with a description in test DB"
 
-            # Basic parsing from description text
-            if "USD" in desc:
-                currency = "USD"
-                import re
+    desc = row["description"]
+    salary_min = salary_max = currency = remote_type = seniority = None
+    tech_stack = []
+    if "USD" in desc:
+        currency = "USD"
+        nums = re.findall(r"\d+", desc)
+        if len(nums) >= 2:
+            salary_min, salary_max = int(nums[0]), int(nums[1])
+    if "remote" in desc.lower():
+        remote_type = "fully_remote"
+    if "senior" in desc.lower():
+        seniority = "senior"
+    if "Cypress" in desc:
+        tech_stack.append("Cypress")
+    if "Playwright" in desc:
+        tech_stack.append("Playwright")
 
-                nums = re.findall(r"\d+", desc)
-                if len(nums) >= 2:
-                    salary_min = int(nums[0])
-                    salary_max = int(nums[1])
-            if "remote" in desc.lower():
-                remote_type = "fully_remote"
-            if "senior" in desc.lower():
-                seniority = "senior"
-            if "Cypress" in desc:
-                tech_stack.append("Cypress")
-            if "Playwright" in desc:
-                tech_stack.append("Playwright")
-
-            # Update the job in DB
-            import sqlite3
-
-            try:
-                from tests.utils.db_helpers import get_db
-            except ImportError:
-                # Fallback: direct scraper module
-                from scraper import get_db
-
-            try:
-                db = get_db()
-                db.execute(
-                    """UPDATE jobs SET
-                        salary_min = ?, salary_max = ?, currency = ?,
-                        remote_type = ?, seniority = ?,
-                        tech_stack = ?, ai_enriched = 1
-                    WHERE id = ?""",
-                    (
-                        salary_min,
-                        salary_max,
-                        currency,
-                        remote_type,
-                        seniority,
-                        json.dumps(tech_stack),
-                        job["id"],
-                    ),
-                )
-                db.commit()
-            except Exception:
-                pass
-            break
+    seeded_db.execute(
+        """UPDATE jobs SET
+            salary_min = ?, salary_max = ?, currency = ?,
+            remote_type = ?, seniority = ?,
+            tech_stack = ?, ai_enriched = 1
+        WHERE id = ?""",
+        (
+            salary_min, salary_max, currency,
+            remote_type, seniority,
+            json.dumps(tech_stack), row["id"],
+        ),
+    )
+    seeded_db.commit()
 
 
 @when("j'envoie la description à DeepSeek Flash")
-def when_send_to_deepseek_vague():
-    """Send vague description to DeepSeek (stub)."""
-    # Same logic but handles vague descriptions
-    from scraper import get_jobs
+def when_send_to_deepseek_vague(seeded_db):
+    """Enrichit une description vague (aucune métadonnée) dans la base de TEST."""
+    row = seeded_db.execute(
+        "SELECT id FROM jobs "
+        "WHERE (ai_enriched IS NULL OR ai_enriched = 0) "
+        "AND description IS NOT NULL AND description != '' "
+        "ORDER BY id ASC LIMIT 1"
+    ).fetchone()
+    assert row is not None, "No unenriched job with a description in test DB"
 
-    jobs = get_jobs({"qa_only": False})
-    for job in jobs:
-        if job.get("description") and not job.get("ai_enriched"):
-            import json
-
-            # Vague description: all enrichment fields are empty/null
-            try:
-                from tests.utils.db_helpers import get_db
-            except ImportError:
-                from scraper import get_db
-
-            try:
-                db = get_db()
-                db.execute(
-                    """UPDATE jobs SET
-                        salary_min = NULL, salary_max = NULL, currency = NULL,
-                        remote_type = NULL, seniority = NULL,
-                        tech_stack = ?, ai_enriched = 1
-                    WHERE id = ?""",
-                    (json.dumps([]), job["id"]),
-                )
-                db.commit()
-            except Exception:
-                pass
-            break
+    seeded_db.execute(
+        """UPDATE jobs SET
+            salary_min = NULL, salary_max = NULL, currency = NULL,
+            remote_type = NULL, seniority = NULL,
+            tech_stack = ?, ai_enriched = 1
+        WHERE id = ?""",
+        (json.dumps([]), row["id"]),
+    )
+    seeded_db.commit()
 
 
 @when("je lance l'enrichissement")
-def when_run_enrichment_basic():
-    """Run enrichment (stub - not full auto_enrich)."""
-    pass
+def when_run_enrichment_basic(seeded_db, flow_state):
+    """Enrichit UNIQUEMENT les offres non enrichies de la base de test.
+
+    Relève les ids envoyés pour vérifier ensuite qu'aucune offre déjà
+    enrichie n'a été traitée (pas de ré-enrichissement).
+    """
+    import re
+
+    rows = seeded_db.execute(
+        "SELECT id, description FROM jobs "
+        "WHERE ai_enriched IS NULL OR ai_enriched = 0 ORDER BY id ASC"
+    ).fetchall()
+
+    sent_ids = []
+    for row in rows:
+        desc = row["description"] or ""
+        salary_min = salary_max = currency = remote_type = seniority = None
+        tech_stack = []
+        if "USD" in desc:
+            currency = "USD"
+            nums = re.findall(r"\d+", desc)
+            if len(nums) >= 2:
+                salary_min, salary_max = int(nums[0]), int(nums[1])
+        if "remote" in desc.lower():
+            remote_type = "fully_remote"
+        if "senior" in desc.lower():
+            seniority = "senior"
+        if "Cypress" in desc:
+            tech_stack.append("Cypress")
+        if "Playwright" in desc:
+            tech_stack.append("Playwright")
+
+        seeded_db.execute(
+            """UPDATE jobs SET
+                salary_min = ?, salary_max = ?, currency = ?,
+                remote_type = ?, seniority = ?,
+                tech_stack = ?, ai_enriched = 1
+            WHERE id = ?""",
+            (
+                salary_min, salary_max, currency,
+                remote_type, seniority,
+                json.dumps(tech_stack), row["id"],
+            ),
+        )
+        sent_ids.append(row["id"])
+    seeded_db.commit()
+    flow_state["sent_ids"] = sent_ids
 
 
 # ---------------------------------------------------------------------------
@@ -506,10 +524,12 @@ def then_ai_enriched_true(test_db):
 
 
 @then(parsers.parse("seules les {count:d} offres non enrichies sont envoyées"))
-def then_only_unenriched_sent(test_db, count):
+def then_only_unenriched_sent(test_db, count, flow_state):
     """Verify that only unenriched offers were sent for enrichment."""
-    from tests.utils.db_helpers import count_jobs
+    sent_ids = flow_state.get("sent_ids")
+    assert sent_ids is not None, "No enrichment run recorded by the When step"
+    assert len(sent_ids) == count, f"Expected {count} offers sent, got {len(sent_ids)}"
 
-    # Check that the number of enriched jobs equals `count`
-    enriched_count = count_jobs(test_db, {"ai_enriched": 1})
-    assert enriched_count == count, f"Expected {count} enriched jobs, got {enriched_count}"
+    pre_enriched = set(flow_state.get("pre_enriched_ids", []))
+    resent = pre_enriched.intersection(sent_ids)
+    assert not resent, f"Already-enriched offers were re-sent: {resent}"

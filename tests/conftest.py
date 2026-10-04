@@ -32,67 +32,75 @@ FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
 
 
 @pytest.fixture
-def test_db():
-    """Create an isolated SQLite test database with production-matching schema.
+def test_db_file(tmp_path):
+    """Chemin d'une base SQLite de test sur FICHIER, partagée par tout le test.
 
-    Uses an in-memory database for speed. Yields the connection; drops all
-    tables on teardown so each test gets a clean slate.
+    Pourquoi un fichier et non `:memory:` : chaque appel à
+    `sqlite3.connect(":memory:")` crée une base **distincte et vide**. Or l'app
+    ouvre elle-même la base par `sqlite3.connect(DB_PATH)` à plusieurs endroits,
+    sans passer par `get_db()`. Une base en mémoire donnait donc aux steps une
+    base peuplée et à l'app une base vide (« No jobs found in database »).
 
-    Yields:
-        sqlite3.Connection with row_factory set to sqlite3.Row
-    """
-    conn = sqlite3.connect(":memory:")
-    conn.row_factory = sqlite3.Row
-    create_schema(conn)
-    yield conn
-    conn.close()
-
-
-@pytest.fixture
-def test_db_path(tmp_path):
-    """Create an isolated file-based SQLite test database.
-
-    Useful for testing code that requires a file path. Schema matches production.
-
-    Yields:
-        Path to the temporary database file
+    Returns:
+        Chemin absolu du fichier SQLite de test
     """
     db_path = str(tmp_path / "test_jobs.db")
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     create_schema(conn)
     conn.close()
-    yield db_path
+    return db_path
 
 
 @pytest.fixture
-def flask_app(test_db):
-    """Create a Flask app instance configured to use the test database.
-
-    Monkey-patches the app's DB_PATH and get_db() to use the in-memory test DB.
+def test_db(test_db_file):
+    """Connexion à la base de test sur fichier, schéma de production.
 
     Yields:
-        Flask application instance
+        sqlite3.Connection avec row_factory = sqlite3.Row
+    """
+    conn = sqlite3.connect(test_db_file)
+    conn.row_factory = sqlite3.Row
+    yield conn
+    conn.close()
+
+
+@pytest.fixture
+def test_db_path(test_db_file):
+    """Alias de `test_db_file` (compatibilité).
+
+    Yields:
+        Chemin du fichier SQLite de test
+    """
+    yield test_db_file
+
+
+@pytest.fixture
+def flask_app(test_db_file):
+    """Instance Flask configurée sur la base de test PARTAGÉE.
+
+    L'app n'accède pas à la base uniquement par `get_db()` : elle appelle aussi
+    `sqlite3.connect(DB_PATH)` directement. On pointe donc `DB_PATH` vers le
+    fichier de test, ce qui garantit que l'app et les steps lisent et écrivent
+    la même base.
+
+    Yields:
+        Instance d'application Flask
     """
     import app as app_module
 
     original_get_db = app_module.get_db
+    original_db_path = app_module.DB_PATH
+
+    app_module.DB_PATH = test_db_file
 
     def test_get_db():
-        """Return test DB, reconnecting if it was closed."""
-        try:
-            test_db.execute("SELECT 1")
-            return test_db
-        except (sqlite3.ProgrammingError, sqlite3.OperationalError):
-            # Connection was closed, reopen in-memory with schema
-            new_conn = sqlite3.connect(":memory:")
-            new_conn.row_factory = sqlite3.Row
-            from tests.utils.db_helpers import create_schema
-            create_schema(new_conn)
-            return new_conn
+        """Connexion neuve vers la base de test partagée."""
+        conn = sqlite3.connect(test_db_file)
+        conn.row_factory = sqlite3.Row
+        return conn
 
     app_module.get_db = test_get_db
-    app_module.DB_PATH = ":memory:"
 
     # Disable GitHub DB population in tests
     app_module.DB_POPULATED = True
@@ -101,6 +109,7 @@ def flask_app(test_db):
     yield app_module.app
 
     app_module.get_db = original_get_db
+    app_module.DB_PATH = original_db_path
 
 
 @pytest.fixture
@@ -251,6 +260,18 @@ def api_response():
     return {}
 
 
+@pytest.fixture
+def flow_state():
+    """État partagé entre les steps d'un même scénario BDD.
+
+    Les fixtures pytest sont mises en cache par test : tous les steps d'un
+    scénario qui demandent ``flow_state`` reçoivent le MÊME dict. Sert à
+    transporter une mesure d'un step d'action (When) vers un step d'assertion
+    (Then), par exemple le nombre de lignes réellement insérées.
+    """
+    return {}
+
+
 def pytest_configure(config):
     """Register custom markers."""
     config.addinivalue_line("markers", "e2e: End-to-end tests requiring Playwright browser")
@@ -269,3 +290,45 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "medium: Medium severity")
     config.addinivalue_line("markers", "low: Low severity")
     config.addinivalue_line("markers", "bug: Bug identifier")
+    config.addinivalue_line("markers", "contract: Contrats de données (schémas JSON)")
+    config.addinivalue_line("markers", "smoke: Parcours minimal de fumée")
+    config.addinivalue_line("markers", "quarantine: Test isolé (nécessite --run-quarantine)")
+
+
+# ---------------------------------------------------------------------------
+# Anti-flaky — quarantaine tracée (tests/quarantine.json)
+#
+# Un test instable est isolé et tracé, JAMAIS supprimé en silence.
+# Le réactiver : pytest --run-quarantine
+# ---------------------------------------------------------------------------
+
+QUARANTINE_FILE = os.path.join(os.path.dirname(__file__), "quarantine.json")
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--run-quarantine",
+        action="store_true",
+        default=False,
+        help="Exécute aussi les tests en quarantaine (tests/quarantine.json).",
+    )
+
+
+def _quarantined_ids():
+    try:
+        with open(QUARANTINE_FILE) as f:
+            return set(json.load(f).get("tests", []))
+    except (OSError, ValueError):
+        return set()
+
+
+def pytest_collection_modifyitems(config, items):
+    """Marque en skip les tests listés dans tests/quarantine.json."""
+    if config.getoption("--run-quarantine"):
+        return
+    quarantined = _quarantined_ids()
+    if not quarantined:
+        return
+    for item in items:
+        if item.nodeid in quarantined:
+            item.add_marker(pytest.mark.skip(reason="quarantaine (tests/quarantine.json)"))

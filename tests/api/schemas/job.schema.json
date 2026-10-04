@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Job (table SQLite jobs — modèle de l'app)",
+  "type": "object",
+  "required": [
+    "title",
+    "url"
+  ],
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "company": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "url": {
+      "type": "string",
+      "pattern": "^https?://"
+    },
+    "location": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "salary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tags": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "tags séparés par des virgules"
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "raw_date": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "is_qa": {
+      "type": [
+        "integer",
+        "boolean",
+        "null"
+      ]
+    },
+    "applied": {
+      "type": [
+        "integer",
+        "boolean",
+        "null"
+      ]
+    },
+    "cover_letter": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tech_stack": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "seniority": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "contract_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "remote_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "salary_min": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "salary_max": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "currency": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ai_enriched": {
+      "type": [
+        "integer",
+        "boolean",
+        "null"
+      ]
+    },
+    "saved": {
+      "type": [
+        "integer",
+        "boolean",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": true
+}

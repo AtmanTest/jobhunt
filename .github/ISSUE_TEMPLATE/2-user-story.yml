@@ -1,0 +1,122 @@
+name: "🧭 User story"
+description: "Besoin produit — PSPO (valeur, outcome, hypothèses) et critères d'acceptation testables."
+title: "[US] "
+labels: ["user-story", "backlog"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Product Owner** : une story se juge sur la **valeur** produite et sur des
+        **critères d'acceptation testables**, pas sur la quantité de fonctionnalités.
+        Cadre de référence — PSPO I et II (empirisme, ordering, Evidence-Based Management)
+        et ISTQB CTFL pour la testabilité.
+
+  - type: input
+    id: product-goal
+    attributes:
+      label: Objectif produit (Product Goal)
+      description: À quel objectif produit cette story contribue-t-elle ?
+      placeholder: Rendre la recherche d'offres QA exploitable en moins de 2 minutes.
+    validations:
+      required: true
+
+  - type: textarea
+    id: story
+    attributes:
+      label: User story
+      placeholder: |
+        En tant que consultant QA en recherche,
+        je veux filtrer les offres par pays,
+        afin de ne voir que les marchés accessibles sans visa.
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome attendu et mesure
+      description: Un résultat observable, pas une tâche. Indiquez la métrique.
+      placeholder: |
+        - 100 % des offres affichées appartiennent au pays sélectionné
+        - Le temps de filtrage perçu reste inférieur à 1 s
+    validations:
+      required: true
+
+  - type: textarea
+    id: hypotheses
+    attributes:
+      label: Hypothèses à valider
+      description: Ce qu'on croit vrai et qu'il faut prouver (Evidence-Based Management).
+      placeholder: Les recruteurs français publient majoritairement des offres locales.
+    validations:
+      required: false
+
+  - type: textarea
+    id: ac
+    attributes:
+      label: Critères d'acceptation (Étant donné / Quand / Alors)
+      description: Un critère par comportement, format Gherkin, vérifiable par un test automatisé.
+      placeholder: |
+        AC-01
+        Étant donné une base contenant des offres de France et de Dubaï
+        Quand je sélectionne le filtre « France »
+        Alors seules les offres françaises sont listées
+
+        AC-02
+        Étant donné un filtre France actif
+        Quand aucune offre française n'existe
+        Alors un état vide explicite est affiché
+    validations:
+      required: true
+
+  - type: textarea
+    id: non-goals
+    attributes:
+      label: Hors périmètre (non-objectifs)
+      description: Ce que cette story ne fera pas. Évite la dérive.
+      placeholder: Pas de mise en cache hors ligne, pas de tri par TJM.
+    validations:
+      required: true
+
+  - type: textarea
+    id: edge-cases
+    attributes:
+      label: Cas limites et comportements d'erreur
+      description: Contexte, exigences métier, données, erreurs.
+      placeholder: |
+        - Pays inconnu en base, l'offre est classée « autres », jamais perdue
+        - Filtre combiné avec la recherche texte, intersection et non union
+    validations:
+      required: true
+
+  - type: textarea
+    id: test-data
+    attributes:
+      label: Données de test nécessaires
+      description: Jeu minimal déterministe, via les fabriques du dépôt (tests/data/factories.py).
+      placeholder: 3 offres France, 2 offres Dubaï, 1 offre sans pays.
+    validations:
+      required: false
+
+  - type: textarea
+    id: risques
+    attributes:
+      label: Risques, dont risques liés à l'IA générative
+      description: ISTQB CT-GenAI — hallucination, erreur de raisonnement, biais, données personnelles, non-déterminisme.
+      placeholder: |
+        - Les offres sans champ pays peuvent être mal classées (biais de données)
+        - Toute donnée collée ici doit être non personnelle
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: definition-of-done
+    attributes:
+      label: Definition of Done
+      options:
+        - label: Chaque critère d'acceptation est vérifiable par un test automatisé
+          required: true
+        - label: Les cas limites sont couverts par des tests
+          required: true
+        - label: Aucune donnée personnelle ni secret dans cette issue
+          required: true

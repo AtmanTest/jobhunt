@@ -221,9 +221,9 @@ def given_db_has_url(seeded_db, url):
 
 
 @given(parsers.parse('une nouvelle offre arrive avec "{url}"'))
-def given_new_offer_with_url(url):
-    """Placeholder: a new offer with a different-case URL will be processed."""
-    pass
+def given_new_offer_with_url(url, flow_state):
+    """Store the (case-different) URL of the incoming offer."""
+    flow_state["new_url"] = url
 
 
 # ---------------------------------------------------------------------------
@@ -277,9 +277,30 @@ def when_filter_date_range(api_client, start_date, end_date):
 
 
 @when("le déduplicateur compare")
-def when_dedup_compare():
-    """Execute the deduplicator comparison (stub)."""
-    pass
+def when_dedup_compare(seeded_db, flow_state):
+    """Attempt to insert the incoming offer through the production dedup path.
+
+    ``scraper.save_jobs`` dedups on LOWER(title)+LOWER(company), so the
+    different-case URL of the same offer must not create a second row.
+    """
+    from tests.utils.product_ops import save_jobs_against
+
+    row = seeded_db.execute("SELECT title, company FROM jobs LIMIT 1").fetchone()
+    inserted = 0
+    if row:
+        inserted = save_jobs_against(seeded_db, [{
+            "title": row["title"],
+            "company": row["company"],
+            "source": "RemoteOK",
+            "url": flow_state.get("new_url", ""),
+            "location": "Worldwide",
+            "salary": "",
+            "tags": "",
+            "description": "Duplicate with different URL case.",
+            "date": "2026-05-28",
+            "raw_date": 1779571200,
+        }])
+    flow_state["inserted"] = inserted
 
 
 # ---------------------------------------------------------------------------
@@ -395,9 +416,8 @@ def then_offer_inserted_with_empty_salary(test_db):
 
 
 @then(parsers.parse("{count:d} doublon est inséré"))
-def then_duplicates_inserted(seeded_db, count):
-    """Verify that exactly `count` duplicates exist."""
-    from tests.utils.db_helpers import count_jobs
-
-    actual = count_jobs(seeded_db)
-    assert actual == count, f"Expected {count} jobs, found {actual}"
+def then_duplicates_inserted(seeded_db, count, flow_state):
+    """Verify that exactly `count` duplicates were inserted by the attempt."""
+    inserted = flow_state.get("inserted")
+    assert inserted is not None, "No dedup attempt recorded by the When step"
+    assert inserted == count, f"Expected {count} duplicates inserted, got {inserted}"

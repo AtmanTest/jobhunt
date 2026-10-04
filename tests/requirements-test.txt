@@ -27,3 +27,8 @@ jsonschema>=4.20.0
 
 # Utilities
 python-dateutil>=2.8.0
+
+# Rapports & stabilité
+pytest-rerunfailures>=13.0
+pytest-html>=4.1.0
+allure-pytest>=2.13.0

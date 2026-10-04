@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JobHunt — Chaîne d'agents · du ticket à la pull request</title>
+<style>
+  :root{
+    --bg:#faf7f2; --ink:#12233f; --muted:#5b6b82; --line:#e3ddd2; --card:#ffffff;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Segoe UI,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+       -webkit-font-smoothing:antialiased;padding:34px 26px 46px}
+  .wrap{max-width:1240px;margin:0 auto}
+  header{text-align:center;margin-bottom:26px}
+  h1{margin:0;font-size:42px;line-height:1.05;letter-spacing:-.5px;font-weight:800}
+  .sub{margin:10px 0 0;font-size:14px;font-weight:800;letter-spacing:2.4px;color:#8a6d3b;text-transform:uppercase}
+  .sub2{margin:8px 0 0;font-size:14px;color:var(--muted)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+  .full{grid-column:1/-1}
+  section{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .bar{display:flex;align-items:center;gap:11px;padding:12px 16px;color:#fff;font-weight:800;
+       font-size:15px;letter-spacing:.4px;text-transform:uppercase}
+  .num{width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,.22);
+       display:flex;align-items:center;justify-content:center;font-size:13px}
+  .body{padding:16px}
+  .c1 .bar{background:#1b2a4a}.c1{background:#f4f7fc;border-color:#d8e1ee}
+  .c2 .bar{background:#2563eb}.c2{background:#f2f6ff;border-color:#d5e2ff}
+  .c3 .bar{background:#047857}.c3{background:#f1fdf8;border-color:#c6efe0}
+  .c4 .bar{background:#7c3aed}.c4{background:#faf5ff;border-color:#ead9ff}
+  .c5 .bar{background:#be123c}.c5{background:#fff5f7;border-color:#ffd7de}
+  .c6 .bar{background:#d97706}.c6{background:#fffaf0;border-color:#f5e3c2}
+  table{width:100%;border-collapse:collapse;font-size:12.7px}
+  th{text-align:left;font-size:10.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted);
+     border-bottom:1px solid var(--line);padding:6px 8px}
+  td{padding:6px 8px;border-bottom:1px solid #f2eee7;color:#20344f;vertical-align:top}
+  code{font-family:var(--mono);font-size:11.5px;background:#eef2f8;padding:1px 5px;border-radius:4px}
+  .step{display:flex;gap:11px;align-items:flex-start;background:#fff;border:1px solid #d5e2ff;
+        border-radius:10px;padding:9px 11px;margin-bottom:8px}
+  .step b{font-size:13.2px}
+  .step span{font-size:12.1px;color:var(--muted);display:block;margin-top:2px}
+  .badge{flex:0 0 auto;min-width:34px;height:26px;border-radius:8px;background:#2563eb;color:#fff;
+         display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;padding:0 6px}
+  .badge.green{background:#047857}.badge.dark{background:#1b2a4a}.badge.purple{background:#7c3aed}
+  ul{margin:0;padding:0;list-style:none}
+  li{position:relative;padding:4px 0 4px 24px;font-size:13px;line-height:1.45;color:#20344f}
+  li:before{content:"✓";position:absolute;left:2px;top:4px;color:#047857;font-weight:800}
+  li.x:before{content:"✕";color:#be123c}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+  .node{background:#fff;border:1px solid #d5e2ff;border-radius:9px;padding:7px 11px;font-size:12.4px;
+        font-weight:700;color:#12233f}
+  .arrow{color:#94a3b8;font-weight:800}
+  .legend{font-size:11.6px;color:var(--muted);margin-top:8px;line-height:1.5}
+  footer{text-align:center;margin-top:22px;font-size:12px;color:var(--muted)}
+  @media (max-width:900px){.grid,.grid-3{grid-template-columns:1fr}h1{font-size:30px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Chaîne d'agents JobHunt</h1>
+  <p class="sub">Du ticket à la pull request</p>
+  <p class="sub2">ISTQB CTFL v4.0 · ISTQB CT-GenAI v1.1 · PSPO I &amp; II · développement piloté par la spécification</p>
+</header>
+
+<div class="grid">
+
+  <!-- 1 -->
+  <section class="c1">
+    <div class="bar"><span class="num">1</span>Entrée — le ticket, jamais un prompt</div>
+    <div class="body">
+      <table>
+        <tr><th>Formulaire</th><th>Champs structurants</th></tr>
+        <tr><td><b>🐞 Bug</b></td><td>reproduction · attendu · obtenu · sévérité · environnement ·
+            <b>technique CTFL manquée</b> · <b>test de non-régression</b> (obligatoire)</td></tr>
+        <tr><td><b>🧭 User story</b></td><td>objectif produit · valeur mesurée · hypothèses · <b>AC Gherkin</b> ·
+            <b>hors périmètre</b> · cas limites · données de test · risques dont IA</td></tr>
+        <tr><td><b>🔧 Tâche technique</b></td><td>contexte · résultat observable · contraintes ·
+            plan de vérification · impact et retour arrière</td></tr>
+      </table>
+      <p class="legend">Formulaire libre <b>désactivé</b>. Rien n'entre dans la chaîne sans structure.
+         Le déclenchement exige le label <code>agent:go</code> : aucune exécution implicite.</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="c6">
+    <div class="bar"><span class="num">2</span>Les rôles et leur référentiel</div>
+    <div class="body">
+      <table>
+        <tr><th>Rôle</th><th>Référentiel</th><th>Produit</th></tr>
+        <tr><td><b>PO</b></td><td>PSPO I &amp; II</td><td>valeur, objectif produit, AC testables, hors périmètre</td></tr>
+        <tr><td><b>Spec Review</b></td><td>CTFL · CT-GenAI</td><td>verdict GO / NO-GO, bloquants</td></tr>
+        <tr><td><b>Architecte</b></td><td>ingénierie · CTFL</td><td>décisions, impact données, testabilité</td></tr>
+        <tr><td><b>QA</b></td><td><b>CTFL v4.0</b> · CT-GenAI</td><td>traçabilité AC→CT, cas Gherkin, techniques, cas négatifs</td></tr>
+        <tr><td><b>Dev</b></td><td>bonnes pratiques</td><td>branche dédiée, diff minimal, tests d'abord</td></tr>
+        <tr><td><b>QA Review</b></td><td>CTFL · CT-GenAI</td><td>verdict green / red / refused, preuves</td></tr>
+        <tr><td><b>Fix</b></td><td>CTFL</td><td>cause racine + test de non-régression obligatoire</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="c2 full">
+    <div class="bar"><span class="num">3</span>Le flux</div>
+    <div class="body">
+      <div class="flow">
+        <span class="node">Issue</span><span class="arrow">→</span>
+        <span class="node">PO</span><span class="arrow">→</span>
+        <span class="node">Spec Review</span><span class="arrow">→</span>
+        <span class="node">Architecte</span><span class="arrow">→</span>
+        <span class="node">QA</span><span class="arrow">→</span>
+        <span class="node">Dev</span><span class="arrow">→</span>
+        <span class="node">CI</span><span class="arrow">→</span>
+        <span class="node">QA Review</span><span class="arrow">→</span>
+        <span class="node">PR + rapport</span>
+      </div>
+      <div class="step"><div class="badge purple">Fix</div><div><b>Boucle de correction bornée</b>
+        <span>échec CI → Fix (max 3 tentatives) → CI. Au-delà : arrêt et remontée du blocage, jamais de boucle infinie.</span></div></div>
+      <p class="legend">Chaque étape est un <b>enchaînement de prompts</b> avec vérification intermédiaire :
+         aucune sortie ne passe sans preuve.</p>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="c3">
+    <div class="bar"><span class="num">4</span>Les quatre portes de qualité</div>
+    <div class="body">
+      <table>
+        <tr><th>Porte</th><th>Preuve exigée</th><th>Échec</th></tr>
+        <tr><td><b>1. Spec Review</b></td><td>verdict + bloquants</td><td>NO-GO : on ne code pas</td></tr>
+        <tr><td><b>2. Critères testables</b></td><td>table AC → CT</td><td>AC non testable = réécrit</td></tr>
+        <tr><td><b>3. CI</b></td><td><code>fingerprint_tested</code> vs <code>fingerprint_head</code></td><td>refused</td></tr>
+        <tr><td><b>4. QA Review</b></td><td>verdict + preuve par test</td><td>red → boucle Fix</td></tr>
+      </table>
+      <p class="legend">Verdicts journalisés : <b>green</b> · <b>red</b> · <b>refused</b>.
+         Un refus n'est pas un échec de test : c'est un refus de certifier.</p>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="c4">
+    <div class="bar"><span class="num">5</span>Artefacts et traçabilité</div>
+    <div class="body">
+      <p class="legend" style="margin-top:0"><b>Dans le dépôt</b> (versionnés, revus en PR)</p>
+      <table>
+        <tr><td><code>specs/&lt;issue&gt;/spec.md</code></td><td>objectif, valeur, AC, hors périmètre</td></tr>
+        <tr><td><code>specs/&lt;issue&gt;/review.md</code></td><td>verdict de la Spec Review</td></tr>
+        <tr><td><code>specs/&lt;issue&gt;/plan.md</code></td><td>décisions et impact</td></tr>
+        <tr><td><code>specs/&lt;issue&gt;/tasks.md</code></td><td>découpage ordonné</td></tr>
+        <tr><td><code>prompts/</code></td><td>les contrats de rôle, source de vérité</td></tr>
+      </table>
+      <p class="legend"><b>Dans Supabase</b> : <code>runs</code> (coût, tokens par étape) ·
+         <code>cases</code> · <code>gates</code> (verdict, empreintes) · <code>pipeline_events</code> (journal en ajout seul).</p>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="c5 full">
+    <div class="bar"><span class="num">6</span>Ce que la chaîne applique d'ISTQB CT-GenAI</div>
+    <div class="body">
+      <div class="grid-3">
+        <ul>
+          <li><b>6 composants de prompt</b> — rôle, contexte, instruction, données, contraintes, format</li>
+          <li><b>Enchaînement de prompts</b> — la chaîne entière, vérifiée à chaque étape</li>
+        </ul>
+        <ul>
+          <li><b>Few-shot</b> — les cas existants servent d'exemples à l'agent QA</li>
+          <li><b>Méta-prompting</b> — la Spec Review attaque la consigne</li>
+        </ul>
+        <ul>
+          <li class="x"><b>Hallucination</b> — aucune sortie acceptée sans test qui tourne</li>
+          <li class="x"><b>Non-déterminisme</b> — verdict sur faits reproductibles</li>
+        </ul>
+      </div>
+      <p class="legend">Vie privée : les formulaires et les tests interdisent toute donnée personnelle ·
+         Shadow AI : un seul point d'entrée, tracé et versionné.</p>
+    </div>
+  </section>
+
+</div>
+
+<footer>JobHunt — architecture des agents · CTFL v4.0 · CT-GenAI v1.1 · PSPO I &amp; II · document interne, aucun secret</footer>
+</div>
+</body>
+</html>

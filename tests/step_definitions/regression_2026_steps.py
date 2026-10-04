@@ -67,6 +67,8 @@ def given_apply_card(seeded_db):
     return {"id": seeded_db.lastrowid, "url": "https://example.com/apply/123"}
 
 
+@given("Chrome est ouvert sur une page quelconque",
+       target_fixture="chrome_open")
 @given(parsers.parse("le chrome est ouvert sur une page quelconque"),
        target_fixture="chrome_open")
 def given_chrome_open():
@@ -151,13 +153,15 @@ def when_query_endpoint(flask_client, endpoint):
 
 @when(parsers.parse("on insère {job_dict}"))
 def when_insert_job(seeded_db, job_dict):
-    """Insert a job dict into DB (test dedup)."""
+    """Insert a job dict via the PRODUCTION dedup path (``scraper.save_jobs``).
+
+    The feature asserts the title+company deduplication, which only exists in
+    the production insert path — not in a raw INSERT.
+    """
+    from tests.utils.product_ops import save_jobs_against
+
     job = json.loads(job_dict)
-    from tests.utils.db_helpers import insert_test_jobs
-    count_before = seeded_db.execute("SELECT COUNT(*) FROM jobs").fetchone()[0]
-    insert_test_jobs(seeded_db, [job])
-    count_after = seeded_db.execute("SELECT COUNT(*) FROM jobs").fetchone()[0]
-    RESPONSE_DATA["insert_result"] = count_after - count_before
+    RESPONSE_DATA["insert_result"] = save_jobs_against(seeded_db, [job])
 
 
 @when(parsers.parse('le scraper appelle chrome_navigate("{url}")'))

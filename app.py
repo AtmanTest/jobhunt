@@ -134,6 +134,70 @@ def parse_feature_files():
     return {"categories": categories}
 
 
+def collect_pytest_tests(timeout=60):
+    """Inventaire réel des tests pytest (parcours Playwright inclus).
+
+    Renvoie une liste de nodeids, ou [] si pytest est absent (la production hébergée
+    n'installe que requirements.txt) ou si la collecte échoue : le tableau de bord QA
+    ne doit jamais tomber pour autant.
+    """
+    try:
+        proc = subprocess.run(
+            # `-o addopts=` : neutralise le `-v` de tests/pytest.ini, sans quoi pytest
+            # imprime un arbre au lieu des nodeids (et la collecte serait illisible).
+            [sys.executable, "-m", "pytest", "tests/", "--collect-only", "-q",
+             "-o", "addopts=", "-p", "no:cacheprovider"],
+            cwd=os.path.dirname(os.path.abspath(__file__)),
+            capture_output=True, text=True, timeout=timeout,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return []
+
+    nodeids = []
+    for line in (proc.stdout or "").splitlines():
+        line = line.strip()
+        if "::" in line and line.split("::", 1)[0].endswith(".py"):
+            nodeids.append(line)
+    return sorted(set(nodeids))
+
+
+def qa_inventory():
+    """Inventaire unifié (BDD + pytest) au format attendu par la page /qa.
+
+    Tout est réel : aucun statut n'est inventé. Un test jamais exécuté porte le
+    statut « unknown » (affiché « Collecté ») ; le verdict vient d'une exécution.
+    """
+    modules = []
+
+    for cat in parse_feature_files().get("categories", []):
+        tests = []
+        for sc in cat.get("scenarios", []):
+            tests.append({
+                "name": sc.get("name", "").replace("Scenario:", "").strip(),
+                "status": "unknown",
+                "severity": "info",
+                "detail": " ".join(sc.get("steps", [])[:3]) or f"<code>{cat['path']}</code>",
+            })
+        if tests:
+            modules.append({"name": f"BDD · {cat['category']}", "tests": tests})
+
+    by_file = {}
+    for nodeid in collect_pytest_tests():
+        path, _, name = nodeid.partition("::")
+        by_file.setdefault(path, []).append((name, nodeid))
+    for path in sorted(by_file):
+        modules.append({
+            "name": f"pytest · tests/{path}",
+            "tests": [
+                {"name": name, "status": "unknown", "severity": "info",
+                 "detail": f"<code>{nodeid}</code>"}
+                for name, nodeid in by_file[path]
+            ],
+        })
+
+    return {"modules": modules, "collected": sum(len(m["tests"]) for m in modules)}
+
+
 def run_pytest_async():
     """Run pytest in a thread, save output to a timestamped file."""
     import uuid
@@ -145,7 +209,7 @@ def run_pytest_async():
         start = time.time()
         try:
             proc = subprocess.run(
-                ["python3", "-m", "pytest", "tests/", "-v", "--tb=short", "--no-header"],
+                [sys.executable, "-m", "pytest", "tests/", "-v", "--tb=short", "--no-header"],
                 capture_output=True, text=True, timeout=120,
                 cwd=os.path.dirname(__file__),
             )
@@ -1188,7 +1252,7 @@ def api_stats_advanced():
     stack_counts = {}
     for s in all_stacks:
         stack_counts[s] = stack_counts.get(s, 0) + 1
-    stats["top_tech_stacks"] = sorted(stack_counts.items(), key=lambda x: x[1], reverse=True)[:20]
+    stats["top_stacks"] = sorted(stack_counts.items(), key=lambda x: x[1], reverse=True)[:20]
     
     # Salary stats
     cur = conn.execute("SELECT salary_min, salary_max FROM jobs WHERE salary_min IS NOT NULL OR salary_max IS NOT NULL")
@@ -1847,7 +1911,9 @@ def qa_dashboard():
 
 @app.route("/qa/api/test-cases")
 def qa_api_test_cases():
-    return jsonify(parse_feature_files())
+    data = parse_feature_files()
+    data.update(qa_inventory())
+    return jsonify(data)
 
 
 @app.route("/qa/api/runs", methods=["GET", "POST"])
@@ -2310,4 +2376,9 @@ if __name__ == "__main__":
 ║  Ctrl+C pour arrêter                         ║
 ╚══════════════════════════════════════════════╝
     """)
-    app.run(host="0.0.0.0", port=port, debug=True)
+    # SÉCURITÉ : le serveur de développement écoute UNIQUEMENT sur la boucle locale.
+    # Ne jamais rebinder sur 0.0.0.0. Exposition volontaire et ponctuelle :
+    #     JOBHUNT_DEV_HOST=0.0.0.0   (jamais par défaut)
+    dev_host = os.environ.get("JOBHUNT_DEV_HOST", "127.0.0.1")
+    dev_debug = os.environ.get("JOBHUNT_DEV_DEBUG", "0") == "1"
+    app.run(host=dev_host, port=port, debug=dev_debug)
