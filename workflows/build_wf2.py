@@ -53,13 +53,13 @@ ROLES = {
 # `hermes-agent` route vers le modèle par défaut du profil ; les étapes
 # purement mécaniques peuvent être basculées sur un modèle local (gratuit).
 MAX_TOKENS = {
-    "PO": 1200,
-    "SpecReview": 600,
-    "Architecte": 900,
-    "QA": 1500,
+    "PO": 2000,
+    "SpecReview": 900,
+    "Architecte": 1500,
+    "QA": 2000,
     "Dev": 4000,
     "Fix": 2000,
-    "QAReview": 800,
+    "QAReview": 1000,
 }
 MODELE = {
     "PO": "deepseek-flash",
@@ -71,8 +71,15 @@ MODELE = {
     "QAReview": "deepseek-flash",
 }
 
-HERMES_URL = "http://hermes:8642/v1/chat/completions"
-CRED_HERMES = {"httpHeaderAuth": {"id": "hermesapitoken01", "name": "Hermes API"}}
+# API fournisseur DIRECTE, et non l'API agent Hermes.
+#
+# Mesuré : un appel minimal (« dis ok ») coûte 13 704 tokens d'entrée via l'API
+# agent — elle réinjecte SOUL + mémoire + définitions d'outils à chaque étape —
+# contre 38 tokens en direct. Soit ~98 000 tokens d'entrée par run, dont ~800
+# utiles. Les étapes de la chaîne sont de simples complétions : aucun outil n'est
+# nécessaire, donc aucun contexte d'agent ne doit être payé.
+LLM_URL = "https://api.deepseek.com/v1/chat/completions"
+CRED_LLM = {"httpHeaderAuth": {"id": "deepseekapi01", "name": "DeepSeek API"}}
 CRED_GITHUB = {"githubApi": {"id": "githubpatcreds01", "name": "GitHub"}}
 CRED_PG = {"postgres": {"id": "supabasepg00001", "name": "Supabase (Postgres)"}}
 
@@ -88,7 +95,7 @@ REPO = "AtmanTest/jobhunt"
 LABEL_DEMANDE = "agent:go"
 LABEL_EN_COURS = "agent:running"
 LABEL_TRAITEE = "agent:done"
-INTERVALLE_MINUTES = 5
+INTERVALLE_MINUTES = 2
 
 
 def lire_prompts() -> dict[str, str]:
@@ -104,6 +111,11 @@ def noeud_llm(nom: str, role: str, entree_js: str, x: int, y: int) -> dict:
     corps = (
         "={{ JSON.stringify({"
         f" model: '{MODELE[role]}', stream: false, max_tokens: {MAX_TOKENS[role]},"
+        # `deepseek-flash` raisonne par défaut : sans cette ligne, tout le budget
+        # de sortie part dans le raisonnement et `message.content` revient VIDE
+        # (le texte utile se retrouve dans `reasoning_content`). Les étapes
+        # suivantes recevraient alors une chaîne vide.
+        " thinking: { type: 'disabled' },"
         " messages: ["
         "  { role: 'system', content: $('Préparer').first().json.roles." + role + " },"
         "  { role: 'user', content: " + entree_js + " }"
@@ -112,7 +124,7 @@ def noeud_llm(nom: str, role: str, entree_js: str, x: int, y: int) -> dict:
     return {
         "parameters": {
             "method": "POST",
-            "url": HERMES_URL,
+            "url": LLM_URL,
             "options": {"timeout": 900000},
             "authentication": "genericCredentialType",
             "genericAuthType": "httpHeaderAuth",
@@ -125,21 +137,33 @@ def noeud_llm(nom: str, role: str, entree_js: str, x: int, y: int) -> dict:
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [x, y],
-        "credentials": CRED_HERMES,
+        "credentials": CRED_LLM,
     }
+
+
+def expression(valeur: str) -> str:
+    """Préfixe `=` devant toute valeur contenant une expression n8n.
+
+    n8n n'évalue `{{ … }}` que si la valeur commence par `=`. Sans ce préfixe,
+    l'expression est envoyée **littéralement** dans l'URL — d'où un 404 dont le
+    message d'erreur contient encore les accolades.
+    """
+    if valeur.startswith("=") or "{{" not in valeur:
+        return valeur
+    return "=" + valeur
 
 
 def noeud_github(nom: str, methode: str, url: str, corps: str | None, x: int, y: int) -> dict:
     """Appel REST GitHub avec le credential GitHub existant (aucun jeton en clair)."""
     params: dict = {
         "method": methode,
-        "url": url,
+        "url": expression(url),
         "options": {"timeout": 120000},
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "githubApi",
     }
     if corps is not None:
-        params.update({"sendBody": True, "specifyBody": "json", "jsonBody": corps})
+        params.update({"sendBody": True, "specifyBody": "json", "jsonBody": expression(corps)})
     return {
         "parameters": params,
         "id": "gh-" + re.sub(r"\W+", "-", nom).lower(),
@@ -174,8 +198,11 @@ def noeud_si(nom: str, conditions: dict, x: int, y: int) -> dict:
 
 
 def noeud_pg(nom: str, requete: str, x: int, y: int) -> dict:
+    # Même piège que pour les URL : une requête SQL contenant `{{ … }}` n'est
+    # interpolée que si la valeur commence par `=`.
     return {
-        "parameters": {"operation": "executeQuery", "query": requete, "options": {}},
+        "parameters": {"operation": "executeQuery", "query": expression(requete),
+                       "options": {}},
         "id": "pg-" + re.sub(r"\W+", "-", nom).lower(),
         "name": nom,
         "type": "n8n-nodes-base.postgres",
@@ -218,6 +245,9 @@ return [{ json: {
   issue_url: issue.html_url,
   // Seul le ticket est transmis : pas d'historique, pas de contexte parasite.
   issue_text: `# ${titre}\\n\\n${corps}`,
+  // Le titre est du texte libre : une apostrophe y casserait le littéral SQL
+  // (« n'expose pas » → syntax error). On l'échappe ici, jamais dans la requête.
+  titre_sql: String(titre).replace(/'/g, "''"),
   roles: __ROLES__,
 } }];
 """
@@ -225,8 +255,12 @@ return [{ json: {
 CODE_SELECTION = """// Choisit LA prochaine issue à traiter, par sondage sortant.
 // Sont écartées : les pull requests (l'API issues les renvoie aussi) et les
 // issues déjà prises ou terminées — le cycle de vie est porté par les étiquettes.
-const liste = Array.isArray($json) ? $json : ($json.issues || $json.items || []);
-const issues = liste.filter(i => i && !i.pull_request);
+//
+// En mode `runOnceForAllItems`, `$json` n'est QUE le premier élément : le
+// tableau complet s'obtient par `$input.all()`. C'est ici que la version
+// précédente jetait silencieusement tous les tickets.
+const liste = $input.all().map(i => i.json).filter(Boolean);
+const issues = liste.filter(i => !i.pull_request);
 
 const aTraiter = issues.filter(i => {
   const noms = (i.labels || []).map(l => (typeof l === 'string' ? l : l.name));
@@ -236,7 +270,8 @@ const aTraiter = issues.filter(i => {
 });
 
 if (!aTraiter.length) {
-  return [{ json: { ignore: true, raison: 'aucune issue étiquetée __DEMANDE__ à traiter' } }];
+  return [{ json: { ignore: true,
+    raison: `aucune issue à traiter (${issues.length} ouverte(s) examinée(s))` } }];
 }
 
 const issue = aTraiter[0];
@@ -303,11 +338,13 @@ CODE_CHEMINS = """// Liste des chemins existants du dépôt — NOMS SEULS, jama
 // (envoyer l'arborescence complète coûterait des milliers de tokens par run).
 const arbre = ($json.tree || []).filter(e => e.type === 'blob');
 const plafond = 400;
-const chemins = arbre.slice(0, plafond).map(e => e.path).join('\\n');
+// GitHub signale lui-même une réponse tronquée ; on y ajoute notre propre plafond.
+const tronque = $json.truncated === true || arbre.length > plafond;
+const liste = arbre.slice(0, plafond).map(e => e.path).join('\\n');
 return [{ json: {
   nb_fichiers: arbre.length,
-  tronque: arbre.length > plafond,
-  chemins: tronque ? chemins + '\\n(…)' : chemins,
+  tronque,
+  chemins: tronque ? liste + '\\n(…)' : liste,
 } }];
 """
 
@@ -329,7 +366,12 @@ CODE_ANALYSER_CI = """// Verdict de la CI, rattaché au commit RÉELLEMENT produ
 const runs = Array.isArray($json.workflow_runs) ? $json.workflow_runs : [];
 const ctx = $('Préparer').first().json;
 const sha = $('Lire le commit').first().json.object.sha;
-const tentative = (ctx.tentative || 0) + 1;
+// Le compteur doit survivre aux tours de boucle : on lit le passage précédent
+// du MÊME nœud, sinon il repart à 1 à chaque itération et la borne des 3
+// tentatives ne s'applique jamais.
+const passages = $('Analyser la CI').all();
+const precedent = passages.length > 1 ? passages[passages.length - 2].json : null;
+const tentative = ((precedent && precedent.tentative) || 0) + 1;
 
 const run = runs.find(r => r.head_sha === sha) || null;
 const statut = run ? run.status : 'absent';
@@ -431,7 +473,7 @@ def construire(roles: dict[str, str]) -> dict:
             "insert into public.pipeline_events (workflow, event, payload) "
             "values ('wf2-agents','run_demarre',"
             " jsonb_build_object('run', '{{ $json.runId }}', 'repo', '{{ $json.repo }}',"
-            " 'issue', {{ $json.numero }}, 'titre', '{{ $('Préparer').first().json.titre }}'));",
+            " 'issue', {{ $json.numero }}, 'titre', '{{ $json.titre_sql }}'));",
             -1000, 300,
         ),
         noeud_llm("PO — critères", "PO",
@@ -465,7 +507,7 @@ def construire(roles: dict[str, str]) -> dict:
         noeud_llm("Dev — fichiers", "Dev",
                   "$('QA — cas de test').first().json.choices[0].message.content"
                   " + '\\n\\n## Ticket\\n' + $('Préparer').first().json.issue_text"
-                  " + '\\n\\n## Chemins existants du dépôt (n\'écris que ce qui manque)\\n'"
+                  " + '\\n\\n## Chemins existants du dépôt , à compléter si nécessaire\\n'"
                   " + $('Chemins du dépôt').first().json.chemins", 200, 300),
         noeud_code("Préparer l'écriture", CODE_PREPARER_ECRITURE, 400, 300),
         noeud_github("Référence main", "GET",
@@ -496,6 +538,15 @@ def construire(roles: dict[str, str]) -> dict:
                      None, 1800, 300),
         noeud_code("Analyser la CI",
                    CODE_ANALYSER_CI.replace("__MAX__", str(MAX_TENTATIVES)), 2000, 300),
+        {
+            "parameters": {"amount": 60, "unit": "seconds"},
+            "id": "wait-ci",
+            "name": "Attendre la CI",
+            "type": "n8n-nodes-base.wait",
+            "typeVersion": 1.1,
+            "position": [2300, 520],
+            "webhookId": "jobhunt-wait-ci",
+        },
         noeud_si("CI terminée ?", {
             "options": {"caseSensitive": True, "leftValue": "", "typeValidation": "loose", "version": 2},
             "conditions": [{
@@ -528,6 +579,23 @@ def construire(roles: dict[str, str]) -> dict:
         noeud_github("Poster le rapport", "POST",
                      "https://api.github.com/repos/{{ $json.repo }}/issues/{{ $json.numero }}/comments",
                      "={{ JSON.stringify({ body: $json.corps_rapport }) }}", 3000, 300),
+        noeud_github(
+            "Commenter le refus",
+            "POST",
+            "https://api.github.com/repos/{{ $('Préparer').first().json.repo }}"
+            "/issues/{{ $('Préparer').first().json.numero }}/comments",
+            "={{ JSON.stringify({ body: '## Spécification refusée — porte Spec Review"
+            "\\n\\n' + $('Spec Review').first().json.choices[0].message.content }) }}",
+            3400, 520,
+        ),
+        noeud_github(
+            "Marquer refusée",
+            "POST",
+            "https://api.github.com/repos/{{ $('Préparer').first().json.repo }}"
+            "/issues/{{ $('Préparer').first().json.numero }}/labels",
+            "={{ JSON.stringify({ labels: ['agent:no-go'] }) }}",
+            3600, 520,
+        ),
         noeud_pg(
             "Journal — verdict",
             "insert into public.gates (run_id, porte, verdict, motif, empreinte_tested, empreinte_head) "
@@ -579,9 +647,13 @@ def construire(roles: dict[str, str]) -> dict:
         "Porte — Spec Review": {
             "main": [
                 [{"node": "Architecte — plan", "type": "main", "index": 0}],
-                [{"node": "Fin", "type": "main", "index": 0}],
+                # Refus : on commente, on étiquette agent:no-go et on retire
+                # agent:go — sinon le ticket serait repreulé à chaque cycle.
+                [{"node": "Commenter le refus", "type": "main", "index": 0}],
             ]
         },
+        "Commenter le refus": lien("Marquer refusée"),
+        "Marquer refusée": {"main": [[{"node": "Retirer la demande", "type": "main", "index": 0}]]},
         "Architecte — plan": lien("QA — cas de test"),
         "QA — cas de test": lien("Arborescence"),
         "Arborescence": lien("Chemins du dépôt"),
@@ -596,7 +668,15 @@ def construire(roles: dict[str, str]) -> dict:
         "Ouvrir la PR": lien("CI — statut"),
         "CI — statut": lien("Analyser la CI"),
         "Analyser la CI": lien("CI terminée ?"),
-        "CI terminée ?": {"main": [[{"node": "Résultat ?", "type": "main", "index": 0}], []]},
+        "CI terminée ?": {
+            "main": [
+                [{"node": "Résultat ?", "type": "main", "index": 0}],
+                # La CI vient d'être déclenchée par l'ouverture de la PR : elle
+                # n'a pas encore de verdict. On attend, puis on redemande.
+                [{"node": "Attendre la CI", "type": "main", "index": 0}],
+            ]
+        },
+        "Attendre la CI": {"main": [[{"node": "CI — statut", "type": "main", "index": 0}]]},
         "Résultat ?": {
             "main": [
                 [{"node": "QA Review", "type": "main", "index": 0}],
@@ -616,7 +696,14 @@ def construire(roles: dict[str, str]) -> dict:
         "id": "wf2agentsjobhunt",
         "name": "JobHunt — WF2 Chaîne d'agents (issue → PR)",
         "active": False,
-        "settings": {"executionOrder": "v1"},
+        # Sans ces réglages, n8n ne conserve pas les données d'une exécution
+        # réussie : impossible de diagnostiquer un arrêt silencieux.
+        "settings": {
+            "executionOrder": "v1",
+            "saveDataSuccessExecution": "all",
+            "saveDataErrorExecution": "all",
+            "saveManualExecutions": True,
+        },
         "nodes": nodes,
         "connections": connections,
         "meta": {

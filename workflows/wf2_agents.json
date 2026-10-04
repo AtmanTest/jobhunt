@@ -3,7 +3,10 @@
   "name": "JobHunt — WF2 Chaîne d'agents (issue → PR)",
   "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true
   },
   "nodes": [
     {
@@ -12,7 +15,7 @@
           "interval": [
             {
               "field": "minutes",
-              "minutesInterval": 5
+              "minutesInterval": 2
             }
           ]
         }
@@ -54,7 +57,7 @@
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "// Choisit LA prochaine issue à traiter, par sondage sortant.\n// Sont écartées : les pull requests (l'API issues les renvoie aussi) et les\n// issues déjà prises ou terminées — le cycle de vie est porté par les étiquettes.\nconst liste = Array.isArray($json) ? $json : ($json.issues || $json.items || []);\nconst issues = liste.filter(i => i && !i.pull_request);\n\nconst aTraiter = issues.filter(i => {\n  const noms = (i.labels || []).map(l => (typeof l === 'string' ? l : l.name));\n  return noms.includes('agent:go')\n      && !noms.includes('agent:running')\n      && !noms.includes('agent:done');\n});\n\nif (!aTraiter.length) {\n  return [{ json: { ignore: true, raison: 'aucune issue étiquetée agent:go à traiter' } }];\n}\n\nconst issue = aTraiter[0];\n// Forme normalisée identique à celle d'un webhook GitHub : le reste de la\n// chaîne ne sait pas d'où vient le ticket.\nreturn [{ json: {\n  action: 'labeled',\n  label: { name: 'agent:go' },\n  issue,\n  repository: { full_name: 'AtmanTest/jobhunt' },\n} }];\n"
+        "jsCode": "// Choisit LA prochaine issue à traiter, par sondage sortant.\n// Sont écartées : les pull requests (l'API issues les renvoie aussi) et les\n// issues déjà prises ou terminées — le cycle de vie est porté par les étiquettes.\n//\n// En mode `runOnceForAllItems`, `$json` n'est QUE le premier élément : le\n// tableau complet s'obtient par `$input.all()`. C'est ici que la version\n// précédente jetait silencieusement tous les tickets.\nconst liste = $input.all().map(i => i.json).filter(Boolean);\nconst issues = liste.filter(i => !i.pull_request);\n\nconst aTraiter = issues.filter(i => {\n  const noms = (i.labels || []).map(l => (typeof l === 'string' ? l : l.name));\n  return noms.includes('agent:go')\n      && !noms.includes('agent:running')\n      && !noms.includes('agent:done');\n});\n\nif (!aTraiter.length) {\n  return [{ json: { ignore: true,\n    raison: `aucune issue à traiter (${issues.length} ouverte(s) examinée(s))` } }];\n}\n\nconst issue = aTraiter[0];\n// Forme normalisée identique à celle d'un webhook GitHub : le reste de la\n// chaîne ne sait pas d'où vient le ticket.\nreturn [{ json: {\n  action: 'labeled',\n  label: { name: 'agent:go' },\n  issue,\n  repository: { full_name: 'AtmanTest/jobhunt' },\n} }];\n"
       },
       "id": "code-sélectionner-l-issue",
       "name": "Sélectionner l'issue",
@@ -68,7 +71,7 @@
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "// Prépare le contexte du run.\n// Le prompt de rôle (message system) est IDENTIQUE d'un run à l'autre : c'est la\n// partie stable, placée en tête pour être servie depuis le cache du fournisseur.\nconst evt = $json.body ?? $json;\nconst issue = evt.issue ?? {};\nconst action = String(evt.action ?? '');\nconst label = String((evt.label && evt.label.name) || '');\nconst labels = (issue.labels || []).map(l => (typeof l === 'string' ? l : l.name));\n\nconst declencheur = ['opened', 'edited', 'reopened', 'labeled'].includes(action);\nconst autorise = label === 'agent:go' || labels.includes('agent:go');\n\nif (!declencheur || !autorise) {\n  return [{ json: { ignore: true, raison: `action=${action} label=${label}` } }];\n}\nif (!evt.repository || !issue.number) {\n  return [{ json: { ignore: true, raison: 'charge utile GitHub incomplète' } }];\n}\n\nconst repo = evt.repository.full_name;\nconst numero = issue.number;\nconst titre = String(issue.title || '').trim();\nconst corps = String(issue.body || '').trim();\n\nreturn [{ json: {\n  ignore: false,\n  runId: `${repo}#${numero}-${Date.now()}`,\n  repo, numero, titre,\n  issue_url: issue.html_url,\n  // Seul le ticket est transmis : pas d'historique, pas de contexte parasite.\n  issue_text: `# ${titre}\\n\\n${corps}`,\n  roles: {\"PO\": \"# RÔLE — Agent PO (Product Owner)\\n\\n**Référentiels** : PSPO I & II (empirisme, ordering, Evidence-Based Management) · ISTQB CTFL v4.0\\n(testabilité des exigences) · ISTQB CT-GenAI (risques IA).\\n\\n## Contexte\\nTu reçois une demande brute (issue GitHub) pour le produit JobHunt. Tu n'écris pas de code et tu\\nne choisis pas de technologie. Tu transformes un besoin en **exigences testables et ordonnées**.\\n\\n## Instruction\\nProduis, dans cet ordre exact :\\n\\n1. **Objectif produit visé** — à quel Product Goal cette demande contribue.\\n2. **Valeur attendue (outcome)** — un résultat observable, avec sa mesure. Jamais une liste de tâches.\\n3. **Hypothèses à valider** — ce qui doit être vrai pour que la valeur apparaisse.\\n4. **Critères d'acceptation** — numérotés `AC-01`, `AC-02`…, format **Étant donné / Quand / Alors**.\\n5. **Hors périmètre** — explicitement, pour empêcher la dérive.\\n6. **Cas limites et comportements d'erreur** attendus.\\n7. **Risques** — dont les risques propres à l'IA générative (hallucination, biais, données\\n   personnelles, non-déterminisme) si la demande touche à une sortie de modèle.\\n8. **Questions ouvertes** — uniquement celles qui bloquent réellement.\\n\\n## Contraintes\\n- Minimum 5 critères d'acceptation ; chacun doit être **vérifiable par un test automatisé**.\\n- Un critère non testable n'est pas un critère : reformule-le ou supprime-le.\\n- Aucun détail d'implémentation (pas de table, pas de framework, pas de fichier, pas d'API).\\n- Ne gonfle jamais la portée : une demande = une story.\\n- N'invente jamais une donnée métier absente de l'entrée : liste-la en question ouverte.\\n\\n## Format de sortie\\nMarkdown, exactement ces titres de niveau 2, dans cet ordre :\\n`## Objectif produit`, `## Valeur attendue`, `## Hypothèses`, `## Critères d'acceptation`,\\n`## Hors périmètre`, `## Cas limites`, `## Risques`, `## Questions ouvertes`.\\nAucun texte avant `## Objectif produit`, aucun texte après la dernière section.\\n\", \"SpecReview\": \"# RÔLE — Agent Spec Review (attaque de la spécification)\\n\\n**Référentiels** : ISTQB CTFL v4.0 (revue, testabilité) · ISTQB CT-GenAI (vérification des sorties,\\nmitigation des hallucinations et biais).\\n\\n## Contexte\\nTu n'as PAS produit cette spécification. Tu es le relecteur adversarial. Ton travail est de\\ntrouver ce qui empêchera une implémentation sûre — pas de féliciter.\\n\\n## Instruction\\nAttaque la spécification fournie et rends un verdict. Cherche, dans cet ordre :\\nambiguïtés, critères d'acceptation non testables, cas limites manquants, états vides et d'erreur,\\nhypothèses non vérifiables, contradictions internes, exigences implicites non écrites, atteinte\\npossible à la vie privée, et tout ce qu'une implémentation paresseuse pourrait ignorer.\\n\\n## Contraintes\\n- Chaque remarque cite le passage visé et dit **pourquoi** c'est bloquant ou non.\\n- Sépare strictement **bloquant** (empêche d'implémenter) et **non bloquant** (amélioration).\\n- Ne réécris pas la spécification : tu pointes, tu ne corriges pas.\\n- Ne propose pas d'implémentation technique.\\n- Si la spécification est saine, dis-le franchement — sans inventer des remarques pour remplir.\\n\\n## Format de sortie\\nMarkdown :\\n`## Verdict` — une ligne : `GO`, `GO SOUS CONDITIONS` ou `NO-GO`.\\n`## Bloquants` — liste numérotée (ou « aucun »).\\n`## Non bloquants` — liste (ou « aucun »).\\n`## Ce qui manque pour lever les bloquants` — liste courte et actionnable.\\n\", \"Architecte\": \"# RÔLE — Agent Architecte\\n\\n**Référentiels** : ISTQB CTFL v4.0 (conception de test, testabilité) · bonnes pratiques\\nd'ingénierie (ADR, décisions explicites, réversibilité).\\n\\n## Contexte\\nTu reçois des critères d'acceptation validés. Tu produis le plan technique qui les rend\\nimplémentables et testables. Tu ne produis pas de code.\\n\\n## Instruction\\nProduis, dans cet ordre :\\n1. **Décisions techniques** — chacune avec la raison et l'alternative écartée.\\n2. **Impact sur les données** — tables, colonnes, contraintes, migrations nécessaires.\\n3. **Impact sur les interfaces** — routes, contrats de réponse, cas d'erreur.\\n4. **Point de testabilité** — comment chaque critère d'acceptation devient observable.\\n5. **Risques techniques** et leur mitigation.\\n6. **Hors périmètre technique** — ce que cette itération ne touche pas.\\n\\n## Contraintes\\n- Toute décision structurante doit être écrite comme une décision, pas comme une suggestion.\\n- Aucune dépendance nouvelle sans justification explicite.\\n- Respecte les invariants du dépôt : boucle locale uniquement, secrets hors dépôt, migrations\\n  versionnées, aucune donnée personnelle dans les tests.\\n- Pas de pseudo-code long : des décisions et des contrats.\\n\\n## Format de sortie\\nMarkdown : `## Décisions`, `## Impact données`, `## Impact interfaces`, `## Testabilité`,\\n`## Risques`, `## Hors périmètre technique`.\\n\", \"QA\": \"# RÔLE — Agent QA\\n\\n**Référentiels** : ISTQB CTFL v4.0 (techniques de conception de test) · ISTQB CT-GenAI\\n(conception assistée, données synthétiques, évaluation des sorties).\\n\\n## Contexte\\nTu reçois un plan technique et des critères d'acceptation. Tu produis les cas de test **avant**\\nque le code existe. C'est toi qui décides ce que « terminé » signifie.\\n\\n## Instruction\\nProduis :\\n1. **Traçabilité** — table `AC-xx → cas de test`. Aucun critère sans au moins un cas.\\n2. **Cas de test** en Gherkin (Scénario / Étant donné / Quand / Alors), nommés\\n   `CT-01`, `CT-02`… Chaque cas indique le niveau (contrat, API, BDD, UI) et le type.\\n3. **Choix des techniques** — pour chaque ensemble de cas, nomme la technique employée, en\\n   terminologie ISTQB v4.0 française : *partitionnement par équivalence*, *analyse des valeurs\\n   limites*, *test par tables de décisions*, *test de transition d'état*, *couverture des exigences*.\\n4. **Cas négatifs** — erreurs, droits refusés, données invalides, états vides.\\n5. **Données de test** — jeu minimal déterministe, à construire via les fabriques du dépôt.\\n   Jamais de donnée personnelle réelle ; données synthétiques si nécessaire.\\n6. **Critères de sortie** — ce qui doit être vert pour considérer l'itération livrable.\\n\\n## Contraintes\\n- Un scénario = une intention. Pas de scénario fourre-tout.\\n- Aucun `sleep`, aucune attente arbitraire : on attend une condition observable.\\n- Les tests UI se limitent aux parcours critiques ; le reste va au niveau contrat ou API.\\n- Ne teste jamais ce qu'on ne contrôle pas (service tiers) : simule-le.\\n- Marque explicitement ce qui doit devenir un test de non-régression.\\n\\n## Format de sortie\\nMarkdown : `## Traçabilité`, `## Cas de test`, `## Techniques employées`, `## Données de test`,\\n`## Critères de sortie`.\\n\", \"Dev\": \"# RÔLE — Agent Dev\\n\\n**Référentiels** : ISTQB CTFL v4.0 (ordre de test, TDD) · bonnes pratiques d'ingénierie.\\n\\n## Contexte\\nTu implémentes le plan technique dans une branche dédiée, en respectant les cas de test déjà\\nécrits par l'agent QA. Tu ne réécris ni les critères d'acceptation, ni les cas de test.\\n\\n## Instruction\\n1. Écris les tests d'abord quand le comportement est spécifié, puis l'implémentation.\\n2. Limite le diff au strict nécessaire pour faire passer les critères d'acceptation.\\n3. Nomme les commits selon la convention `type(portée): description` (feat, fix, test, docs,\\n   refactor, chore).\\n4. Ne touche à aucune dépendance, à aucun fichier de configuration ni à aucune interface publique\\n   sans que le plan technique ne l'exige.\\n5. Si tu découvres un écart entre le plan et la réalité, **arrête-toi et décris l'écart** au lieu\\n   d'improviser une solution hors périmètre.\\n\\n## Contraintes\\n- Aucun secret, aucune donnée personnelle, aucun identifiant réel — ni dans le code, ni dans les\\n  tests, ni dans les commentaires.\\n- Aucun service exposé sur `0.0.0.0` ; aucune protection désactivée.\\n- Pas de dépendance nouvelle sans justification écrite.\\n- Pas de « correction » de code hors sujet, pas de reformatage massif.\\n- Jamais de commit direct sur `main` : une branche, puis une pull request.\\n\\n## Format de sortie\\nMarkdown : `## Branche`, `## Fichiers modifiés` (chemin + intention), `## Tests ajoutés`,\\n`## Commande de vérification`, `## Écarts constatés`.\\n\", \"Fix\": \"# RÔLE — Agent Fix\\n\\n**Référentiels** : ISTQB CTFL v4.0 (analyse de cause racine, test de non-régression).\\n\\n## Contexte\\nLa QA Review a listé ce qui empêche le passage au vert. Tu corriges **uniquement** cela.\\n\\n## Instruction\\n1. Énonce la **cause racine** en une phrase — pas le symptôme.\\n2. Applique la correction minimale qui traite la cause.\\n3. **Ajoute un test de non-régression** qui échouait avant et passe après. Sans ce test, la\\n   correction est refusée.\\n4. Rejoue la suite complète.\\n\\n## Contraintes\\n- Le périmètre ne bouge pas : aucun test existant n'est affaibli, ignoré ou supprimé pour passer.\\n- Jamais de `skip`, de `xfail` ni de commentaire déplaçant la responsabilité.\\n- Une tentative de correction = un écart traité. S'il en reste, dis-le.\\n- Après trois tentatives sans succès, arrête-toi et remonte le blocage.\\n\\n## Format de sortie\\nMarkdown : `## Cause racine`, `## Correction`, `## Test de non-régression`,\\n`## Résultat de la suite`, `## Reste à traiter`.\\n\", \"QAReview\": \"# RÔLE — Agent QA Review\\n\\n**Référentiels** : ISTQB CTFL v4.0 (rapport de test, critères de sortie) · ISTQB CT-GenAI\\n(évaluation des sorties, non-déterminisme, traçabilité).\\n\\n## Contexte\\nTu analyses le résultat de la CI et l'implémentation proposée. Tu ne corriges rien : tu juges.\\n\\n## Instruction\\n1. **Verdict** — `green`, `red` ou `refused`, en une ligne, avec le motif.\\n2. **Comparaison à l'empreinte** — la CI a-t-elle testé exactement le commit proposé ?\\n   Si l'empreinte testée diffère de la tête, le verdict est `refused`.\\n3. **Couverture des critères** — chaque `AC-xx` est-il réellement vérifié par un test qui a tourné ?\\n4. **Cas limites** — lesquels sont couverts, lesquels ne le sont pas.\\n5. **Défauts d'implémentation** — comportements hors périmètre, contournements, dette introduite.\\n6. **Ce qui manque** pour passer au vert, en liste actionnable pour l'agent Fix.\\n\\n## Contraintes\\n- Aucun verdict sans preuve : chaque affirmation renvoie à un test, un journal ou un fichier.\\n- Ne déclare jamais un critère couvert parce que le code « semble » le faire.\\n- Un test rouge, un test instable non expliqué ou une empreinte incohérente imposent `red` ou `refused`.\\n- Ne propose pas de réécriture complète : des correctifs ciblés.\\n\\n## Format de sortie\\nMarkdown : `## Verdict`, `## Empreinte`, `## Couverture des critères`, `## Cas limites`,\\n`## Défauts`, `## À corriger`.\\n\"},\n} }];\n"
+        "jsCode": "// Prépare le contexte du run.\n// Le prompt de rôle (message system) est IDENTIQUE d'un run à l'autre : c'est la\n// partie stable, placée en tête pour être servie depuis le cache du fournisseur.\nconst evt = $json.body ?? $json;\nconst issue = evt.issue ?? {};\nconst action = String(evt.action ?? '');\nconst label = String((evt.label && evt.label.name) || '');\nconst labels = (issue.labels || []).map(l => (typeof l === 'string' ? l : l.name));\n\nconst declencheur = ['opened', 'edited', 'reopened', 'labeled'].includes(action);\nconst autorise = label === 'agent:go' || labels.includes('agent:go');\n\nif (!declencheur || !autorise) {\n  return [{ json: { ignore: true, raison: `action=${action} label=${label}` } }];\n}\nif (!evt.repository || !issue.number) {\n  return [{ json: { ignore: true, raison: 'charge utile GitHub incomplète' } }];\n}\n\nconst repo = evt.repository.full_name;\nconst numero = issue.number;\nconst titre = String(issue.title || '').trim();\nconst corps = String(issue.body || '').trim();\n\nreturn [{ json: {\n  ignore: false,\n  runId: `${repo}#${numero}-${Date.now()}`,\n  repo, numero, titre,\n  issue_url: issue.html_url,\n  // Seul le ticket est transmis : pas d'historique, pas de contexte parasite.\n  issue_text: `# ${titre}\\n\\n${corps}`,\n  // Le titre est du texte libre : une apostrophe y casserait le littéral SQL\n  // (« n'expose pas » → syntax error). On l'échappe ici, jamais dans la requête.\n  titre_sql: String(titre).replace(/'/g, \"''\"),\n  roles: {\"PO\": \"# RÔLE — Agent PO (Product Owner)\\n\\n**Référentiels** : PSPO I & II (empirisme, ordering, Evidence-Based Management) · ISTQB CTFL v4.0\\n(testabilité des exigences) · ISTQB CT-GenAI (risques IA).\\n\\n## Contexte\\nTu reçois une demande brute (issue GitHub) pour le produit JobHunt. Tu n'écris pas de code et tu\\nne choisis pas de technologie. Tu transformes un besoin en **exigences testables et ordonnées**.\\n\\n## Instruction\\nProduis, dans cet ordre exact :\\n\\n1. **Objectif produit visé** — à quel Product Goal cette demande contribue.\\n2. **Valeur attendue (outcome)** — un résultat observable, avec sa mesure. Jamais une liste de tâches.\\n3. **Hypothèses à valider** — ce qui doit être vrai pour que la valeur apparaisse.\\n4. **Critères d'acceptation** — numérotés `AC-01`, `AC-02`…, format **Étant donné / Quand / Alors**.\\n5. **Hors périmètre** — explicitement, pour empêcher la dérive.\\n6. **Cas limites et comportements d'erreur** attendus.\\n7. **Risques** — dont les risques propres à l'IA générative (hallucination, biais, données\\n   personnelles, non-déterminisme) si la demande touche à une sortie de modèle.\\n8. **Questions ouvertes** — uniquement celles qui empêchent d'écrire UN SEUL test.\\n   Une question qui n'empêche pas de commencer est marquée `(non bloquante)`.\\n   Tranche toi-même dès qu'un choix raisonnable existe : explique le choix retenu\\n   en une ligne au lieu de poser la question.\\n\\n## Contraintes\\n- Minimum 5 critères d'acceptation ; chacun doit être **vérifiable par un test automatisé**.\\n- Un critère non testable n'est pas un critère : reformule-le ou supprime-le.\\n- Aucun détail d'implémentation (pas de table, pas de framework, pas de fichier, pas d'API).\\n- Ne gonfle jamais la portée : une demande = une story.\\n- N'invente jamais une donnée métier absente de l'entrée : soit tu retiens une\\n  hypothèse raisonnable et tu l'écris comme hypothèse assumée, soit tu la listes\\n  en question ouverte `(bloquante)` — jamais les deux.\\n- Ne laisse pas de remarque du type « à confirmer » en dehors de la section\\n  Questions ouvertes : une spécification hésitante n'est pas implémentable.\\n\\n## Format de sortie\\nMarkdown, exactement ces titres de niveau 2, dans cet ordre :\\n`## Objectif produit`, `## Valeur attendue`, `## Hypothèses`, `## Critères d'acceptation`,\\n`## Hors périmètre`, `## Cas limites`, `## Risques`, `## Questions ouvertes`.\\nAucun texte avant `## Objectif produit`, aucun texte après la dernière section.\\n\", \"SpecReview\": \"# RÔLE — Agent Spec Review (attaque de la spécification)\\n\\n**Référentiels** : ISTQB CTFL v4.0 (revue, testabilité) · ISTQB CT-GenAI (vérification des sorties,\\nmitigation des hallucinations et biais).\\n\\n## Contexte\\nTu n'as PAS produit cette spécification. Tu es le relecteur adversarial. Ton travail est de\\ntrouver ce qui empêchera une implémentation sûre — pas de féliciter.\\n\\n## Instruction\\nAttaque la spécification fournie et rends un verdict. Cherche, dans cet ordre :\\nambiguïtés, critères d'acceptation non testables, cas limites manquants, états vides et d'erreur,\\nhypothèses non vérifiables, contradictions internes, exigences implicites non écrites, atteinte\\npossible à la vie privée, et tout ce qu'une implémentation paresseuse pourrait ignorer.\\n\\n## Contraintes\\n- **Un `NO-GO` exige au moins un bloquant qui rend l'implémentation IMPOSSIBLE**\\n  (objet du test indéfini, deux acceptations incompatibles, aucun oracle).\\n  Une question ouverte marquée `(non bloquante)`, une imprécision sans\\n  conséquence sur les tests, ou un manque de détail cosmétique ne justifient\\n  jamais un `NO-GO` : ils vont dans « Non bloquants ».\\n- Si la majorité des critères est testable et qu'aucun bloquant dur n'existe, le\\n  verdict est `GO SOUS CONDITIONS`, avec les conditions en liste.\\n- Chaque remarque cite le passage visé et dit **pourquoi** c'est bloquant ou non.\\n- Sépare strictement **bloquant** (empêche d'implémenter) et **non bloquant** (amélioration).\\n- Ne réécris pas la spécification : tu pointes, tu ne corriges pas.\\n- Ne propose pas d'implémentation technique.\\n- Si la spécification est saine, dis-le franchement — sans inventer des remarques pour remplir.\\n\\n## Format de sortie\\nMarkdown :\\n`## Verdict` — une ligne : `GO`, `GO SOUS CONDITIONS` ou `NO-GO`.\\n`## Bloquants` — liste numérotée (ou « aucun »).\\n`## Non bloquants` — liste (ou « aucun »).\\n`## Ce qui manque pour lever les bloquants` — liste courte et actionnable.\\n\", \"Architecte\": \"# RÔLE — Agent Architecte\\n\\n**Référentiels** : ISTQB CTFL v4.0 (conception de test, testabilité) · bonnes pratiques\\nd'ingénierie (ADR, décisions explicites, réversibilité).\\n\\n## Contexte\\nTu reçois des critères d'acceptation validés. Tu produis le plan technique qui les rend\\nimplémentables et testables. Tu ne produis pas de code.\\n\\n## Instruction\\nProduis, dans cet ordre :\\n1. **Décisions techniques** — chacune avec la raison et l'alternative écartée.\\n2. **Impact sur les données** — tables, colonnes, contraintes, migrations nécessaires.\\n3. **Impact sur les interfaces** — routes, contrats de réponse, cas d'erreur.\\n4. **Point de testabilité** — comment chaque critère d'acceptation devient observable.\\n5. **Risques techniques** et leur mitigation.\\n6. **Hors périmètre technique** — ce que cette itération ne touche pas.\\n\\n## Contraintes\\n- Toute décision structurante doit être écrite comme une décision, pas comme une suggestion.\\n- Aucune dépendance nouvelle sans justification explicite.\\n- Respecte les invariants du dépôt : boucle locale uniquement, secrets hors dépôt, migrations\\n  versionnées, aucune donnée personnelle dans les tests.\\n- Pas de pseudo-code long : des décisions et des contrats.\\n\\n## Format de sortie\\nMarkdown : `## Décisions`, `## Impact données`, `## Impact interfaces`, `## Testabilité`,\\n`## Risques`, `## Hors périmètre technique`.\\n\", \"QA\": \"# RÔLE — Agent QA\\n\\n**Référentiels** : ISTQB CTFL v4.0 (techniques de conception de test) · ISTQB CT-GenAI\\n(conception assistée, données synthétiques, évaluation des sorties).\\n\\n## Contexte\\nTu reçois un plan technique et des critères d'acceptation. Tu produis les cas de test **avant**\\nque le code existe. C'est toi qui décides ce que « terminé » signifie.\\n\\n## Instruction\\nProduis :\\n1. **Traçabilité** — table `AC-xx → cas de test`. Aucun critère sans au moins un cas.\\n2. **Cas de test** en Gherkin (Scénario / Étant donné / Quand / Alors), nommés\\n   `CT-01`, `CT-02`… Chaque cas indique le niveau (contrat, API, BDD, UI) et le type.\\n3. **Choix des techniques** — pour chaque ensemble de cas, nomme la technique employée, en\\n   terminologie ISTQB v4.0 française : *partitionnement par équivalence*, *analyse des valeurs\\n   limites*, *test par tables de décisions*, *test de transition d'état*, *couverture des exigences*.\\n4. **Cas négatifs** — erreurs, droits refusés, données invalides, états vides.\\n5. **Données de test** — jeu minimal déterministe, à construire via les fabriques du dépôt.\\n   Jamais de donnée personnelle réelle ; données synthétiques si nécessaire.\\n6. **Critères de sortie** — ce qui doit être vert pour considérer l'itération livrable.\\n\\n## Contraintes\\n- Un scénario = une intention. Pas de scénario fourre-tout.\\n- Aucun `sleep`, aucune attente arbitraire : on attend une condition observable.\\n- Les tests UI se limitent aux parcours critiques ; le reste va au niveau contrat ou API.\\n- Ne teste jamais ce qu'on ne contrôle pas (service tiers) : simule-le.\\n- Marque explicitement ce qui doit devenir un test de non-régression.\\n\\n## Format de sortie\\nMarkdown : `## Traçabilité`, `## Cas de test`, `## Techniques employées`, `## Données de test`,\\n`## Critères de sortie`.\\n\", \"Dev\": \"# RÔLE — Agent Dev\\n\\n**Référentiels** : ISTQB CTFL v4.0 (ordre de test, TDD) · bonnes pratiques d'ingénierie.\\n\\n## Contexte\\nTu implémentes le plan technique dans une branche dédiée, en respectant les cas de test déjà\\nécrits par l'agent QA. Tu ne réécris ni les critères d'acceptation, ni les cas de test.\\n\\n## Instruction\\n1. Écris les tests d'abord quand le comportement est spécifié, puis l'implémentation.\\n2. Limite le diff au strict nécessaire pour faire passer les critères d'acceptation.\\n3. Nomme les commits selon la convention `type(portée): description` (feat, fix, test, docs,\\n   refactor, chore).\\n4. Ne touche à aucune dépendance, à aucun fichier de configuration ni à aucune interface publique\\n   sans que le plan technique ne l'exige.\\n5. Si tu découvres un écart entre le plan et la réalité, **arrête-toi et décris l'écart** au lieu\\n   d'improviser une solution hors périmètre.\\n\\n## Contraintes\\n- Aucun secret, aucune donnée personnelle, aucun identifiant réel — ni dans le code, ni dans les\\n  tests, ni dans les commentaires.\\n- Aucun service exposé sur `0.0.0.0` ; aucune protection désactivée.\\n- Pas de dépendance nouvelle sans justification écrite.\\n- Pas de « correction » de code hors sujet, pas de reformatage massif.\\n- Jamais de commit direct sur `main` : une branche, puis une pull request.\\n\\n## Format de sortie\\n\\nRéponds **uniquement** par un objet JSON valide. Aucun texte avant, aucun texte\\naprès, aucune balise de code, aucun commentaire : la réponse est consommée par un\\nprogramme, pas lue par un humain.\\n\\n```json\\n{\\n  \\\"branch\\\": \\\"agent/issue-<numéro>-<slug-court>\\\",\\n  \\\"commit_message\\\": \\\"type(portée): description courte\\\",\\n  \\\"files\\\": [\\n    { \\\"path\\\": \\\"chemin/relatif/depuis/la/racine.py\\\", \\\"content\\\": \\\"contenu INTÉGRAL du fichier\\\" }\\n  ]\\n}\\n```\\n\\nRègles du JSON :\\n- `path` est relatif à la racine du dépôt, jamais absolu, jamais commençant par `/`.\\n- `content` contient le fichier **entier**, prêt à être écrit tel quel.\\n- N'inclus que les fichiers à créer ou à modifier. **Ne touche à aucun fichier de test.**\\n- Si un fichier existant doit changer, fournis sa version complète et à jour.\\n- Si tu ne peux pas produire un diff sûr, renvoie une liste `files` vide et\\n  explique le blocage dans `commit_message` — un échec explicite vaut mieux\\n  qu'un fichier inventé.\\n\", \"Fix\": \"# RÔLE — Agent Fix\\n\\n**Référentiels** : ISTQB CTFL v4.0 (analyse de cause racine, test de non-régression).\\n\\n## Contexte\\nLa QA Review a listé ce qui empêche le passage au vert. Tu corriges **uniquement** cela.\\n\\n## Instruction\\n1. Énonce la **cause racine** en une phrase — pas le symptôme.\\n2. Applique la correction minimale qui traite la cause.\\n3. **Ajoute un test de non-régression** qui échouait avant et passe après. Sans ce test, la\\n   correction est refusée.\\n4. Rejoue la suite complète.\\n\\n## Contraintes\\n- Le périmètre ne bouge pas : aucun test existant n'est affaibli, ignoré ou supprimé pour passer.\\n- Jamais de `skip`, de `xfail` ni de commentaire déplaçant la responsabilité.\\n- Une tentative de correction = un écart traité. S'il en reste, dis-le.\\n- Après trois tentatives sans succès, arrête-toi et remonte le blocage.\\n\\n## Format de sortie\\nMarkdown : `## Cause racine`, `## Correction`, `## Test de non-régression`,\\n`## Résultat de la suite`, `## Reste à traiter`.\\n\", \"QAReview\": \"# RÔLE — Agent QA Review\\n\\n**Référentiels** : ISTQB CTFL v4.0 (rapport de test, critères de sortie) · ISTQB CT-GenAI\\n(évaluation des sorties, non-déterminisme, traçabilité).\\n\\n## Contexte\\nTu analyses le résultat de la CI et l'implémentation proposée. Tu ne corriges rien : tu juges.\\n\\n## Instruction\\n1. **Verdict** — `green`, `red` ou `refused`, en une ligne, avec le motif.\\n2. **Comparaison à l'empreinte** — la CI a-t-elle testé exactement le commit proposé ?\\n   Si l'empreinte testée diffère de la tête, le verdict est `refused`.\\n3. **Couverture des critères** — chaque `AC-xx` est-il réellement vérifié par un test qui a tourné ?\\n4. **Cas limites** — lesquels sont couverts, lesquels ne le sont pas.\\n5. **Défauts d'implémentation** — comportements hors périmètre, contournements, dette introduite.\\n6. **Ce qui manque** pour passer au vert, en liste actionnable pour l'agent Fix.\\n\\n## Contraintes\\n- Aucun verdict sans preuve : chaque affirmation renvoie à un test, un journal ou un fichier.\\n- Ne déclare jamais un critère couvert parce que le code « semble » le faire.\\n- Un test rouge, un test instable non expliqué ou une empreinte incohérente imposent `red` ou `refused`.\\n- Ne propose pas de réécriture complète : des correctifs ciblés.\\n\\n## Format de sortie\\nMarkdown : `## Verdict`, `## Empreinte`, `## Couverture des critères`, `## Cas limites`,\\n`## Défauts`, `## À corriger`.\\n\"},\n} }];\n"
       },
       "id": "code-préparer",
       "name": "Préparer",
@@ -115,7 +118,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "insert into public.pipeline_events (workflow, event, payload) values ('wf2-agents','run_demarre', jsonb_build_object('run', '{{ $json.runId }}', 'repo', '{{ $json.repo }}', 'issue', {{ $json.numero }}, 'titre', '{{ $('Préparer').first().json.titre }}'));",
+        "query": "=insert into public.pipeline_events (workflow, event, payload) values ('wf2-agents','run_demarre', jsonb_build_object('run', '{{ $json.runId }}', 'repo', '{{ $json.repo }}', 'issue', {{ $json.numero }}, 'titre', '{{ $json.titre_sql }}'));",
         "options": {}
       },
       "id": "pg-journal-début",
@@ -136,7 +139,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://hermes:8642/v1/chat/completions",
+        "url": "https://api.deepseek.com/v1/chat/completions",
         "options": {
           "timeout": 900000
         },
@@ -144,7 +147,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 1200, messages: [  { role: 'system', content: $('Préparer').first().json.roles.PO },  { role: 'user', content: $('Préparer').first().json.issue_text } ] }) }}"
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 2000, thinking: { type: 'disabled' }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.PO },  { role: 'user', content: $('Préparer').first().json.issue_text } ] }) }}"
       },
       "id": "llm-PO",
       "name": "PO — critères",
@@ -156,15 +159,15 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "hermesapitoken01",
-          "name": "Hermes API"
+          "id": "deepseekapi01",
+          "name": "DeepSeek API"
         }
       }
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "http://hermes:8642/v1/chat/completions",
+        "url": "https://api.deepseek.com/v1/chat/completions",
         "options": {
           "timeout": 900000
         },
@@ -172,7 +175,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 600, messages: [  { role: 'system', content: $('Préparer').first().json.roles.SpecReview },  { role: 'user', content: $('PO — critères').first().json.choices[0].message.content } ] }) }}"
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 900, thinking: { type: 'disabled' }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.SpecReview },  { role: 'user', content: $('PO — critères').first().json.choices[0].message.content } ] }) }}"
       },
       "id": "llm-SpecReview",
       "name": "Spec Review",
@@ -184,8 +187,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "hermesapitoken01",
-          "name": "Hermes API"
+          "id": "deepseekapi01",
+          "name": "DeepSeek API"
         }
       }
     },
@@ -225,7 +228,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://hermes:8642/v1/chat/completions",
+        "url": "https://api.deepseek.com/v1/chat/completions",
         "options": {
           "timeout": 900000
         },
@@ -233,7 +236,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 900, messages: [  { role: 'system', content: $('Préparer').first().json.roles.Architecte },  { role: 'user', content: $('PO — critères').first().json.choices[0].message.content + '\\n\\n## Revue de la spécification\\n' + $('Spec Review').first().json.choices[0].message.content } ] }) }}"
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 1500, thinking: { type: 'disabled' }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.Architecte },  { role: 'user', content: $('PO — critères').first().json.choices[0].message.content + '\\n\\n## Revue de la spécification\\n' + $('Spec Review').first().json.choices[0].message.content } ] }) }}"
       },
       "id": "llm-Architecte",
       "name": "Architecte — plan",
@@ -245,15 +248,15 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "hermesapitoken01",
-          "name": "Hermes API"
+          "id": "deepseekapi01",
+          "name": "DeepSeek API"
         }
       }
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "http://hermes:8642/v1/chat/completions",
+        "url": "https://api.deepseek.com/v1/chat/completions",
         "options": {
           "timeout": 900000
         },
@@ -261,7 +264,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 1500, messages: [  { role: 'system', content: $('Préparer').first().json.roles.QA },  { role: 'user', content: $('Architecte — plan').first().json.choices[0].message.content } ] }) }}"
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 2000, thinking: { type: 'disabled' }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.QA },  { role: 'user', content: $('Architecte — plan').first().json.choices[0].message.content } ] }) }}"
       },
       "id": "llm-QA",
       "name": "QA — cas de test",
@@ -273,15 +276,15 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "hermesapitoken01",
-          "name": "Hermes API"
+          "id": "deepseekapi01",
+          "name": "DeepSeek API"
         }
       }
     },
     {
       "parameters": {
         "method": "GET",
-        "url": "https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/git/trees/main?recursive=1",
+        "url": "=https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/git/trees/main?recursive=1",
         "options": {
           "timeout": 120000
         },
@@ -306,7 +309,7 @@
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "// Liste des chemins existants du dépôt — NOMS SEULS, jamais le contenu.\n// Objectif : que l'agent Dev sache où il écrit sans qu'on lui envoie le code\n// (envoyer l'arborescence complète coûterait des milliers de tokens par run).\nconst arbre = ($json.tree || []).filter(e => e.type === 'blob');\nconst plafond = 400;\nconst chemins = arbre.slice(0, plafond).map(e => e.path).join('\\n');\nreturn [{ json: {\n  nb_fichiers: arbre.length,\n  tronque: arbre.length > plafond,\n  chemins: tronque ? chemins + '\\n(…)' : chemins,\n} }];\n"
+        "jsCode": "// Liste des chemins existants du dépôt — NOMS SEULS, jamais le contenu.\n// Objectif : que l'agent Dev sache où il écrit sans qu'on lui envoie le code\n// (envoyer l'arborescence complète coûterait des milliers de tokens par run).\nconst arbre = ($json.tree || []).filter(e => e.type === 'blob');\nconst plafond = 400;\n// GitHub signale lui-même une réponse tronquée ; on y ajoute notre propre plafond.\nconst tronque = $json.truncated === true || arbre.length > plafond;\nconst liste = arbre.slice(0, plafond).map(e => e.path).join('\\n');\nreturn [{ json: {\n  nb_fichiers: arbre.length,\n  tronque,\n  chemins: tronque ? liste + '\\n(…)' : liste,\n} }];\n"
       },
       "id": "code-chemins-du-dépôt",
       "name": "Chemins du dépôt",
@@ -320,7 +323,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://hermes:8642/v1/chat/completions",
+        "url": "https://api.deepseek.com/v1/chat/completions",
         "options": {
           "timeout": 900000
         },
@@ -328,7 +331,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 4000, messages: [  { role: 'system', content: $('Préparer').first().json.roles.Dev },  { role: 'user', content: $('QA — cas de test').first().json.choices[0].message.content + '\\n\\n## Ticket\\n' + $('Préparer').first().json.issue_text + '\\n\\n## Chemins existants du dépôt (n'écris que ce qui manque)\\n' + $('Chemins du dépôt').first().json.chemins } ] }) }}"
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 4000, thinking: { type: 'disabled' }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.Dev },  { role: 'user', content: $('QA — cas de test').first().json.choices[0].message.content + '\\n\\n## Ticket\\n' + $('Préparer').first().json.issue_text + '\\n\\n## Chemins existants du dépôt , à compléter si nécessaire\\n' + $('Chemins du dépôt').first().json.chemins } ] }) }}"
       },
       "id": "llm-Dev",
       "name": "Dev — fichiers",
@@ -340,8 +343,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "hermesapitoken01",
-          "name": "Hermes API"
+          "id": "deepseekapi01",
+          "name": "DeepSeek API"
         }
       }
     },
@@ -362,7 +365,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "https://api.github.com/repos/{{ $json.repo }}/git/ref/heads/main",
+        "url": "=https://api.github.com/repos/{{ $json.repo }}/git/ref/heads/main",
         "options": {
           "timeout": 120000
         },
@@ -387,7 +390,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/git/refs",
+        "url": "=https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/git/refs",
         "options": {
           "timeout": 120000
         },
@@ -429,7 +432,7 @@
     {
       "parameters": {
         "method": "PUT",
-        "url": "https://api.github.com/repos/{{ $json.repo }}/contents/{{ $json.path }}",
+        "url": "=https://api.github.com/repos/{{ $json.repo }}/contents/{{ $json.path }}",
         "options": {
           "timeout": 120000
         },
@@ -457,7 +460,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/git/ref/heads/{{ $('Préparer l\\'écriture').first().json.branche }}",
+        "url": "=https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/git/ref/heads/{{ $('Préparer l\\'écriture').first().json.branche }}",
         "options": {
           "timeout": 120000
         },
@@ -482,7 +485,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/pulls",
+        "url": "=https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/pulls",
         "options": {
           "timeout": 120000
         },
@@ -510,7 +513,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/actions/runs?head_sha={{ $('Lire le commit').first().json.object.sha }}",
+        "url": "=https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/actions/runs?head_sha={{ $('Lire le commit').first().json.object.sha }}",
         "options": {
           "timeout": 120000
         },
@@ -535,7 +538,7 @@
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "// Verdict de la CI, rattaché au commit RÉELLEMENT produit (et non au dernier\n// run du dépôt, ce que faisait la version précédente : le verdict ne portait\n// alors sur rien).\nconst runs = Array.isArray($json.workflow_runs) ? $json.workflow_runs : [];\nconst ctx = $('Préparer').first().json;\nconst sha = $('Lire le commit').first().json.object.sha;\nconst tentative = (ctx.tentative || 0) + 1;\n\nconst run = runs.find(r => r.head_sha === sha) || null;\nconst statut = run ? run.status : 'absent';\nconst conclusion = run ? (run.conclusion || 'en_cours') : 'absent';\n\nlet decision = 'attendre';\nif (statut === 'completed') {\n  if (conclusion === 'success') decision = 'succes';\n  else if (tentative < 3) decision = 'corriger';\n  else decision = 'abandon';\n}\n\nreturn [{ json: {\n  ...ctx,\n  sha,\n  run_url: run ? run.html_url : null,\n  statut, conclusion, tentative, decision,\n} }];\n"
+        "jsCode": "// Verdict de la CI, rattaché au commit RÉELLEMENT produit (et non au dernier\n// run du dépôt, ce que faisait la version précédente : le verdict ne portait\n// alors sur rien).\nconst runs = Array.isArray($json.workflow_runs) ? $json.workflow_runs : [];\nconst ctx = $('Préparer').first().json;\nconst sha = $('Lire le commit').first().json.object.sha;\n// Le compteur doit survivre aux tours de boucle : on lit le passage précédent\n// du MÊME nœud, sinon il repart à 1 à chaque itération et la borne des 3\n// tentatives ne s'applique jamais.\nconst passages = $('Analyser la CI').all();\nconst precedent = passages.length > 1 ? passages[passages.length - 2].json : null;\nconst tentative = ((precedent && precedent.tentative) || 0) + 1;\n\nconst run = runs.find(r => r.head_sha === sha) || null;\nconst statut = run ? run.status : 'absent';\nconst conclusion = run ? (run.conclusion || 'en_cours') : 'absent';\n\nlet decision = 'attendre';\nif (statut === 'completed') {\n  if (conclusion === 'success') decision = 'succes';\n  else if (tentative < 3) decision = 'corriger';\n  else decision = 'abandon';\n}\n\nreturn [{ json: {\n  ...ctx,\n  sha,\n  run_url: run ? run.html_url : null,\n  statut, conclusion, tentative, decision,\n} }];\n"
       },
       "id": "code-analyser-la-ci",
       "name": "Analyser la CI",
@@ -545,6 +548,21 @@
         2000,
         300
       ]
+    },
+    {
+      "parameters": {
+        "amount": 60,
+        "unit": "seconds"
+      },
+      "id": "wait-ci",
+      "name": "Attendre la CI",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2300,
+        520
+      ],
+      "webhookId": "jobhunt-wait-ci"
     },
     {
       "parameters": {
@@ -615,7 +633,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://hermes:8642/v1/chat/completions",
+        "url": "https://api.deepseek.com/v1/chat/completions",
         "options": {
           "timeout": 900000
         },
@@ -623,7 +641,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 2000, messages: [  { role: 'system', content: $('Préparer').first().json.roles.Fix },  { role: 'user', content: $('Analyser la CI').first().json.conclusion + '\\n\\n## Cas de test\\n' + $('QA — cas de test').first().json.choices[0].message.content } ] }) }}"
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 2000, thinking: { type: 'disabled' }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.Fix },  { role: 'user', content: $('Analyser la CI').first().json.conclusion + '\\n\\n## Cas de test\\n' + $('QA — cas de test').first().json.choices[0].message.content } ] }) }}"
       },
       "id": "llm-Fix",
       "name": "Fix",
@@ -635,15 +653,15 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "hermesapitoken01",
-          "name": "Hermes API"
+          "id": "deepseekapi01",
+          "name": "DeepSeek API"
         }
       }
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "http://hermes:8642/v1/chat/completions",
+        "url": "https://api.deepseek.com/v1/chat/completions",
         "options": {
           "timeout": 900000
         },
@@ -651,7 +669,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 800, messages: [  { role: 'system', content: $('Préparer').first().json.roles.QAReview },  { role: 'user', content: $('Analyser la CI').first().json.conclusion + '\\n\\n## Critères\\n' + $('PO — critères').first().json.choices[0].message.content } ] }) }}"
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-flash', stream: false, max_tokens: 1000, thinking: { type: 'disabled' }, messages: [  { role: 'system', content: $('Préparer').first().json.roles.QAReview },  { role: 'user', content: $('Analyser la CI').first().json.conclusion + '\\n\\n## Critères\\n' + $('PO — critères').first().json.choices[0].message.content } ] }) }}"
       },
       "id": "llm-QAReview",
       "name": "QA Review",
@@ -663,8 +681,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "hermesapitoken01",
-          "name": "Hermes API"
+          "id": "deepseekapi01",
+          "name": "DeepSeek API"
         }
       }
     },
@@ -685,7 +703,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.github.com/repos/{{ $json.repo }}/issues/{{ $json.numero }}/comments",
+        "url": "=https://api.github.com/repos/{{ $json.repo }}/issues/{{ $json.numero }}/comments",
         "options": {
           "timeout": 120000
         },
@@ -712,8 +730,64 @@
     },
     {
       "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/issues/{{ $('Préparer').first().json.numero }}/comments",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ body: '## Spécification refusée — porte Spec Review\\n\\n' + $('Spec Review').first().json.choices[0].message.content }) }}"
+      },
+      "id": "gh-commenter-le-refus",
+      "name": "Commenter le refus",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3400,
+        520
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/issues/{{ $('Préparer').first().json.numero }}/labels",
+        "options": {
+          "timeout": 120000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ labels: ['agent:no-go'] }) }}"
+      },
+      "id": "gh-marquer-refusée",
+      "name": "Marquer refusée",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3600,
+        520
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "githubpatcreds01",
+          "name": "GitHub"
+        }
+      }
+    },
+    {
+      "parameters": {
         "operation": "executeQuery",
-        "query": "insert into public.gates (run_id, porte, verdict, motif, empreinte_tested, empreinte_head) values ('{{ $('Préparer').first().json.runId }}', 'ci', '{{ $('Analyser la CI').first().json.conclusion }}', '{{ $('Analyser la CI').first().json.decision }}', '{{ $('Analyser la CI').first().json.sha }}', '{{ $('Analyser la CI').first().json.sha }}');",
+        "query": "=insert into public.gates (run_id, porte, verdict, motif, empreinte_tested, empreinte_head) values ('{{ $('Préparer').first().json.runId }}', 'ci', '{{ $('Analyser la CI').first().json.conclusion }}', '{{ $('Analyser la CI').first().json.decision }}', '{{ $('Analyser la CI').first().json.sha }}', '{{ $('Analyser la CI').first().json.sha }}');",
         "options": {}
       },
       "id": "pg-journal-verdict",
@@ -734,7 +808,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/issues/{{ $('Préparer').first().json.numero }}/labels",
+        "url": "=https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/issues/{{ $('Préparer').first().json.numero }}/labels",
         "options": {
           "timeout": 120000
         },
@@ -762,7 +836,7 @@
     {
       "parameters": {
         "method": "DELETE",
-        "url": "https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/issues/{{ $('Préparer').first().json.numero }}/labels/agent:go",
+        "url": "=https://api.github.com/repos/{{ $('Préparer').first().json.repo }}/issues/{{ $('Préparer').first().json.numero }}/labels/agent:go",
         "options": {
           "timeout": 120000
         },
@@ -897,7 +971,29 @@
         ],
         [
           {
-            "node": "Fin",
+            "node": "Commenter le refus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Commenter le refus": {
+      "main": [
+        [
+          {
+            "node": "Marquer refusée",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marquer refusée": {
+      "main": [
+        [
+          {
+            "node": "Retirer la demande",
             "type": "main",
             "index": 0
           }
@@ -1067,7 +1163,24 @@
             "index": 0
           }
         ],
-        []
+        [
+          {
+            "node": "Attendre la CI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attendre la CI": {
+      "main": [
+        [
+          {
+            "node": "CI — statut",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Résultat ?": {
