@@ -1,0 +1,4 @@
+{
+  "_doc": "Tests instables mis en quarantaine : ignorés par défaut, réactivés avec --run-quarantine. Jamais de désactivation en silence.",
+  "tests": []
+}

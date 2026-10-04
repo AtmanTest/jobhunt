@@ -269,3 +269,45 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "medium: Medium severity")
     config.addinivalue_line("markers", "low: Low severity")
     config.addinivalue_line("markers", "bug: Bug identifier")
+    config.addinivalue_line("markers", "contract: Contrats de données (schémas JSON)")
+    config.addinivalue_line("markers", "smoke: Parcours minimal de fumée")
+    config.addinivalue_line("markers", "quarantine: Test isolé (nécessite --run-quarantine)")
+
+
+# ---------------------------------------------------------------------------
+# Anti-flaky — quarantaine tracée (tests/quarantine.json)
+#
+# Un test instable est isolé et tracé, JAMAIS supprimé en silence.
+# Le réactiver : pytest --run-quarantine
+# ---------------------------------------------------------------------------
+
+QUARANTINE_FILE = os.path.join(os.path.dirname(__file__), "quarantine.json")
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--run-quarantine",
+        action="store_true",
+        default=False,
+        help="Exécute aussi les tests en quarantaine (tests/quarantine.json).",
+    )
+
+
+def _quarantined_ids():
+    try:
+        with open(QUARANTINE_FILE) as f:
+            return set(json.load(f).get("tests", []))
+    except (OSError, ValueError):
+        return set()
+
+
+def pytest_collection_modifyitems(config, items):
+    """Marque en skip les tests listés dans tests/quarantine.json."""
+    if config.getoption("--run-quarantine"):
+        return
+    quarantined = _quarantined_ids()
+    if not quarantined:
+        return
+    for item in items:
+        if item.nodeid in quarantined:
+            item.add_marker(pytest.mark.skip(reason="quarantaine (tests/quarantine.json)"))
