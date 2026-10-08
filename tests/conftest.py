@@ -251,6 +251,41 @@ def empty_db(test_db):
 
 
 @pytest.fixture
+def api_env(flask_app, test_db_file, monkeypatch):
+    """Application Flask de test, alignée AUSSI sur `scraper.DB_PATH`.
+
+    Pourquoi : `flask_app` aligne `app.DB_PATH`, mais plusieurs routes passent
+    par `scraper.get_db()` (qui lit `scraper.DB_PATH`, une variable distincte) —
+    `/api/jobs`, `/api/job/<id>/click`. Sans cet alignement, ces routes
+    liraient la base de développement au lieu de la base isolée du test.
+    """
+    import scraper
+
+    monkeypatch.setattr(scraper, "DB_PATH", test_db_file)
+    return flask_app
+
+
+@pytest.fixture
+def seeded_api(api_env, test_db, sample_jobs):
+    """Environnement API sur base ensemencée.
+
+    Returns:
+        dict avec `app` (Flask), `db` (connexion de test) et `ids` (offres insérées).
+    """
+    from tests.utils.db_helpers import insert_test_jobs
+
+    ids = insert_test_jobs(test_db, sample_jobs)
+    return {"app": api_env, "db": test_db, "ids": ids}
+
+
+@pytest.fixture
+def seeded_client(seeded_api):
+    """Client Flask sur base ensemencée (voir `seeded_api` pour les ids)."""
+    with seeded_api["app"].test_client() as client:
+        yield client
+
+
+@pytest.fixture
 def api_response():
     """Simple dict to store the last API response between BDD steps.
 
