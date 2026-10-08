@@ -36,7 +36,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from config import settings  # noqa: E402
-from tests.playwright.pages import DashboardPage, KanbanPage  # noqa: E402
+from tests.playwright.pages import DashboardPage, KanbanPage, LoginPage  # noqa: E402
 
 # Fragments de bruit réseau à ignorer (chargement de ressource, requête bloquée)
 # : ce ne sont pas des erreurs applicatives.
@@ -169,6 +169,43 @@ def reg_dashboard(page, seeded) -> DashboardPage:
 def kanban(page, seeded) -> KanbanPage:
     """Page Object de la vue Kanban ciblant le serveur E2E déterministe."""
     return KanbanPage(page, base_url=seeded["base_url"])
+
+
+@pytest.fixture
+def login(page, seeded) -> LoginPage:
+    """Page Object de l'écran de connexion ciblant le serveur E2E déterministe."""
+    return LoginPage(page, base_url=seeded["base_url"])
+
+
+@pytest.fixture
+def connected_dashboard(page, seeded) -> DashboardPage:
+    """Dashboard avec une session SIMULÉE : le menu utilisateur reste affiché.
+
+    Le dashboard remplace le bouton utilisateur par un lien « Connexion » dès que
+    `/api/auth/me` répond « anonyme ». En simulant une réponse authentifiée, on
+    exerce la branche connectée (menu, profil, déconnexion) sans dépendre d'un
+    vrai fournisseur d'identité. La route est interceptée AVANT la navigation.
+    """
+    import json as _json
+
+    page.route(
+        "**/api/auth/me",
+        lambda route: route.fulfill(
+            status=200,
+            content_type="application/json",
+            body=_json.dumps(
+                {
+                    "authenticated": True,
+                    "user_id": "u-test",
+                    "email": "qa@example.com",
+                    "full_name": "Atman",
+                    "headline": "QA Lead",
+                    "avatar_url": "",
+                }
+            ),
+        ),
+    )
+    return DashboardPage(page, base_url=seeded["base_url"])
 
 
 @pytest.fixture

@@ -50,6 +50,21 @@ class DashboardPage:
         self.theme_button: Locator = page.locator("#theme-btn")
         self.sidebar: Locator = page.locator("#sidebar")
 
+        # ── Onglets pays ──
+        self.country_tabs: Locator = page.locator(".country-btn")
+        self.active_country_tab: Locator = page.locator(".country-btn.active")
+        self.active_panel: Locator = page.locator(".tab-panel.active")
+
+        # ── Stats hero, badges de fraîcheur et pagination ──
+        self.hero_cards: Locator = page.locator(".hero .hero-card")
+        self.new_badges: Locator = page.locator(".tab-panel.active .badge-new-green")
+        self.pagination: Locator = page.locator(".tab-panel.active .pagination")
+
+        # ── Menu utilisateur (profil / déconnexion) ──
+        self.user_menu_trigger: Locator = page.locator("#user-trigger")
+        self.user_dropdown: Locator = page.locator("#user-dropdown")
+        self.logout_link: Locator = page.locator("#user-dropdown a.dd-danger")
+
         # ── Cartes d'offres (panneau actif et global) ──
         # Le panneau actif (France) contient une carte par offre ; le panneau
         # « Tous » les duplique. On scope donc les comptes d'égalité au panneau
@@ -115,6 +130,24 @@ class DashboardPage:
         self.contract_group.locator(f'.facet-btn[data-val="{value}"]').click()
         return self
 
+    def click_country(self, tab: str) -> "DashboardPage":
+        """Active l'onglet pays `tab` (france, suisse, tous, linkedin, …)."""
+        self.page.locator(f'.country-btn[data-tab="{tab}"]').click()
+        return self
+
+    def page_button(self, label: str) -> Locator:
+        """Bouton de pagination du panneau actif, par libellé (« 1 », « ‹ », « › »)."""
+        return self.pagination.get_by_role("button", name=label, exact=True)
+
+    def open_user_menu(self) -> "DashboardPage":
+        self.user_menu_trigger.click()
+        return self
+
+    def logout(self) -> "DashboardPage":
+        """Déclenche la déconnexion depuis le menu utilisateur."""
+        self.logout_link.click()
+        return self
+
     def toggle_theme(self) -> "DashboardPage":
         self.theme_button.click()
         return self
@@ -153,6 +186,20 @@ class DashboardPage:
 
     def first_visible_card(self) -> Locator:
         return self.page.locator(".tab-panel.active .job-card[data-id]:visible").first
+
+    def panel(self, tab: str) -> Locator:
+        return self.page.locator(f"#panel-{tab}")
+
+    def active_panel_id(self) -> str:
+        return self.page.evaluate(
+            "() => { const p = document.querySelector('.tab-panel.active');"
+            " return p ? p.id : ''; }"
+        )
+
+    def country_tab_badge(self, tab: str) -> int:
+        raw = self.page.locator(f'.country-btn[data-tab="{tab}"] .badge').inner_text()
+        digits = "".join(ch for ch in raw if ch.isdigit())
+        return int(digits) if digits else 0
 
     # --- thème (état réellement calculé, pas seulement une classe) --------
     def theme_attribute(self) -> Any:
