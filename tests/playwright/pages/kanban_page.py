@@ -63,6 +63,12 @@ class KanbanPage:
         self.view.wait_for(state="hidden", timeout=self.READY_TIMEOUT_MS)
         return self
 
+    def close_with_keyboard(self) -> "KanbanPage":
+        """Ferme l'écran Kanban au clavier (Échap) — chemin d'accessibilité."""
+        self.page.keyboard.press("Escape")
+        self.view.wait_for(state="hidden", timeout=self.READY_TIMEOUT_MS)
+        return self
+
     def move_card(self, job_id, from_stage: str, to_stage: str) -> "KanbanPage":
         """Déplace une carte via le bouton de la colonne cible du board."""
         self.move_button(from_stage, job_id, to_stage).click()

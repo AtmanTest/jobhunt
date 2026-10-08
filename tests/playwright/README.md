@@ -18,6 +18,17 @@ python -m pytest tests/playwright -m regression
 python -m pytest tests/playwright -n auto
 ```
 
+## TNR — une seule commande
+
+```bash
+bash tests/run_tnr.sh        # cœur + E2E navigateur + BDD navigateur
+```
+
+Ce script exécute la non-régression complète et s'arrête au premier étage en échec.
+La stratégie, la priorisation par risque et le catalogue des cas sont décrits dans
+[docs/strategie-tests.md](../../docs/strategie-tests.md) et
+[docs/catalogue-cas-tests.md](../../docs/catalogue-cas-tests.md).
+
 La régression démarre **son propre serveur** Flask sur un port libre de `127.0.0.1`,
 adossé à une base SQLite temporaire ensemencée de façon déterministe : rien à lancer
 à la main, aucun état partagé entre tests.
@@ -30,7 +41,7 @@ Aucun chemin ni port n'est codé en dur.
 | Chemin | Rôle |
 |---|---|
 | `specs/smoke/` | `@smoke` — parcours minimal, à chaque PR |
-| `specs/regression/` | `@regression` — chargement, recherche, facettes, thème, mobile, Kanban, carte, état vide |
+| `specs/regression/` | `@regression` — connexion, session, chargement, recherche, facettes, onglets pays, thème, mobile, Kanban, carte, pagination, état vide |
 | `test_dashboard.py` | 10 scénarios historiques du dashboard (filtre budget, stats, onglets pays, pagination, rejet, Apply) — étage `@regression` |
 | `pages/` | Page Objects (interactions seules, **jamais d'assertion**) |
 | `fixtures/` | jeu de données E2E déterministe (`e2e_data.py`) |
