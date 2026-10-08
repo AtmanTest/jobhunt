@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lettre de motivation — {{ job.title }} | JobHunt</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f0f14; color: #e0e0e0; line-height: 1.6;
+    padding: 32px 16px; display: flex; justify-content: center;
+  }
+  .feuille { width: 100%; max-width: 760px; }
+  .barre { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+  .retour { color: #8b8b9a; text-decoration: none; font-size: 14px; }
+  .retour:hover { color: #e0e0e0; }
+  .version { color: #5a5a68; font-size: 12px; }
+  h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .entreprise { color: #a09fb0; font-size: 15px; margin-bottom: 14px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 14px; list-style: none; color: #8b8b9a; font-size: 13px; margin-bottom: 18px; }
+  .score { font-size: 14px; color: #a09fb0; margin-bottom: 14px; }
+  .score strong { color: #4ade80; }
+  .competences { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin-bottom: 26px; }
+  .competences li { background: rgba(79,70,229,0.15); border: 1px solid rgba(79,70,229,0.4); color: #a5b4fc; border-radius: 20px; padding: 2px 10px; font-size: 12px; }
+  .lettre { position: relative; background: #17171f; border: 1px solid #262633; border-radius: 12px; padding: 22px; }
+  .lettre h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: #8b8b9a; margin-bottom: 14px; }
+  .lettre pre { white-space: pre-wrap; font-family: inherit; font-size: 14px; color: #d4d4dd; }
+  .copier { position: absolute; top: 18px; right: 18px; background: #262633; color: #e0e0e0; border: 1px solid #3a3a4a; border-radius: 8px; padding: 5px 12px; font-size: 12px; cursor: pointer; }
+  .copier:hover { border-color: #4f46e5; }
+  .postuler { display: inline-block; margin-top: 22px; background: #4f46e5; color: #fff; text-decoration: none; border-radius: 10px; padding: 11px 20px; font-size: 14px; font-weight: 600; }
+  .postuler:hover { background: #6366f1; }
+</style>
+</head>
+<body>
+<main class="feuille">
+  <div class="barre">
+    <a class="retour" href="/">← Tableau de bord</a>
+    <span class="version">JobHunt v{{ version }}</span>
+  </div>
+
+  <h1>{{ job.title }}</h1>
+  <p class="entreprise">{{ job.company }}</p>
+
+  <ul class="meta">
+    {% if job.location %}<li>📍 {{ job.location }}</li>{% endif %}
+    {% if job.salary %}<li>💰 {{ job.salary }}</li>{% endif %}
+    {% if job.source %}<li>🔗 {{ job.source }}</li>{% endif %}
+    {% if job.date %}<li>📅 {{ job.date }}</li>{% endif %}
+  </ul>
+
+  {% if score %}<p class="score">Score de correspondance : <strong>{{ score }}%</strong></p>{% endif %}
+
+  {% if matched_skills %}
+  <ul class="competences">
+    {% for skill in matched_skills %}<li>{{ skill }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  <article class="lettre">
+    <button type="button" class="copier" data-copy>Copier</button>
+    <h2>Lettre de motivation</h2>
+    <pre id="cover-letter">{{ cover_letter }}</pre>
+  </article>
+
+  {% if job.url %}
+  <a class="postuler" href="{{ job.url }}" target="_blank" rel="noopener noreferrer">Postuler ↗</a>
+  {% endif %}
+</main>
+<script>
+  var bouton = document.querySelector('[data-copy]');
+  if (bouton) {
+    bouton.addEventListener('click', function () {
+      var lettre = document.getElementById('cover-letter').innerText;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(lettre).then(function () { bouton.textContent = 'Copié ✓'; });
+      }
+    });
+  }
+</script>
+</body>
+</html>
