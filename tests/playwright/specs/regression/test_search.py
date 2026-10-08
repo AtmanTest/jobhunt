@@ -40,3 +40,25 @@ def test_effacer_la_recherche_restaure_l_etat_complet(reg_dashboard, seeded):
 
     expect(reg_dashboard.counter).to_have_text(f"{total} offres")
     expect(reg_dashboard.active_matching_cards).to_have_count(total)
+
+
+def test_la_recherche_ignore_la_casse(reg_dashboard, seeded):
+    """Partition d'équivalence : « cypress » et « Cypress » sélectionnent le même lot."""
+    reg_dashboard.open_ready()
+    expected = len(seeded["info"]["cypress_ids"])
+
+    reg_dashboard.search(QUERY.lower())
+
+    expect(reg_dashboard.counter).to_have_text(f"{expected} offres")
+    expect(reg_dashboard.active_matching_cards).to_have_count(expected)
+
+
+def test_la_recherche_porte_aussi_sur_l_entreprise(reg_dashboard):
+    """Le terme est cherché dans toute la carte (titre, entreprise, tags)."""
+    reg_dashboard.open_ready()
+
+    reg_dashboard.search("Globex")
+
+    expect(reg_dashboard.counter).to_have_text("1 offres")
+    expect(reg_dashboard.active_matching_cards).to_have_count(1)
+    expect(reg_dashboard.active_matching_cards.first).to_contain_text("Globex")

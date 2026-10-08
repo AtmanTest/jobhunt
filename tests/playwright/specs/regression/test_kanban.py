@@ -54,3 +54,40 @@ def test_deplacer_une_carte_persiste_cote_serveur(reg_dashboard, kanban, seeded,
     jobs = response.json()
     persisted = next(j for j in jobs if str(j["id"]) == str(job_id))
     assert persisted["pipeline_stage"] == "applied"
+
+
+def test_le_kanban_se_ferme_au_clavier(reg_dashboard, kanban):
+    """Chemin d'accessibilité : Échap ferme l'écran sans toucher la souris."""
+    reg_dashboard.open_ready()
+    kanban.open()
+    expect(kanban.view).to_be_visible()
+
+    kanban.close_with_keyboard()
+
+    expect(kanban.view).to_be_hidden()
+
+
+def test_le_kanban_se_ferme_par_le_bouton(reg_dashboard, kanban):
+    reg_dashboard.open_ready()
+    kanban.open()
+    expect(kanban.view).to_be_visible()
+
+    kanban.close()
+
+    expect(kanban.view).to_be_hidden()
+
+
+def test_un_deplacement_survit_a_un_rechargement(reg_dashboard, kanban, seeded):
+    """La persistance serveur est vérifiée côté UI : recharger ne perd rien."""
+    reg_dashboard.open_ready()
+    kanban.open()
+    job_id = seeded["info"]["kanban_ids"]["interview"]
+
+    kanban.move_card(job_id, "interview", "offer")
+    kanban.close()
+
+    reg_dashboard.reload_loaded()
+    kanban.open()
+
+    expect(kanban.card("offer", job_id)).to_be_visible()
+    expect(kanban.cards_in("interview")).to_have_count(0)

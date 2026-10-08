@@ -42,3 +42,40 @@ def test_aucune_erreur_console_au_chargement(reg_dashboard, console_errors):
     expect(reg_dashboard.job_list.first).to_be_visible()
     expect(reg_dashboard.active_panel_cards.first).to_be_visible()
     assert console_errors == [], f"erreur(s) console/JS au chargement : {console_errors}"
+
+
+def test_les_quatre_cartes_de_stats_sont_presentes(reg_dashboard):
+    reg_dashboard.open_ready()
+
+    expect(reg_dashboard.hero_cards).to_have_count(4)
+    expect(reg_dashboard.hero_cards.filter(has_text="Offres QA")).to_have_count(1)
+    expect(reg_dashboard.hero_cards.filter(has_text="Cette semaine")).to_have_count(1)
+    expect(reg_dashboard.hero_cards.filter(has_text="Marchés actifs")).to_have_count(1)
+    expect(reg_dashboard.hero_cards.filter(has_text="Jobs clôturés")).to_have_count(1)
+
+
+def test_les_offres_recentes_portent_le_badge_new(reg_dashboard, seeded):
+    """Seules les offres publiées il y a moins de 7 jours sont badgées."""
+    reg_dashboard.open_ready()
+
+    attendu = len(seeded["info"]["recent_ids"])
+    expect(reg_dashboard.new_badges).to_have_count(attendu)
+
+
+def test_la_pagination_est_bornee_aux_deux_extremites(reg_dashboard, seeded):
+    reg_dashboard.open_ready()
+    total = seeded["info"]["total_display"]
+    dernier = (total + PER_PAGE - 1) // PER_PAGE
+
+    # Première page : on ne peut pas revenir en arrière.
+    expect(reg_dashboard.page_button("‹")).to_be_disabled()
+    expect(reg_dashboard.page_button("›")).to_be_enabled()
+
+    reg_dashboard.page_button(str(dernier)).click()
+
+    # Dernière page : on ne peut pas avancer davantage.
+    expect(reg_dashboard.page_button("›")).to_be_disabled()
+    expect(reg_dashboard.page_button("‹")).to_be_enabled()
+
+    reg_dashboard.page_button("1").click()
+    expect(reg_dashboard.page_button("‹")).to_be_disabled()
