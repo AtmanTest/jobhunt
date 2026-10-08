@@ -1,7 +1,7 @@
 # Catalogue des cas de test — JobHunt
 
 Compagnon du [plan de stratégie de tests](./strategie-tests.md). Il recense les cas
- de test **conçus** (techniques ISTQB), leur priorité de risque, et l'endroit où ils
+de test **conçus** (techniques ISTQB), leur priorité de risque, et l'endroit où ils
 sont exécutés.
 
 ## Légende
@@ -47,7 +47,7 @@ Techniques : **EP** partition d'équivalence · **BVA** valeurs limites ·
 | M16 Monitoring | 5 | 5 | 0 | 0 | P3 |
 | M17 Cockpit QA | 4 | 4 | 0 | 0 | P3 |
 | M18 Pages vitrines / POC | 6 | 6 | 0 | 0 | P3 |
-| **Total** | **244** | **242** | **0** | **2** |
+| **Total** | **244** | **242** | **0** | **2** | |
 
 **Backlog résorbé** : aucun cas conçu ne reste au statut ⏳. Les 2 cas restants sont
 des défauts constatés (§21), pas des tests manquants.
